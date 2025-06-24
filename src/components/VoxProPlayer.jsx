@@ -1,5 +1,6 @@
 import {useState, useEffect, useMemo }o} from 'react'
 import useAssignments from '../hooks/useAssignments';
+import { supabase } from '../lib/supabase';
 
 const VoxProPlayer = () => {
   // Configuration
@@ -7,7 +8,10 @@ const VoxProPlayer = () => {
   
   // State
   const [backendStatus, setBackendStatus] = useState('connecting')
-  const [statusMessage, setStatusMessage] = useState('Connecting to Enterprise Backend...')
+  const [statusMessage, setStatusMessage] = useState('Connecting to Enterprise Backend...'
+                                                    const [debugData, setDebugData] = useState(null);
+  
+const [debugError, setDebugError] = useState(null);)
 
     const assignments = useAssignments();
     const keyAssignments = useMemo(() => {
@@ -24,6 +28,16 @@ const VoxProPlayer = () => {
       setStatusMessage('Connected');
     }
   }, [assignments]);
+
+useEffect(() => {
+  supabase
+    .from('assignments')
+    .select('*')
+    .then(({ data, error }) => {
+      setDebugData(data);
+      setDebugError(error);
+    });
+}, []);
 
   const initializePlayer = async () => {
 
@@ -259,6 +273,14 @@ const VoxProPlayer = () => {
                 <div>REC: Record</div>
               </div>
             </div>
+  {/* Debug Section */}
+  <div className="debug bg-gray-100 p-4 mt-4">
+    <h3 className="text-red-600 font-semibold mb-2">Debug – Supabase assignments</h3>
+    <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(debugData, null, 2)}</pre>
+    {debugError && (
+      <pre className="text-xs text-red-500 whitespace-pre-wrap">{JSON.stringify(debugError, null, 2)}</pre>
+    )}
+  </div>
           </div>
         </div>
       </div>
