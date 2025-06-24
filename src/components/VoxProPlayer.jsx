@@ -289,4 +289,5 @@ useEffect(() => {
 }
 
 export default VoxProPlayer;
+  
 
