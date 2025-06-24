@@ -17,19 +17,16 @@ const VoxProPlayer = () => {
     });
     return map;
   }, [assignments]);
-
+ 
   useEffect(() => {
-    initializePlayer()
-    
-    const healthInterval = setInterval(checkBackendHealth, 30000)
-    
-    return () => {
-      clearInterval(healthInterval)
+    if (assignments) {
+      setBackendStatus('online');
+      setStatusMessage('Connected');
     }
-  }, [])
+  }, [assignments]);
 
   const initializePlayer = async () => {
-    await checkBackendHealth()
+
   
   }
 
