@@ -285,8 +285,8 @@ useEffect(() => {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default VoxProPlayer
+export default VoxProPlayer;
 
