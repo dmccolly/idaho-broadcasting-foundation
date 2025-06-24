@@ -1,4 +1,4 @@
-import {useState, useEffect, useMemo }o} from 'react'
+import { useState, useEffect, useMemo } from 'react';
 import useAssignments from '../hooks/useAssignments';
 import { supabase } from '../lib/supabase';
 
