@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import useAssignments from '../hooks/useAssignments';
 
 const VoxProPlayer = () => {
   // Configuration
@@ -8,6 +9,7 @@ const VoxProPlayer = () => {
   const [backendStatus, setBackendStatus] = useState('connecting')
   const [statusMessage, setStatusMessage] = useState('Connecting to Enterprise Backend...')
   const [keyAssignments, setKeyAssignments] = useState({})
+    const assignments = useAssignments();
 
   useEffect(() => {
     initializePlayer()
