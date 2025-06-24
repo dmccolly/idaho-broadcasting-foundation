@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { uploadAudio } from '../lib/uploadAudio';
+import { supabase } from '../lib/supabase';
 
 const VoxProManagement = () => {
   // Configuration
@@ -11,6 +12,8 @@ const VoxProManagement = () => {
   const [mediaLibrary, setMediaLibrary] = useState([])
   const [storageStats, setStorageStats] = useState({})
   const [keyAssignments, setKeyAssignments] = useState({})
+  const [debugData, setDebugData] = useState(null);
+const [debugError, setDebugError] = useState(null);
   
   // Form state
   const [mediaTitle, setMediaTitle] = useState('')
@@ -33,7 +36,17 @@ const VoxProManagement = () => {
       clearInterval(healthInterval)
       clearInterval(statsInterval)
     }
-  }, [])
+  
+  useEffect(() => {
+  supabase
+    .from('assignments')
+    .select('*')
+    .then(({ data, error }) => {
+      setDebugData(data);
+      setDebugError(error);
+    });
+}, []);
+}, [])
 
   const initializeManagement = async () => {
     await checkBackendHealth()
@@ -455,6 +468,15 @@ const VoxProManagement = () => {
             <div>Total Size: {storageStats.total_size_mb}MB</div>
             <div>Available: {storageStats.available_space_mb}MB</div>
           </div>
+            {/* Debug Section */}
+  <div className="debug bg-gray-100 p-4 mt-4">
+    <h3 className="text-red-600 font-semibold mb-2">Debug – Supabase assignments</h3>
+    <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(debugData, null, 2)}</pre>
+    {debugError && (
+      <pre className="text-xs text-red-500 whitespace-pre-wrap">{JSON.stringify(debugError, null, 2)}</pre>
+    )}
+  </div>
+
         </div>
       )}
     </div>
