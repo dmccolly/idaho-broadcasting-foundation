@@ -8,7 +8,7 @@ const VoxProPlayer = () => {
   
   // State
   const [backendStatus, setBackendStatus] = useState('connecting')
-  const [statusMessage, setStatusMessage] = useState('Connecting to Enterprise Backend...'');
+  onst [statusMessage, setStatusMessage] = useState('Connecting to Enterprise Backend...');
                                                     
   const [debugData, setDebugData] = useState(null);
   const [debugError, setDebugError] = useState(null);
