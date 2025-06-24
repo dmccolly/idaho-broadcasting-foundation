@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import {useState, useEffect, useMemo }o} from 'react'
 import useAssignments from '../hooks/useAssignments';
 
 const VoxProPlayer = () => {
@@ -8,8 +8,15 @@ const VoxProPlayer = () => {
   // State
   const [backendStatus, setBackendStatus] = useState('connecting')
   const [statusMessage, setStatusMessage] = useState('Connecting to Enterprise Backend...')
-  const [keyAssignments, setKeyAssignments] = useState({})
+
     const assignments = useAssignments();
+    const keyAssignments = useMemo(() => {
+    const map = {};
+    assignments.forEach(a => {
+      map[a.key_slot] = a;
+    });
+    return map;
+  }, [assignments]);
 
   useEffect(() => {
     initializePlayer()
@@ -23,7 +30,7 @@ const VoxProPlayer = () => {
 
   const initializePlayer = async () => {
     await checkBackendHealth()
-    await loadKeyAssignments()
+  
   }
 
   const checkBackendHealth = async () => {
@@ -53,23 +60,7 @@ const VoxProPlayer = () => {
       setBackendStatus('offline')
       setStatusMessage('Media Server: Offline')
     }
-  }
-
-  const loadKeyAssignments = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/assignments`)
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          setKeyAssignments(data.assignments || {})
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load key assignments:', error)
-    }
-  }
-
-  const handleKeyPress = async (keyNumber) => {
+    const handleKeyPress = async (keyNumber) => {
     try {
       const response = await fetch(`${API_BASE_URL}/play`, {
         method: 'POST',
