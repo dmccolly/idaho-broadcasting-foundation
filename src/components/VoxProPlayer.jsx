@@ -11,7 +11,7 @@ const VoxProPlayer = () => {
   const [statusMessage, setStatusMessage] = useState('Connecting to Enterprise Backend...'');
                                                     
   const [debugData, setDebugData] = useState(null);
-coconst [debugError, setDebugError] = useState(null);
+  const [debugError, setDebugError] = useState(null);
 
     const assignments = useAssignments();
     const keyAssignments = useMemo(() => {
