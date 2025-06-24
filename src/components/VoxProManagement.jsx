@@ -1,487 +1,590 @@
-import { useState, useEffect } from 'react'
-import { uploadAudio } from '../lib/uploadAudio';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 const VoxProManagement = () => {
-  // Configuration
-  const API_BASE_URL = 'https://j6h5i7c15mnp.manus.space/api'
-  
-  // State
-  const [backendStatus, setBackendStatus] = useState('connecting')
-  const [statusMessage, setStatusMessage] = useState('Connecting to Enterprise Backend...')
-  const [mediaLibrary, setMediaLibrary] = useState([])
-  const [storageStats, setStorageStats] = useState({})
-  const [keyAssignments, setKeyAssignments] = useState({})
-  const [debugData, setDebugData] = useState(null);
-const [debugError, setDebugError] = useState(null);
+  // State management
+  const [connectionStatus, setConnectionStatus] = useState('connecting');
+  const [statusMessage, setStatusMessage] = useState('Connecting to Supabase...');
+  const [assignments, setAssignments] = useState([]);
   
   // Form state
-  const [mediaTitle, setMediaTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [submittedBy, setSubmittedBy] = useState('')
-  const [selectedKey, setSelectedKey] = useState('KEY 1')
-  const [audioFile, setAudioFile] = useState(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-
-  const keys = ['KEY 1', 'KEY 2', 'KEY 3', 'KEY 4', 'KEY 5', 'KEY A', 'KEY B', 'KEY C', 'KEY D']
-
-  useEffect(() => {
-    initializeManagement()
-    
-    const healthInterval = setInterval(checkBackendHealth, 30000)
-    const statsInterval = setInterval(updateStorageStats, 60000)
-    
-    return () => {
-      clearInterval(healthInterval)
-      clearInterval(statsInterval)
-    }
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    submittedBy: '',
+    keySlot: '',
+    mediaFile: null
+  });
   
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Initialize Supabase connection
   useEffect(() => {
-  supabase
-    .from('assignments')
-    .select('*')
-    .then(({ data, error }) => {
-      setDebugData(data);
-      setDebugError(error);
-    });
-}, []);
-}, [])
+    const initializeConnection = async () => {
+      try {
+        // Test Supabase connection
+        const { data, error } = await supabase
+          .from('assignments')
+          .select('*')
+          .limit(1);
 
-  const initializeManagement = async () => {
-    await checkBackendHealth()
-    await loadMediaLibrary()
-    await updateStorageStats()
-    await loadKeyAssignments()
-  }
-
-  const checkBackendHealth = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/health`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+        if (error) {
+          console.error('Supabase connection error:', error);
+          setConnectionStatus('disconnected');
+          setStatusMessage('Failed to connect to Supabase');
+          return;
         }
-      })
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        setBackendStatus('online')
-        setStatusMessage('Enterprise Backend Connected')
-        if (data.storage_stats) {
-          setStorageStats(data.storage_stats)
-        }
-      } else {
-        throw new Error(data.message || 'Backend unhealthy')
-      }
-    } catch (error) {
-      console.error('Backend health check failed:', error)
-      setBackendStatus('offline')
-      setStatusMessage(`Backend Connection Error: ${error.message}`)
-    }
-  }
 
-  const loadMediaLibrary = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/media`)
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          setMediaLibrary(data.media || [])
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load media library:', error)
-    }
-  }
-
-  const loadKeyAssignments = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/assignments`)
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          setKeyAssignments(data.assignments || {})
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load key assignments:', error)
-    }
-  }
-
-  const updateStorageStats = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/storage/stats`)
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          setStorageStats(data.stats || {})
-        }
-      }
-    } catch (error) {
-      console.error('Failed to update storage stats:', error)
-    }
-  }
-
-  const handleUpload = async () => {
-    if (!audioFile || !mediaTitle.trim()) {
-      alert('Please select an audio file and enter a media title')
-      return
-    }
-
-    if (!submittedBy.trim()) {
-      alert('Please enter your name in the "Submitted By" field')
-      return
-    }
-
-    setIsUploading(true)
-    setUploadProgress(0)
-    
-    try {
-      const formData = new FormData()
-      formData.append('audio', audioFile)
-      formData.append('title', mediaTitle)
-      formData.append('description', description)
-      formData.append('submittedBy', submittedBy)
-      formData.append('assignedKey', selectedKey)
-
-      // Simulate progress for user feedback
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval)
-            return 90
-          }
-          return prev + 10
-        })
-      }, 200)
-
-      const response = await fetch(`${API_BASE_URL}/upload`, {
-        method: 'POST',
-        body: formData
-      })
-
-      clearInterval(progressInterval)
-      setUploadProgress(100)
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const data = await response.json()
-
-      if (data.success) {
-        alert('Media uploaded successfully!')
-        setMediaTitle('')
-        setDescription('')
-        setSubmittedBy('')
-        setAudioFile(null)
-        setUploadProgress(0)
+        // Connection successful
+        setConnectionStatus('connected');
+        setStatusMessage('Connected to Supabase');
         
-        // Refresh data
-        await loadMediaLibrary()
-        await updateStorageStats()
-        await loadKeyAssignments()
-      } else {
-        throw new Error(data.message || 'Upload failed')
+        // Load current assignments
+        loadAssignments();
+
+      } catch (error) {
+        console.error('Connection initialization error:', error);
+        setConnectionStatus('disconnected');
+        setStatusMessage('Connection failed');
       }
+    };
+
+    initializeConnection();
+  }, []);
+
+  // Load assignments from Supabase
+  const loadAssignments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('assignments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading assignments:', error);
+        return;
+      }
+
+      setAssignments(data || []);
     } catch (error) {
-      console.error('Upload error:', error)
-      alert(`Upload failed: ${error.message}`)
-      setUploadProgress(0)
+      console.error('Error in loadAssignments:', error);
+    }
+  };
+
+  // Handle form input changes
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Handle file selection
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        mediaFile: file
+      }));
+    }
+  };
+
+  // Handle key slot selection
+  const handleKeySlotSelect = (keySlot) => {
+    setFormData(prev => ({
+      ...prev,
+      keySlot
+    }));
+  };
+
+  // Upload media file to Supabase Storage
+  const uploadMediaFile = async (file) => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `media/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('media-files')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('media-files')
+        .getPublicUrl(filePath);
+
+      return {
+        filePath,
+        publicUrl,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      };
+
+    } catch (error) {
+      console.error('File upload error:', error);
+      throw error;
+    }
+  };
+
+  // Submit assignment to Supabase
+  const handleSubmit = async () => {
+    if (!formData.title || !formData.keySlot) {
+      alert('Please fill in title and select a key slot');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      let mediaInfo = null;
+
+      // Upload file if provided (let Supabase handle the heavy lifting)
+      if (formData.mediaFile) {
+        setUploadProgress(25);
+        mediaInfo = await uploadMediaFile(formData.mediaFile);
+        setUploadProgress(50);
+      }
+
+      // Create assignment record in Supabase
+      const assignmentData = {
+        title: formData.title,
+        description: formData.description,
+        submitted_by: formData.submittedBy,
+        key_slot: formData.keySlot,
+        media_url: mediaInfo?.publicUrl || null,
+        media_file_path: mediaInfo?.filePath || null,
+        media_file_name: mediaInfo?.fileName || null,
+        media_file_size: mediaInfo?.fileSize || null,
+        media_file_type: mediaInfo?.fileType || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      setUploadProgress(75);
+
+      // Insert into Supabase (this will trigger real-time updates to the Player)
+      const { data, error } = await supabase
+        .from('assignments')
+        .upsert(assignmentData, { 
+          onConflict: 'key_slot',
+          ignoreDuplicates: false 
+        })
+        .select();
+
+      if (error) {
+        throw error;
+      }
+
+      setUploadProgress(100);
+
+      // Success - clear form and reload assignments
+      clearForm();
+      loadAssignments();
+      
+      alert('Media assigned successfully! The VoxPro Player will update automatically.');
+
+    } catch (error) {
+      console.error('Submit error:', error);
+      alert(`Error: ${error.message}`);
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
+      setUploadProgress(0);
     }
-  }
+  };
 
-  const deleteMedia = async (mediaId) => {
-    if (!confirm('Are you sure you want to delete this media?')) return
+  // Clear form
+  const clearForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      submittedBy: '',
+      keySlot: '',
+      mediaFile: null
+    });
     
-    try {
-      const response = await fetch(`${API_BASE_URL}/media/${mediaId}`, {
-        method: 'DELETE'
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          await loadMediaLibrary()
-          await updateStorageStats()
-          await loadKeyAssignments()
-        }
-      }
-    } catch (error) {
-      console.error('Delete media error:', error)
+    // Clear file input
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+      fileInput.value = '';
     }
-  }
+  };
 
-  const handleKeyPress = async (keyNumber) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/play`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key_number: keyNumber })
-      })
-    } catch (error) {
-      console.error('Key press error:', error)
+  // Get connection status color
+  const getStatusColor = () => {
+    switch (connectionStatus) {
+      case 'connected': return 'text-green-500';
+      case 'connecting': return 'text-yellow-500';
+      case 'disconnected': return 'text-red-500';
+      default: return 'text-gray-500';
     }
-  }
+  };
 
-  const getKeyTitle = (keyName) => {
-    const assignment = keyAssignments[keyName]
-    return assignment ? assignment.title : 'No media assigned'
-  }
+  // Get connection status indicator
+  const getStatusIndicator = () => {
+    switch (connectionStatus) {
+      case 'connected': return '🟢';
+      case 'connecting': return '🟡';
+      case 'disconnected': return '🔴';
+      default: return '⚪';
+    }
+  };
 
   return (
-    <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg p-6 border border-gray-600 shadow-2xl">
+    <div className="w-full max-w-6xl mx-auto p-4">
       {/* Header */}
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-green-400 mb-1">VoxPro Management System</h2>
-        <p className="text-gray-400 text-sm">Professional Control System with Media Management</p>
-        <div className="flex items-center justify-center space-x-2 mt-3">
-          <div className={`w-3 h-3 rounded-full ${
-            backendStatus === 'online' ? 'bg-green-500' : 
-            backendStatus === 'connecting' ? 'bg-yellow-500' : 'bg-red-500'
-          }`}></div>
-          <span className="text-gray-400 text-sm">{statusMessage}</span>
-        </div>
+      <div className="bg-gray-800 text-white p-4 rounded-t-lg">
+        <h2 className="text-2xl font-bold text-center text-green-400">VoxPro Management Tool</h2>
+        <p className="text-center text-gray-300">Administrative access for media upload, assignment, and system management.</p>
       </div>
 
-      {/* Two Panel Layout */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Left Panel - VoxPro Control Interface */}
-        <div className="bg-gradient-to-b from-gray-700 to-gray-800 rounded-lg p-6 border border-gray-600">
-          <h3 className="text-lg font-bold text-green-400 mb-4 text-center">VoxPro Control Interface</h3>
-          
-          <div className="text-center mb-4">
-            <h4 className="text-white font-bold mb-1">VoxPro</h4>
-            <p className="text-gray-400 text-sm">Professional Control System</p>
+      {/* Main Interface */}
+      <div className="bg-gray-900 text-white p-6 rounded-b-lg">
+        {/* Status Header */}
+        <div className="text-center mb-6">
+          <h3 className="text-xl font-semibold text-green-400 mb-2">VoxPro Management System</h3>
+          <p className="text-gray-400">Professional Control System with Media Management</p>
+          <div className={`flex items-center justify-center gap-2 mt-2 ${getStatusColor()}`}>
+            <span>{getStatusIndicator()}</span>
+            <span>{statusMessage}</span>
           </div>
+        </div>
 
-          {/* Status Bar */}
-          <div className="mb-4">
-            <div className="bg-blue-600 text-white text-center py-2 rounded border border-blue-500 text-sm font-semibold">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* VoxPro Control Interface (Read-only display) */}
+          <div className="bg-gray-800 p-4 rounded-lg">
+            <h4 className="text-lg font-semibold text-green-400 mb-4 text-center">VoxPro Control Interface</h4>
+            
+            <div className="text-center mb-4">
+              <h5 className="text-white font-medium">VoxPro</h5>
+              <p className="text-gray-400 text-sm">Professional Control System</p>
+            </div>
+
+            <div className="bg-blue-600 text-white text-center py-2 px-4 rounded mb-4 font-medium">
               VoxPro Media Interface - Ready
             </div>
-          </div>
 
-          {/* START Keys */}
-          <div className="grid grid-cols-5 gap-2 mb-4">
-            {[1, 2, 3, 4, 5].map(num => (
-              <button
-                key={num}
-                onClick={() => handleKeyPress(`START_${num}`)}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-2 rounded border border-red-500 transition-all duration-200 text-xs"
-                title={getKeyTitle(`START_${num}`)}
-              >
-                START {num}
-              </button>
-            ))}
-          </div>
-
-          {/* Control Buttons */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            <button className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-2 rounded border border-gray-500 text-xs">A</button>
-            <button className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-2 rounded border border-gray-500 text-xs">B</button>
-            <button className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-2 rounded border border-gray-500 text-xs">DUP</button>
-            <button className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-2 rounded border border-gray-500 text-xs">C</button>
-            <button className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-2 rounded border border-gray-500 text-xs">D</button>
-            <button className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-2 rounded border border-gray-500 text-xs">CUE</button>
-            <button className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-2 rounded border border-gray-500 text-xs">E</button>
-            <button className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-2 rounded border border-gray-500 text-xs">F</button>
-            <button className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-2 rounded border border-gray-500 text-xs">REC</button>
-            <button className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-2 rounded border border-gray-500 text-xs">G</button>
-          </div>
-
-          {/* VU Meter */}
-          <div className="flex justify-center">
-            <div className="w-16 h-16 rounded-full border-4 border-green-500 bg-gray-800 flex items-center justify-center relative">
-              <div className="w-1 h-6 bg-green-500 rounded"></div>
-              <div className="absolute inset-0 rounded-full bg-green-500 opacity-20 animate-pulse"></div>
+            {/* START Keys (1-5) - Display only */}
+            <div className="grid grid-cols-5 gap-2 mb-4">
+              {[1, 2, 3, 4, 5].map(num => {
+                const assignment = assignments.find(a => a.key_slot === num.toString());
+                return (
+                  <div
+                    key={num}
+                    className={`
+                      h-12 rounded font-bold text-white border-2 flex items-center justify-center
+                      ${assignment 
+                        ? 'bg-red-600 border-red-400' 
+                        : 'bg-red-800 border-red-600 opacity-50'
+                      }
+                    `}
+                    title={assignment?.title || `START ${num}`}
+                  >
+                    {num}
+                  </div>
+                );
+              })}
             </div>
-          </div>
-        </div>
 
-        {/* Right Panel - Media Management Interface */}
-        <div className="bg-gradient-to-b from-gray-700 to-gray-800 rounded-lg p-6 border border-gray-600">
-          <h3 className="text-lg font-bold text-green-400 mb-4 text-center">Media Management Interface</h3>
-          
-          {/* Current Key Assignments */}
-          <div className="bg-gray-800 rounded p-4 mb-4 border border-gray-600">
-            <h4 className="text-green-400 font-semibold mb-2 text-sm">Current Key Assignments</h4>
-            <div className="text-xs text-gray-300 space-y-1 max-h-20 overflow-y-auto">
-              {Object.entries(keyAssignments).length > 0 ? (
-                Object.entries(keyAssignments).map(([key, assignment]) => (
-                  <div key={key}>{key}: {assignment.title || 'Unassigned'}</div>
-                ))
-              ) : (
-                <div className="text-gray-500">No assignments loaded</div>
-              )}
+            {/* Media Keys Display */}
+            <div className="grid grid-cols-3 gap-2 mb-2">
+              {['A', 'B', 'DUP'].map(key => {
+                const assignment = assignments.find(a => a.key_slot === key);
+                return (
+                  <div
+                    key={key}
+                    className={`
+                      h-12 rounded font-bold text-white border-2 flex items-center justify-center
+                      ${assignment 
+                        ? 'bg-purple-600 border-purple-400' 
+                        : 'bg-purple-800 border-purple-600 opacity-50'
+                      }
+                    `}
+                    title={assignment?.title || key}
+                  >
+                    {key}
+                  </div>
+                );
+              })}
             </div>
-          </div>
 
-          {/* Media Title */}
-          <div className="mb-3">
-            <label className="block text-green-400 text-sm font-semibold mb-1">
-              Media Title (100 characters max)
-            </label>
-            <input
-              type="text"
-              value={mediaTitle}
-              onChange={(e) => setMediaTitle(e.target.value.slice(0, 100))}
-              placeholder="Enter media title..."
-              className="w-full p-2 bg-gray-800 border border-gray-600 rounded text-white text-sm focus:border-green-500 focus:outline-none"
-            />
-            <div className="text-right text-xs text-gray-400 mt-1">
-              {mediaTitle.length}/100
+            <div className="grid grid-cols-3 gap-2 mb-2">
+              {['C', 'D', 'CUE'].map(key => {
+                const assignment = assignments.find(a => a.key_slot === key);
+                const bgColor = key === 'C' ? 'teal' : key === 'D' ? 'red' : 'blue';
+                return (
+                  <div
+                    key={key}
+                    className={`
+                      h-12 rounded font-bold text-white border-2 flex items-center justify-center
+                      ${assignment 
+                        ? `bg-${bgColor}-600 border-${bgColor}-400` 
+                        : `bg-${bgColor}-800 border-${bgColor}-600 opacity-50`
+                      }
+                    `}
+                    title={assignment?.title || key}
+                  >
+                    {key}
+                  </div>
+                );
+              })}
             </div>
-          </div>
 
-          {/* Description */}
-          <div className="mb-3">
-            <label className="block text-green-400 text-sm font-semibold mb-1">
-              Description (300 characters max)
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value.slice(0, 300))}
-              placeholder="Enter description..."
-              rows={3}
-              className="w-full p-2 bg-gray-800 border border-gray-600 rounded text-white text-sm focus:border-green-500 focus:outline-none resize-none"
-            />
-            <div className="text-right text-xs text-gray-400 mt-1">
-              {description.length}/300
+            <div className="grid grid-cols-3 gap-2 mb-2">
+              {['E', 'F', 'REC'].map(key => {
+                const assignment = assignments.find(a => a.key_slot === key);
+                const bgColor = key === 'E' ? 'red' : key === 'F' ? 'green' : 'blue';
+                return (
+                  <div
+                    key={key}
+                    className={`
+                      h-12 rounded font-bold text-white border-2 flex items-center justify-center
+                      ${assignment 
+                        ? `bg-${bgColor}-600 border-${bgColor}-400` 
+                        : `bg-${bgColor}-800 border-${bgColor}-600 opacity-50`
+                      }
+                    `}
+                    title={assignment?.title || key}
+                  >
+                    {key}
+                  </div>
+                );
+              })}
             </div>
-          </div>
 
-          {/* Submitted By */}
-          <div className="mb-3">
-            <label className="block text-green-400 text-sm font-semibold mb-1">
-              Submitted By
-            </label>
-            <input
-              type="text"
-              value={submittedBy}
-              onChange={(e) => setSubmittedBy(e.target.value)}
-              placeholder="Your name..."
-              className="w-full p-2 bg-gray-800 border border-gray-600 rounded text-white text-sm focus:border-green-500 focus:outline-none"
-            />
-          </div>
-
-          {/* File Selection */}
-          <div className="mb-3">
-            <label className="block text-green-400 text-sm font-semibold mb-1">
-              Select Media File
-            </label>
-            <div className="border-2 border-dashed border-gray-600 rounded p-4 text-center bg-gray-800">
-              <input
-                type="file"
-                accept="audio/*"
-                onChange={(e) => setAudioFile(e.target.files[0])}
-                className="hidden"
-                id="file-upload"
-              />
-              <label htmlFor="file-upload" className="cursor-pointer">
-                <div className="text-orange-400 text-sm">📁 Click to select file or drag & drop here</div>
-                {audioFile && <div className="text-white text-xs mt-1">{audioFile.name}</div>}
-              </label>
+            <div className="flex justify-center">
+              {(() => {
+                const assignment = assignments.find(a => a.key_slot === 'G');
+                return (
+                  <div
+                    className={`
+                      h-12 w-20 rounded font-bold text-white border-2 flex items-center justify-center
+                      ${assignment 
+                        ? 'bg-yellow-600 border-yellow-400' 
+                        : 'bg-yellow-800 border-yellow-600 opacity-50'
+                      }
+                    `}
+                    title={assignment?.title || 'G'}
+                  >
+                    G
+                  </div>
+                );
+              })()}
             </div>
-          </div>
 
-          {/* Upload Progress */}
-          {isUploading && (
-            <div className="mb-3">
-              <div className="bg-gray-800 rounded p-2 border border-gray-600">
-                <div className="flex justify-between text-xs text-gray-400 mb-1">
-                  <span>Uploading...</span>
-                  <span>{uploadProgress}%</span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
-                </div>
+            {/* Status Indicator */}
+            <div className="flex justify-center mt-4">
+              <div className="w-16 h-16 rounded-full border-4 border-green-500 flex items-center justify-center">
+                <div className="w-2 h-8 bg-green-500 rounded"></div>
               </div>
             </div>
-          )}
+          </div>
 
-          {/* Key Selection */}
-          <div className="mb-4">
-            <label className="block text-green-400 text-sm font-semibold mb-2">
-              Select Key to Replace
-            </label>
-            <div className="grid grid-cols-5 gap-1">
-              {keys.map(key => (
+          {/* Media Management Interface */}
+          <div className="bg-gray-800 p-4 rounded-lg">
+            <h4 className="text-lg font-semibold text-green-400 mb-4 text-center">Media Management Interface</h4>
+            
+            {/* Current Assignments Display */}
+            <div className="bg-gray-700 p-3 rounded mb-4">
+              <h5 className="text-green-400 font-medium mb-2">Current Key Assignments</h5>
+              <div className="text-sm text-gray-300 max-h-20 overflow-y-auto">
+                {assignments.length > 0 ? (
+                  assignments.map(assignment => (
+                    <div key={assignment.id} className="flex justify-between">
+                      <span>{assignment.key_slot}:</span>
+                      <span className="truncate ml-2">{assignment.title}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500">No assignments loaded</p>
+                )}
+              </div>
+            </div>
+
+            {/* Media Upload Form */}
+            <div className="space-y-4">
+              {/* Media Title */}
+              <div>
+                <label className="block text-green-400 font-medium mb-1">
+                  Media Title (100 characters max)
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  placeholder="Enter media title..."
+                  maxLength={100}
+                  className="w-full bg-gray-700 text-white p-2 rounded border border-gray-600 focus:border-green-400 focus:outline-none"
+                />
+                <div className="text-xs text-gray-400 mt-1">
+                  {formData.title.length}/100
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-green-400 font-medium mb-1">
+                  Description (300 characters max)
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  placeholder="Enter description..."
+                  maxLength={300}
+                  rows={3}
+                  className="w-full bg-gray-700 text-white p-2 rounded border border-gray-600 focus:border-green-400 focus:outline-none resize-none"
+                />
+                <div className="text-xs text-gray-400 mt-1">
+                  {formData.description.length}/300
+                </div>
+              </div>
+
+              {/* Submitted By */}
+              <div>
+                <label className="block text-green-400 font-medium mb-1">
+                  Submitted By
+                </label>
+                <input
+                  type="text"
+                  value={formData.submittedBy}
+                  onChange={(e) => handleInputChange('submittedBy', e.target.value)}
+                  placeholder="Your name..."
+                  className="w-full bg-gray-700 text-white p-2 rounded border border-gray-600 focus:border-green-400 focus:outline-none"
+                />
+              </div>
+
+              {/* File Upload */}
+              <div>
+                <label className="block text-green-400 font-medium mb-1">
+                  Select Media File
+                </label>
+                <div className="border-2 border-dashed border-gray-600 rounded p-4 text-center hover:border-green-400 transition-colors">
+                  <input
+                    type="file"
+                    onChange={handleFileSelect}
+                    accept="audio/*,video/*"
+                    className="hidden"
+                    id="media-file-input"
+                  />
+                  <label 
+                    htmlFor="media-file-input" 
+                    className="cursor-pointer text-blue-400 hover:text-blue-300"
+                  >
+                    📁 Click to select file or drag & drop here
+                  </label>
+                  {formData.mediaFile && (
+                    <p className="text-green-400 mt-2 text-sm">
+                      Selected: {formData.mediaFile.name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Key Selection */}
+              <div>
+                <label className="block text-green-400 font-medium mb-2">
+                  Select Key to Replace
+                </label>
+                <div className="grid grid-cols-5 gap-2 mb-2">
+                  {[1, 2, 3, 4, 5].map(num => (
+                    <button
+                      key={num}
+                      onClick={() => handleKeySlotSelect(num.toString())}
+                      className={`
+                        h-10 rounded font-bold text-white border-2
+                        ${formData.keySlot === num.toString()
+                          ? 'bg-green-600 border-green-400'
+                          : 'bg-red-600 border-red-400 hover:bg-red-700'
+                        }
+                      `}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {['A', 'B', 'C', 'D'].map(key => (
+                    <button
+                      key={key}
+                      onClick={() => handleKeySlotSelect(key)}
+                      className={`
+                        h-10 rounded font-bold text-white border-2
+                        ${formData.keySlot === key
+                          ? 'bg-green-600 border-green-400'
+                          : 'bg-purple-600 border-purple-400 hover:bg-purple-700'
+                        }
+                      `}
+                    >
+                      {key}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Upload Progress */}
+              {isUploading && (
+                <div className="bg-gray-700 p-3 rounded">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Uploading...</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-600 rounded-full h-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-2">
                 <button
-                  key={key}
-                  onClick={() => setSelectedKey(key)}
-                  className={`py-1 px-2 rounded text-xs font-bold transition-all duration-200 ${
-                    selectedKey === key 
-                      ? 'bg-red-600 text-white border border-red-500' 
-                      : 'bg-gray-600 text-white border border-gray-500 hover:bg-gray-500'
-                  }`}
+                  onClick={handleSubmit}
+                  disabled={isUploading || !formData.title || !formData.keySlot}
+                  className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded transition-colors"
                 >
-                  {key.replace('KEY ', '')}
+                  {isUploading ? 'Uploading...' : 'Upload & Assign Media'}
                 </button>
-              ))}
+                <button
+                  onClick={clearForm}
+                  disabled={isUploading}
+                  className="bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 text-white font-bold py-2 px-4 rounded transition-colors"
+                >
+                  Clear Form
+                </button>
+              </div>
             </div>
           </div>
-
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={handleUpload}
-              disabled={isUploading || backendStatus !== 'online'}
-              className="bg-gray-600 hover:bg-gray-500 disabled:bg-gray-700 text-white font-semibold py-2 px-3 rounded border border-gray-500 transition-all duration-200 text-sm"
-            >
-              {isUploading ? 'Uploading...' : 'Upload & Assign Media'}
-            </button>
-            <button
-              onClick={() => {
-                setMediaTitle('')
-                setDescription('')
-                setSubmittedBy('')
-                setAudioFile(null)
-                setUploadProgress(0)
-              }}
-              className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-3 rounded border border-gray-500 transition-all duration-200 text-sm"
-            >
-              Clear Form
-            </button>
-          </div>
         </div>
+
+        {/* Debug Section (can be removed in production) */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-6 bg-gray-700 p-4 rounded">
+            <h5 className="text-yellow-400 font-medium mb-2">Debug Info</h5>
+            <div className="text-xs text-gray-300">
+              <p>Connection Status: {connectionStatus}</p>
+              <p>Assignments Loaded: {assignments.length}</p>
+              <p>Selected Key: {formData.keySlot || 'None'}</p>
+              <p>File Selected: {formData.mediaFile?.name || 'None'}</p>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Storage Stats */}
-      {storageStats.total_files && (
-        <div className="mt-6 bg-gradient-to-b from-gray-700 to-gray-800 rounded-lg p-4 border border-gray-600">
-          <h4 className="text-green-400 font-semibold mb-2">Storage Statistics</h4>
-          <div className="grid grid-cols-3 gap-4 text-sm text-gray-300">
-            <div>Total Files: {storageStats.total_files}</div>
-            <div>Total Size: {storageStats.total_size_mb}MB</div>
-            <div>Available: {storageStats.available_space_mb}MB</div>
-          </div>
-            {/* Debug Section */}
-  <div className="debug bg-gray-100 p-4 mt-4">
-    <h3 className="text-red-600 font-semibold mb-2">Debug – Supabase assignments</h3>
-    <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(debugData, null, 2)}</pre>
-    {debugError && (
-      <pre className="text-xs text-red-500 whitespace-pre-wrap">{JSON.stringify(debugError, null, 2)}</pre>
-    )}
-  </div>
-
-        </div>
-      )}
     </div>
-  )
-}
+  );
+};
 
-export default VoxProManagement
+export default VoxProManagement;
 
