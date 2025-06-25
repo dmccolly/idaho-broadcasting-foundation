@@ -30,7 +30,7 @@ const VoxProPlayer = () => {
           .from('assignments')
           .select('*')
           .limit(1);
-
+    console.log('Supabase response', { data, error });
         if (error) {
           console.error('Supabase connection error:', error);
           setConnectionStatus('disconnected');
