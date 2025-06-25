@@ -29,7 +29,10 @@
 
       try {
         const res = await fetch(`${url}/rest/v1/assignments?select=id&limit=1`, {
-          headers: { apikey: key }
+         headers: {
+  apikey: key,
+  Authorization: `Bearer ${key}`
+}
         });
         if (res.ok) {
           statusEl.textContent = '● Connected';
