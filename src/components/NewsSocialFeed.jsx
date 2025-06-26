@@ -107,11 +107,34 @@ const NewsSocialFeed = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4-y-6">
       <h2 className="text-3xl font-bold text-gray-800">News & Social Feed</h2>
+           {/* RSS Feed Integration */}
+      <div className="bg-white pp-46 rounded-lg shadow-md border">
+        <h3 className="text-xl font-semibold mb-4">Industry News</h3>
+        <div className="space-y-3">
+          <div className="border-l-4 border-indigo-500 pl-4 py-2">
+            <h4 className="font-semibold text-gray-800">Broadcasting Industry Update</h4>
+            <p className="text-gray-600 text-sm">Latest developments in radio and television technology</p>
+            <span className="text-xs text-gray-400">Broadcasting Magazine - 4 hours ago</span>
+          </div>
+          <div className="border-l-4 border-indigo-500 pl-4 py-2">
+            <h4 className="font-semibold text-gray-800">FCC Regulatory Changes</h4>
+            <p className="text-gray-600 text-sm">New regulations affecting local broadcasting stations</p>
+            <span className="text-xs text-gray-400">Radio World - 1 day ago</span>
+          </div>
+          <div className="border-l-4 border-indigo-500 pl-4 py-2">
+            <h4 className="font-semibold text-gray-800">Digital Broadcasting Trends</h4>
+            <p className="text-gray-600 text-sm">How streaming is changing traditional broadcasting</p>
+            <span className="text-xs text-gray-400">TV Technology - 2 days ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
       
       {/* Post Creation */}
-      <div className="bg-white p-6 rounded-lg shadow-md border">
+      <div className="bg-white pp-4rounded-lg shadow-md border">
         <h3 className="text-xl font-semibold mb-4">Share an Update</h3>
         <div className="space-y-4">
           <div>
@@ -148,7 +171,7 @@ const NewsSocialFeed = () => {
       </div>
 
       {/* Feed */}
-      <div className="bg-white p-6 rounded-lg shadow-md border">
+      <div className="bg-white pp-46 rounded-lg shadow-md border">
         <h3 className="text-xl font-semibold mb-4">Latest Updates</h3>
         <div className="space-y-4">
           {posts.map(post => (
@@ -169,7 +192,7 @@ const NewsSocialFeed = () => {
       </div>
 
       {/* Social Media Integration Placeholder */}
-      <div className="bg-white p-6 rounded-lg shadow-md border">
+      <div className="bg-white pp-4rounded-lg shadow-md border">
         <h3 className="text-xl font-semibold mb-4">Social Media Integration</h3>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="bg-blue-50 p-4 rounded-lg">
@@ -189,28 +212,6 @@ const NewsSocialFeed = () => {
         </div>
       </div>
 
-      {/* RSS Feed Integration */}
-      <div className="bg-white p-6 rounded-lg shadow-md border">
-        <h3 className="text-xl font-semibold mb-4">Industry News</h3>
-        <div className="space-y-3">
-          <div className="border-l-4 border-indigo-500 pl-4 py-2">
-            <h4 className="font-semibold text-gray-800">Broadcasting Industry Update</h4>
-            <p className="text-gray-600 text-sm">Latest developments in radio and television technology</p>
-            <span className="text-xs text-gray-400">Broadcasting Magazine - 4 hours ago</span>
-          </div>
-          <div className="border-l-4 border-indigo-500 pl-4 py-2">
-            <h4 className="font-semibold text-gray-800">FCC Regulatory Changes</h4>
-            <p className="text-gray-600 text-sm">New regulations affecting local broadcasting stations</p>
-            <span className="text-xs text-gray-400">Radio World - 1 day ago</span>
-          </div>
-          <div className="border-l-4 border-indigo-500 pl-4 py-2">
-            <h4 className="font-semibold text-gray-800">Digital Broadcasting Trends</h4>
-            <p className="text-gray-600 text-sm">How streaming is changing traditional broadcasting</p>
-            <span className="text-xs text-gray-400">TV Technology - 2 days ago</span>
-          </div>
-        </div>
-      </div>
-    </div>
   )
 }
 
