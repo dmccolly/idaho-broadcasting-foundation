@@ -3,15 +3,15 @@
 import React, { useState } from 'react';
 import './RadioPage.css'; // Assuming you'll create a CSS file for styling
 
-// Import your images (after you've uploaded them to your project)
-// IMPORTANT: Replace these paths with the actual paths to your uploaded images!
-import wowCountryLogo from '../assets/images/wow-country-104-3-logo.png'; // You need to upload this image
-import q104Logo from '../assets/images/q104-logo.png'; // You need to upload this image
+// IMPORTANT: You need to upload these images to src/assets/images/
+import wowCountryLogo from '../assets/images/wow-country-104-3-logo.png';
+import q104Logo from '../assets/images/q104-logo.png';
+import radioConsoleDark from '../assets/images/RadioCOnsoleDark.png'; // New image import
 
 const stationData = [
   {
-    id: 'kidq', // Changed from 'kawo' to 'kidq'
-    name: 'KIDQ - 104.3 FM / 100.3 FM', // Updated name for KIDQ
+    id: 'kidq',
+    name: 'KIDQ - 104.3 FM', // Corrected frequency
     synopsis: (
       <>
         <img src={wowCountryLogo} alt="WOW! Country 104.3 Logo" className="station-logo" />
@@ -54,7 +54,7 @@ const stationData = [
   {
     id: 'kqxr',
     name: 'KQXR - 100.3 FM',
-    synopsis: 'KQXR, "100.3 The X," is Idaho\\\'s premier rock station, delivering hard-hitting rock music and supporting local bands. Known for its edgy personality and commitment to the rock scene, it’s a favorite among rock enthusiasts.', // Logos removed
+    synopsis: 'KQXR, "100.3 The X," is Idaho\\'s premier rock station, delivering hard-hitting rock music and supporting local bands. Known for its edgy personality and commitment to the rock scene, it’s a favorite among rock enthusiasts.',
     history: `
       <p><strong>Establishment:</strong> KQXR hit the airwaves in [Year], quickly establishing itself as the voice of rock music in Idaho. Its aggressive programming and rebellious spirit set it apart from other stations.</p>
       <p><strong>Rise to Prominence:</strong> "The X" became a cultural touchstone for rock fans, hosting major concerts, band interviews, and promoting the local music scene. Its morning show gained a reputation for its irreverent humor.</p>
@@ -78,7 +78,7 @@ const stationData = [
   {
     id: 'kfxd',
     name: 'KFXD - 630 AM',
-    synopsis: 'KFXD, "The Fan," is Idaho\\\'s leading sports talk radio station, offering live game broadcasts, expert analysis, and passionate discussions on local and national sports. It’s the go-to station for sports fans.',
+    synopsis: 'KFXD, "The Fan," is Idaho\\'s leading sports talk radio station, offering live game broadcasts, expert analysis, and passionate discussions on local and national sports. It’s the go-to station for sports fans.',
     history: `
       <p><strong>Launch:</strong> KFXD began its journey in [Year] with a clear mission: to be the voice of sports in Idaho. It quickly gained a following among avid sports enthusiasts.</p>
       <p><strong>Building a Reputation:</strong> The station became known for its comprehensive coverage of high school, collegiate, and professional sports. Its live play-by-play broadcasts and insightful commentary set it apart.</p>
@@ -149,9 +149,8 @@ const RadioPage = () => {
   return (
     <div className="radio-page-container">
       <div className="header-graphic">
-        <h1 className="header-title">Idaho Radio History - an adventure in evolution!</h1>
-        {/* Placeholder for radio equipment graphics - in a real scenario, this would be a background image or an actual image tag */}
-        <div className="radio-equipment-placeholder"></div>
+        <img src={radioConsoleDark} alt="Radio Console" className="header-image" />
+        <h1 className="header-title-overlay">Radio History</h1>
       </div>
 
       <div className="station-cards-grid">
