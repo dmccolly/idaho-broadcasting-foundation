@@ -1,1 +1,167 @@
+// src/components/RadioPage.css
+
+/* General container for the entire page */
+.radio-page-container {
+  font-family: 'Arial', sans-serif;
+  color: #333;
+  background-color: #f0f2f5;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header Graphic Section */
+.header-graphic {
+  background-color: #222; /* Dark background */
+  color: #fff;
+  padding: 40px 20px;
+  text-align: center;
+  margin-bottom: 30px;
+  border-radius: 0; /* Squared */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative; /* For positioning the graphic placeholder */
+  overflow: hidden; /* To contain background elements */
+}
+
+.header-title {
+  font-size: 2.5em; /* Smaller header */
+  margin-bottom: 15px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.radio-equipment-placeholder {
+  /* This would ideally be a background image or an actual <img> tag */
+  /* For demonstration, we'll use a simple visual cue */
+  width: 100%;
+  height: 100px; /* Adjust as needed */
+  background: url('https://via.placeholder.com/800x100/333/FFFFFF?text=Radio+Equipment+Graphic+Placeholder' ) no-repeat center center / cover; /* Placeholder image */
+  opacity: 0.7;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 0; /* Behind the text */
+}
+
+.header-graphic .header-title {
+  position: relative;
+  z-index: 1; /* Ensure text is above placeholder */
+}
+
+
+/* Grid for station cards */
+.station-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+/* Individual Station Card */
+.station-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 0; /* Squared */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.station-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.station-name {
+  font-size: 1.4em; /* Smaller and crisper header for station names */
+  color: #0056b3;
+  margin-top: 0;
+  margin-bottom: 12px; /* Slightly reduced margin */
+  border-bottom: 1px solid #eee; /* Thinner border */
+  padding-bottom: 8px; /* Reduced padding */
+  letter-spacing: 0.5px; /* A bit more crisp */
+}
+
+.station-synopsis {
+  font-size: 0.95em; /* Slightly smaller for a cleaner look */
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 20px;
+  flex-grow: 1; /* Allows synopsis to take available space */
+  display: flex; /* To align logo and text */
+  align-items: flex-start; /* Align items to the top */
+  flex-wrap: wrap; /* Allow logos to wrap if needed */
+}
+
+.station-logo {
+  max-width: 80px; /* Significantly size down the logos */
+  height: auto;
+  margin-right: 10px; /* Space between logo and text */
+  margin-bottom: 5px; /* Space between logos if they wrap */
+  border-radius: 0; /* Ensure squared if applicable to logo */
+  flex-shrink: 0; /* Prevent logo from shrinking */
+}
+
+
+.read-more-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  font-size: 0.95em;
+  cursor: pointer;
+  border-radius: 0; /* Squared */
+  transition: background-color 0.3s ease;
+  align-self: flex-start; /* Align button to the start */
+  margin-top: auto; /* Push button to the bottom */
+}
+
+.read-more-button:hover {
+  background-color: #0056b3;
+}
+
+.full-history {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px dashed #eee;
+  font-size: 0.9em;
+  line-height: 1.7;
+  color: #444;
+}
+
+.full-history p {
+  margin-bottom: 10px;
+}
+
+.full-history strong {
+  color: #0056b3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header-title {
+    font-size: 2em;
+  }
+
+  .station-cards-grid {
+    grid-template-columns: 1fr; /* Stack cards on smaller screens */
+  }
+
+  .station-card {
+    padding: 20px;
+  }
+
+  .station-name {
+    font-size: 1.3em;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-title {
+    font-size: 1.8em;
+  }
+  .station-logo {
+    max-width: 60px; /* Even smaller on very small screens */
+  }
+}
 
