@@ -134,62 +134,38 @@ const NewsSocialFeed = () => {
  
       
       {/* Post Creation */}
-          <<div className="bg-white p-4 rounded-lg shadow-md border">
-        <h3 className="text-xl font-semibold mb-4">Share an Update</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Your Name
-            </label>
-            <input
-              type="text"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              placeholder="Enter your name..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              What's happening in Idaho broadcasting?
-            </label>
-            <textarea
-              value={newPost}
-              onChange={(e) => setNewPost(e.target.value)}
-              placeholder="Share news, updates, or thoughts about Idaho broadcasting..."
-              rows={3}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <button
-            onClick={handleSubmitPost}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-          >
-            Post Update
-          </button>
-        </div>
-      </div>
+<div className="bg-white p-4 rounded-lg shadow-md border">
+  <h3 className="text-xl font-semibold mb-4">Share an Update</h3>
 
-      {/* Feed */}
-      <div className="bg-white pp-46 rounded-lg shadow-md border">
-        <h3 className="text-xl font-semibold mb-4">Latest Updates</h3>
-        <div className="space-y-4">
-          {posts.map(post => (
-            <div key={post.id} className={`border-l-4 ${getPostTypeColor(post.type)} pl-4 py-3 bg-gray-50 rounded-r-lg`}>
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex items-center space-x-2">
-                  <span className={`text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-700`}>
-                    {getPostTypeLabel(post.type)}
-                  </span>
-                  <span className="font-semibold text-gray-800">{post.author}</span>
-                </div>
-                <span className="text-xs text-gray-500">{formatTimestamp(post.timestamp)}</span>
-              </div>
-              <p className="text-gray-700">{post.content}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+  <div className="space-y-3">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Your Name
+    </label>
+    <input
+      type="text"
+      value={author}
+      onChange={(e) => setAuthor(e.target.value)}
+      className="w-full p-2 border rounded"
+    />
+
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Your Update
+    </label>
+    <textarea
+      value={newPost}
+      onChange={(e) => setNewPost(e.target.value)}
+      className="w-full p-2 border rounded"
+      rows="3"
+    />
+
+    <button
+      onClick={handlePost}
+      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+    >
+      Post
+    </button>
+  </div>
+</div>
 
       {/* Social Media Integration Placeholder */}
       <div className="bg-white pp-4rounded-lg shadow-md border">
