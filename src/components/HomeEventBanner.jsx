@@ -1,22 +1,14 @@
 import { useState, useEffect } from 'react'
 import { eventUtils } from '../data/eventsData'
 
-const getCurrentEvent = () => {
-  return eventUtils.getCurrentEvent()
-}
-  
-  return null // No current event to display
-}
-
 const HomeEventBanner = ({ onEventClick }) => {
   const [currentEvent, setCurrentEvent] = useState(null)
 
   useEffect(() => {
-    const event = getCurrentEvent()
+    const event = eventUtils.getCurrentEvent()
     setCurrentEvent(event)
   }, [])
 
-  // Don't render anything if no current event
   if (!currentEvent) {
     return null
   }
@@ -61,11 +53,9 @@ const HomeEventBanner = ({ onEventClick }) => {
       <div className={`${styles.background} ${styles.text} rounded-lg shadow-lg overflow-hidden`}>
         <div className="p-4">
           <div className="flex items-start space-x-3">
-            {/* Event Type Indicator */}
             <div className={`w-1 h-16 ${styles.accent} rounded flex-shrink-0 mt-1`}></div>
             
             <div className="flex-1 min-w-0">
-              {/* Event Header */}
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-1">
@@ -77,7 +67,6 @@ const HomeEventBanner = ({ onEventClick }) => {
                   <p className="text-blue-200 font-medium">{currentEvent.subtitle}</p>
                 </div>
                 
-                {/* Event Date */}
                 <div className="text-right text-sm">
                   <div className="bg-white bg-opacity-20 rounded px-2 py-1">
                     <div className="font-medium">{formatEventDate(currentEvent.date)}</div>
@@ -86,12 +75,10 @@ const HomeEventBanner = ({ onEventClick }) => {
                 </div>
               </div>
 
-              {/* Event Description */}
               <p className="text-gray-200 text-sm mt-2 line-clamp-2">
                 {currentEvent.description}
               </p>
 
-              {/* Action Buttons */}
               <div className="flex items-center space-x-3 mt-3">
                 <button
                   onClick={() => onEventClick && onEventClick(currentEvent)}
