@@ -14,37 +14,32 @@
 .header-graphic {
   background-color: #222; /* Dark background */
   color: #fff;
-  padding: 40px 20px;
+  padding: 0; /* Remove padding as image will fill */
   text-align: center;
   margin-bottom: 30px;
   border-radius: 0; /* Squared */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  position: relative; /* For positioning the graphic placeholder */
-  overflow: hidden; /* To contain background elements */
+  position: relative; /* For positioning the text overlay */
+  overflow: hidden; /* To contain the image */
+  display: flex; /* For aligning text */
+  align-items: center; /* Vertically center text */
 }
 
-.header-title {
-  font-size: 2.5em; /* Smaller header */
-  margin-bottom: 15px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.radio-equipment-placeholder {
-  /* This would ideally be a background image or an actual <img> tag */
-  /* For demonstration, we'll use a simple visual cue */
+.header-image {
   width: 100%;
-  height: 100px; /* Adjust as needed */
-  background: url('https://via.placeholder.com/800x100/333/FFFFFF?text=Radio+Equipment+Graphic+Placeholder' ) no-repeat center center / cover; /* Placeholder image */
-  opacity: 0.7;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  z-index: 0; /* Behind the text */
+  height: 200px; /* Set height to 200px */
+  object-fit: cover; /* Ensures the image covers the area without distortion */
+  display: block; /* Remove extra space below image */
 }
 
-.header-graphic .header-title {
-  position: relative;
-  z-index: 1; /* Ensure text is above placeholder */
+.header-title-overlay {
+  position: absolute;
+  left: 20px; /* Position text to the left */
+  color: #fff; /* White text for contrast */
+  font-size: 2.8em; /* Adjust font size as needed */
+  margin: 0; /* Remove default margin */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Stronger shadow for readability */
+  z-index: 2; /* Ensure text is above the image */
 }
 
 
@@ -139,8 +134,8 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .header-title {
-    font-size: 2em;
+  .header-title-overlay {
+    font-size: 2.2em;
   }
 
   .station-cards-grid {
@@ -157,11 +152,11 @@
 }
 
 @media (max-width: 480px) {
-  .header-title {
+  .header-title-overlay {
     font-size: 1.8em;
+    left: 10px; /* Adjust position for smaller screens */
   }
   .station-logo {
     max-width: 60px; /* Even smaller on very small screens */
   }
 }
-
