@@ -1,28 +1,9 @@
 import { useState, useEffect } from 'react'
+import { eventUtils } from '../data/eventsData'
 
-// This would typically come from your backend/CMS or a shared events data file
 const getCurrentEvent = () => {
-  // Example event data - replace with your actual data source
-  const currentEvent = {
-    id: 'larry-lomax-tribute-2025',
-    title: 'Memorial Tribute Luncheon',
-    subtitle: 'Honoring Larry Lomax',
-    date: '2025-06-27',
-    time: '12:00 PM',
-    description: 'Join us for a tribute to legendary Boise radio talent Larry Lomax, "The Emperor" at KBBK and Magic 92.',
-    status: 'upcoming', // 'upcoming', 'today', 'past'
-    rsvpRequired: true,
-    type: 'memorial'
-  }
-
-  // Check if event is still current (not past)
-  const eventDate = new Date(currentEvent.date)
-  const today = new Date()
-  
-  // Show event if it's today or in the future
-  if (eventDate >= today) {
-    return currentEvent
-  }
+  return eventUtils.getCurrentEvent()
+}
   
   return null // No current event to display
 }
