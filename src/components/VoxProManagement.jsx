@@ -1,13 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
-// Universal Media Player Component (same as in Player)
+// Enhanced Universal Media Player Component with resize/drag capabilities
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mediaType, setMediaType] = useState(null);
+  const [windowSize, setWindowSize] = useState({ width: 800, height: 600 });
+  const [windowPosition, setWindowPosition] = useState({ x: window.innerWidth - 820, y: window.innerHeight - 620 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [previousSize, setPreviousSize] = useState(null);
+  
   const playerRef = useRef(null);
   const canvasRef = useRef(null);
+  const windowRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyzerRef = useRef(null);
   const animationRef = useRef(null);
@@ -50,7 +59,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     startVisualization();
   };
 
-  // Start audio visualization animation
   const startVisualization = () => {
     if (!canvasRef.current || !analyzerRef.current) return;
 
@@ -88,12 +96,95 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     draw();
   };
 
-  // Stop visualization
   const stopVisualization = () => {
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
     }
   };
+
+  // Window dragging
+  const handleMouseDown = (e) => {
+    if (e.target.closest('.window-controls') || e.target.closest('.resize-handle')) return;
+    
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - windowPosition.x,
+      y: e.clientY - windowPosition.y
+    });
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      setWindowPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setIsResizing(false);
+  };
+
+  // Window resizing
+  const handleResizeStart = (e) => {
+    e.stopPropagation();
+    setIsResizing(true);
+    setDragStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: windowSize.width,
+      height: windowSize.height
+    });
+  };
+
+  const handleResizeMove = (e) => {
+    if (isResizing) {
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+      
+      setWindowSize({
+        width: Math.max(400, dragStart.width + deltaX),
+        height: Math.max(300, dragStart.height + deltaY)
+      });
+    }
+  };
+
+  // Window maximize/restore
+  const toggleMaximize = () => {
+    if (isMaximized) {
+      // Restore
+      setWindowSize(previousSize.size);
+      setWindowPosition(previousSize.position);
+      setIsMaximized(false);
+    } else {
+      // Maximize
+      setPreviousSize({
+        size: windowSize,
+        position: windowPosition
+      });
+      setWindowSize({
+        width: window.innerWidth - 40,
+        height: window.innerHeight - 40
+      });
+      setWindowPosition({ x: 20, y: 20 });
+      setIsMaximized(true);
+    }
+  };
+
+  // Add event listeners
+  useEffect(() => {
+    if (isDragging || isResizing) {
+      document.addEventListener('mousemove', isDragging ? handleMouseMove : handleResizeMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', isDragging ? handleMouseMove : handleResizeMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, isResizing, dragStart, windowPosition, windowSize]);
 
   const renderMediaContent = () => {
     if (isLoading) {
@@ -206,7 +297,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       <div className="fixed bottom-4 right-4 bg-gray-800 border border-gray-600 rounded-lg p-2 shadow-lg z-50">
         <div className="flex items-center justify-between min-w-48">
           <span className="text-white text-sm truncate">{assignment?.title || 'Media Player'}</span>
-          <div className="flex gap-1 ml-2">
+          <div className="flex gap-1 ml-2 window-controls">
             <button
               onClick={() => onMinimize(false)}
               className="text-gray-400 hover:text-white p-1"
@@ -228,20 +319,38 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   }
 
   return (
-    <div className="fixed bottom-4 right-4 bg-gray-900 border border-gray-600 rounded-lg shadow-2xl z-40 w-[800px] max-h-[600px] overflow-hidden">
+    <div 
+      ref={windowRef}
+      className="fixed bg-gray-900 border border-gray-600 rounded-lg shadow-2xl z-40 overflow-hidden select-none"
+      style={{
+        left: windowPosition.x,
+        top: windowPosition.y,
+        width: windowSize.width,
+        height: windowSize.height,
+        cursor: isDragging ? 'grabbing' : 'default'
+      }}
+      onMouseDown={handleMouseDown}
+    >
       {/* Window Title Bar */}
-      <div className="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-600">
+      <div className="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-600 cursor-grab">
         <div className="flex items-center gap-2">
           <div className="text-green-400">▶</div>
-          <span className="text-white font-medium">Universal Player</span>
+          <span className="text-white font-medium">Universal Player - {assignment?.title}</span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 window-controls">
           <button
             onClick={() => onMinimize(true)}
             className="text-gray-400 hover:text-white px-2 py-1 rounded"
             title="Minimize"
           >
             −
+          </button>
+          <button
+            onClick={toggleMaximize}
+            className="text-gray-400 hover:text-white px-2 py-1 rounded"
+            title={isMaximized ? "Restore" : "Maximize"}
+          >
+            {isMaximized ? "⧉" : "⬜"}
           </button>
           <button
             onClick={onClose}
@@ -254,9 +363,9 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       </div>
 
       {/* Content Area */}
-      <div className="flex h-96">
+      <div className="flex h-full overflow-hidden" style={{ height: windowSize.height - 40 }}>
         {/* Media Player Section */}
-        <div className="flex-1 p-4">
+        <div className="flex-1 p-4 overflow-auto">
           <div className="mb-2">
             <h3 className="text-white font-semibold text-lg">{assignment?.title || 'No Title'}</h3>
             <p className="text-gray-400 text-sm">Key: {assignment?.key_slot} | Type: {mediaType || 'Unknown'}</p>
@@ -265,9 +374,9 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         </div>
 
         {/* Description Panel */}
-        <div className="w-80 bg-gray-800 border-l border-gray-600 p-4">
+        <div className="w-80 bg-gray-800 border-l border-gray-600 p-4 overflow-auto">
           <h4 className="text-green-400 font-semibold mb-3">Media Description</h4>
-          <div className="text-gray-300 text-sm leading-relaxed max-h-80 overflow-y-auto">
+          <div className="text-gray-300 text-sm leading-relaxed">
             {assignment?.description || 'No description available for this media file.'}
           </div>
 
@@ -281,6 +390,15 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
           </div>
         </div>
       </div>
+
+      {/* Resize Handle */}
+      <div 
+        className="absolute bottom-0 right-0 w-4 h-4 bg-gray-600 cursor-se-resize resize-handle"
+        onMouseDown={handleResizeStart}
+        title="Resize window"
+      >
+        <div className="absolute bottom-1 right-1 w-2 h-2 border-r-2 border-b-2 border-gray-400"></div>
+      </div>
     </div>
   );
 };
@@ -292,7 +410,7 @@ const VoxProManagement = () => {
   const [assignments, setAssignments] = useState([]);
   const [activeWindows, setActiveWindows] = useState([]);
   const [windowCounter, setWindowCounter] = useState(0);
-  const [playingKeys, setPlayingKeys] = useState(new Set());
+  const [currentPlayingKey, setCurrentPlayingKey] = useState(null); // Only one key can play at a time
   
   // Form state
   const [formData, setFormData] = useState({
@@ -310,10 +428,11 @@ const VoxProManagement = () => {
   // File input ref
   const fileInputRef = useRef(null);
 
-  // Initialize Supabase connection - NO POPUP CODE
+  // Initialize Supabase connection - NO POPUP CODE, SILENT CONNECTION
   useEffect(() => {
     const initializeConnection = async () => {
       try {
+        // Silent connection - no user prompts or popups
         const { data, error } = await supabase
           .from('assignments')
           .select('*')
@@ -336,6 +455,12 @@ const VoxProManagement = () => {
         setStatusMessage('Connection initialization failed');
       }
     };
+
+    // Prevent any popup dialogs
+    window.addEventListener('beforeunload', (e) => {
+      e.preventDefault();
+      return undefined;
+    });
 
     initializeConnection();
   }, []);
@@ -373,38 +498,20 @@ const VoxProManagement = () => {
       return;
     }
 
-    // Check if this key is currently playing
-    if (playingKeys.has(keySlot)) {
-      // Stop playback
-      setPlayingKeys(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(keySlot);
-        return newSet;
-      });
-      
-      // Close the window
+    // If this key is currently playing, stop it
+    if (currentPlayingKey === keySlot) {
+      setCurrentPlayingKey(null);
       setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== keySlot));
       return;
     }
 
-    // Start playback
-    setPlayingKeys(prev => new Set([...prev, keySlot]));
-
-    // Check if window is already open for this assignment
-    const existingWindow = activeWindows.find(w => w.assignment.id === assignment.id);
-    if (existingWindow) {
-      // If minimized, restore it
-      if (existingWindow.isMinimized) {
-        setActiveWindows(prev => 
-          prev.map(w => 
-            w.id === existingWindow.id 
-              ? { ...w, isMinimized: false }
-              : w
-          )
-        );
-      }
-      return;
+    // Stop any currently playing key and close its window
+    if (currentPlayingKey) {
+      setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== currentPlayingKey));
     }
+
+    // Start playing this key
+    setCurrentPlayingKey(keySlot);
 
     // Create new window
     const newWindow = {
@@ -413,7 +520,7 @@ const VoxProManagement = () => {
       isMinimized: false
     };
 
-    setActiveWindows(prev => [...prev, newWindow]);
+    setActiveWindows([newWindow]); // Only one window at a time
     setWindowCounter(prev => prev + 1);
   };
 
@@ -421,11 +528,9 @@ const VoxProManagement = () => {
     const window = activeWindows.find(w => w.id === windowId);
     if (window) {
       // Stop playback for this key
-      setPlayingKeys(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(window.assignment.key_slot);
-        return newSet;
-      });
+      if (currentPlayingKey === window.assignment.key_slot) {
+        setCurrentPlayingKey(null);
+      }
     }
     
     setActiveWindows(prev => prev.filter(w => w.id !== windowId));
@@ -577,12 +682,8 @@ const VoxProManagement = () => {
       }
 
       // Stop playback if this key is playing
-      if (playingKeys.has(keySlot)) {
-        setPlayingKeys(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(keySlot);
-          return newSet;
-        });
+      if (currentPlayingKey === keySlot) {
+        setCurrentPlayingKey(null);
         setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== keySlot));
       }
 
@@ -603,10 +704,10 @@ const VoxProManagement = () => {
           <p className="text-gray-400">Administrative access for media upload, assignment, and system management.</p>
         </div>
 
-        {/* Three Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+        {/* Two Column Layout (removed fixed Column 3) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
           
-          {/* Column 1: VoxPro Management Console - Using Reference File Styling */}
+          {/* Column 1: VoxPro Management Console */}
           <div className="bg-gray-800 rounded-lg p-6 shadow-2xl border border-gray-600">
             {/* Header */}
             <div className="text-center mb-6">
@@ -628,12 +729,12 @@ const VoxProManagement = () => {
               </div>
             </div>
 
-            {/* START Keys - Using Reference File Styling */}
+            {/* START Keys */}
             <div className="mb-6">
               <div className="grid grid-cols-5 gap-2">
                 {[1, 2, 3, 4, 5].map((key) => {
                   const assignment = getKeyAssignment(key.toString());
-                  const isPlaying = playingKeys.has(key.toString());
+                  const isPlaying = currentPlayingKey === key.toString();
                   
                   return (
                     <button
@@ -667,7 +768,7 @@ const VoxProManagement = () => {
               </div>
             </div>
 
-            {/* Control Buttons - Using Reference File Styling */}
+            {/* Control Buttons */}
             <div className="grid grid-cols-4 gap-2 mb-4">
               {/* Row 1 */}
               <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">A</button>
@@ -690,7 +791,7 @@ const VoxProManagement = () => {
             <div className="text-center">
               <div className="bg-gray-800 px-3 py-2 rounded border border-gray-600">
                 <div className="text-green-400 text-xs font-medium">
-                  Active: {activeWindows.filter(w => !w.isMinimized).length} | Min: {activeWindows.filter(w => w.isMinimized).length}
+                  {currentPlayingKey ? `Playing: Key ${currentPlayingKey}` : 'Ready'} | Windows: {activeWindows.filter(w => !w.isMinimized).length}
                 </div>
               </div>
             </div>
@@ -841,7 +942,7 @@ const VoxProManagement = () => {
                   return (
                     <div key={keyNum} 
                       className={`p-3 rounded-lg border ${
-                        playingKeys.has(keyNum.toString()) 
+                        currentPlayingKey === keyNum.toString() 
                           ? 'border-green-500 bg-green-900/20' 
                           : 'border-gray-600 bg-gray-700'
                       }`}
@@ -849,13 +950,13 @@ const VoxProManagement = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <span className={`inline-flex items-center justify-center w-8 h-8 rounded font-bold text-sm mr-3 ${
-                            playingKeys.has(keyNum.toString())
+                            currentPlayingKey === keyNum.toString()
                               ? 'bg-green-500 text-white'
                               : assignment
                               ? 'bg-red-500 text-white'
                               : 'bg-gray-500 text-white'
                           }`}>
-                            {playingKeys.has(keyNum.toString()) ? 'STOP' : keyNum}
+                            {currentPlayingKey === keyNum.toString() ? 'STOP' : keyNum}
                           </span>
                           <div>
                             <div className="font-medium text-white">
@@ -873,12 +974,12 @@ const VoxProManagement = () => {
                             <button
                               onClick={() => handleKeyClick(keyNum.toString())}
                               className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                                playingKeys.has(keyNum.toString())
+                                currentPlayingKey === keyNum.toString()
                                   ? 'bg-green-600 hover:bg-green-700 text-white'
                                   : 'bg-blue-600 hover:bg-blue-700 text-white'
                               }`}
                             >
-                              {playingKeys.has(keyNum.toString()) ? 'Stop' : 'Play'}
+                              {currentPlayingKey === keyNum.toString() ? 'Stop' : 'Play'}
                             </button>
                             <button
                               onClick={() => deleteAssignment(assignment.id, keyNum.toString())}
@@ -895,24 +996,17 @@ const VoxProManagement = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Column 3: Universal Player */}
-          <div className="bg-gray-800 rounded-lg p-6 shadow-2xl border border-gray-600">
-            <div className="flex items-center mb-4">
-              <div className="w-3 h-3 bg-green-400 rounded-full mr-3 animate-pulse"></div>
-              <h3 className="text-lg font-bold text-green-400">Universal Player</h3>
-            </div>
-            
-            <div className="text-center text-gray-400 py-12">
-              <div className="text-4xl mb-4">🎵</div>
-              <p>Click a key to open media player</p>
-              <p className="text-sm mt-2">Player windows will appear here</p>
-            </div>
-          </div>
+        {/* Resizable Window Area (right side) */}
+        <div className="mt-6 text-center text-gray-400">
+          <div className="text-4xl mb-4">🎵</div>
+          <p>Click a key to open resizable media player window</p>
+          <p className="text-sm mt-2">Player windows will appear and can be moved, resized, and maximized</p>
         </div>
       </div>
 
-      {/* Floating Windows */}
+      {/* Enhanced Floating Windows */}
       {activeWindows.map((window) => (
         <UniversalMediaPlayer
           key={window.id}
