@@ -134,7 +134,7 @@ const NewsSocialFeed = () => {
  
       
       {/* Post Creation */}
-      <div className=bg-white p-4 rounded-lg shado--md  bordder">
+          <<div className="bg-white p-4 rounded-lg shadow-md border">
         <h3 className="text-xl font-semibold mb-4">Share an Update</h3>
         <div className="space-y-4">
           <div>
