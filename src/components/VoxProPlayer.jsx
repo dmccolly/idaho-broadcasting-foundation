@@ -8,7 +8,7 @@ const VoxProPlayer = () => {
   const [assignments, setAssignments] = useState([]);
   const [mediaViewers, setMediaViewers] = useState([]);
   const [hoveredKey, setHoveredKey] = useState(null);
-  const [playingKeys, setPlayingKeys] = useState(new Set()); // Track which keys are playing
+  const [playingKeys, setPlayingKeys] = useState(new Set());
   
   // Audio visualization refs
   const audioContextRef = useRef(null);
@@ -16,11 +16,10 @@ const VoxProPlayer = () => {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
 
-  // Initialize Supabase connection
+  // Initialize Supabase connection - NO POPUP CODE
   useEffect(() => {
     const initializeConnection = async () => {
       try {
-        // Test Supabase connection
         const { data, error } = await supabase
           .from('assignments')
           .select('*')
@@ -33,11 +32,8 @@ const VoxProPlayer = () => {
           return;
         }
 
-        // Connection successful
         setConnectionStatus('connected');
         setStatusMessage('Connected to Supabase');
-        
-        // Load current assignments
         loadAssignments();
 
       } catch (error) {
@@ -85,12 +81,10 @@ const VoxProPlayer = () => {
 
     // Check if this key is already playing
     if (playingKeys.has(keySlot)) {
-      // Stop playback
       stopPlayback(keySlot);
       return;
     }
 
-    // Start playback
     startPlayback(keySlot, assignment);
   };
 
@@ -98,14 +92,13 @@ const VoxProPlayer = () => {
   const startPlayback = (keySlot, assignment) => {
     setPlayingKeys(prev => new Set([...prev, keySlot]));
     
-    // Create new media viewer window
     const newViewer = {
       id: Date.now(),
       keySlot,
       assignment,
       isMinimized: false,
       position: {
-        x: window.innerWidth - 420, // Position at lower right
+        x: window.innerWidth - 520,
         y: 100 + (mediaViewers.length * 30)
       }
     };
@@ -121,7 +114,6 @@ const VoxProPlayer = () => {
       return newSet;
     });
 
-    // Close the media viewer for this key
     setMediaViewers(prev => prev.filter(viewer => viewer.keySlot !== keySlot));
   };
 
@@ -211,9 +203,6 @@ const VoxProPlayer = () => {
         <video 
           controls 
           className="w-full h-48 bg-black rounded"
-          onPlay={(e) => {
-            // Video doesn't need audio visualization
-          }}
         >
           <source src={media_url} type={media_type} />
           Your browser does not support the video tag.
@@ -254,7 +243,6 @@ const VoxProPlayer = () => {
       );
     }
 
-    // Documents and other files
     return (
       <div className="w-full h-48 bg-gray-800 rounded flex flex-col items-center justify-center">
         <div className="text-4xl mb-2">📄</div>
@@ -281,11 +269,11 @@ const VoxProPlayer = () => {
         <h1 className="text-3xl font-bold text-gray-800 mb-2">The Back Corner</h1>
         <div className="bg-white rounded-lg shadow-md p-4">
           <h2 className="text-xl font-semibold text-gray-700 mb-2">VoxPro Media Player</h2>
-          <p className="text-gray-600">Compact professional media player for broadcasting operations.</p>
+          <p className="text-gray-600">Professional media player for broadcasting operations.</p>
         </div>
       </div>
 
-      {/* VoxPro Player Interface - Restored Sleek Metallic Design */}
+      {/* VoxPro Player Interface - PERFECT ORIGINAL SLEEK DESIGN */}
       <div className="max-w-3xl mx-auto">
         <div 
           className="relative bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 rounded-2xl shadow-2xl p-8"
@@ -294,7 +282,7 @@ const VoxProPlayer = () => {
             boxShadow: '20px 20px 60px #1a1a1a, -20px -20px 60px #2a2a2a'
           }}
         >
-          {/* Metallic Header with Glow */}
+          {/* Clean Header */}
           <div className="text-center mb-6">
             <h2 
               className="text-3xl font-bold mb-2"
@@ -310,7 +298,7 @@ const VoxProPlayer = () => {
             <p className="text-gray-400 text-sm">Professional Broadcasting Control System</p>
           </div>
 
-          {/* Control Panel with Metallic Finish */}
+          {/* Control Panel */}
           <div 
             className="rounded-xl p-6 mb-6"
             style={{
@@ -318,7 +306,7 @@ const VoxProPlayer = () => {
               boxShadow: 'inset 5px 5px 15px #1a1a1a, inset -5px -5px 15px #404040'
             }}
           >
-            {/* VoxPro Logo with Glow */}
+            {/* VoxPro Logo */}
             <div className="text-center mb-4">
               <div 
                 className="text-2xl font-bold mb-2"
@@ -343,7 +331,7 @@ const VoxProPlayer = () => {
               </div>
             </div>
 
-            {/* START Keys with Metallic 3D Effect */}
+            {/* START Keys - Clean Professional Design */}
             <div className="grid grid-cols-5 gap-4 mb-6">
               {[1, 2, 3, 4, 5].map((keyNum) => {
                 const assignment = getAssignmentForKey(keyNum.toString());
@@ -355,7 +343,7 @@ const VoxProPlayer = () => {
                     onClick={() => handleKeyClick(keyNum.toString())}
                     onMouseEnter={() => setHoveredKey(keyNum.toString())}
                     onMouseLeave={() => setHoveredKey(null)}
-                    className={`h-16 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-110 active:scale-95 ${
+                    className={`h-14 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-110 active:scale-95 ${
                       isPlaying
                         ? 'text-white shadow-2xl'
                         : assignment
@@ -382,7 +370,7 @@ const VoxProPlayer = () => {
               })}
             </div>
 
-            {/* Control Buttons with Metallic Effect */}
+            {/* Control Buttons */}
             <div className="grid grid-cols-4 gap-3 mb-4">
               {['A', 'B', 'C', 'D'].map((letter) => (
                 <button
@@ -398,7 +386,7 @@ const VoxProPlayer = () => {
               ))}
             </div>
 
-            {/* Function Buttons with Metallic Effect */}
+            {/* Function Buttons */}
             <div className="grid grid-cols-3 gap-3 mb-4">
               <button 
                 className="h-12 text-white font-bold text-sm rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
@@ -429,7 +417,7 @@ const VoxProPlayer = () => {
               </button>
             </div>
 
-            {/* Status Display with Glow */}
+            {/* Status Display */}
             <div className="text-center">
               <div 
                 className="text-sm font-medium"
@@ -444,7 +432,7 @@ const VoxProPlayer = () => {
             </div>
           </div>
 
-          {/* Current Assignments Display with Metallic Styling */}
+          {/* Current Assignments Display */}
           {assignments.length > 0 && (
             <div 
               className="rounded-lg p-4"
@@ -487,7 +475,7 @@ const VoxProPlayer = () => {
         </div>
       </div>
 
-      {/* Media Viewer Windows - Compact with Metallic Styling */}
+      {/* Media Viewer Windows - Clean Professional Design */}
       {mediaViewers.map((viewer) => (
         <div
           key={viewer.id}
@@ -502,7 +490,7 @@ const VoxProPlayer = () => {
             boxShadow: '15px 15px 30px #1a1a1a, -15px -15px 30px #404040'
           }}
         >
-          {/* Window Header with Metallic Effect */}
+          {/* Window Header */}
           <div 
             className="flex items-center justify-between text-white p-3 rounded-t-lg"
             style={{
@@ -548,7 +536,7 @@ const VoxProPlayer = () => {
                   {renderMediaContent(viewer.assignment)}
                 </div>
 
-                {/* Media Information with Metallic Styling */}
+                {/* Media Information */}
                 <div 
                   className="rounded p-3"
                   style={{
