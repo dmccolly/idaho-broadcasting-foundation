@@ -4,9 +4,10 @@ import VoxProPlayer from './components/VoxProPlayer.jsx'
 import VoxProManagement from './components/VoxProManagement.jsx'
 import NewsSocialFeed from './components/NewsSocialFeed.jsx'
 import RadioPage from './components/RadioPage.jsx'
-import EventsPage from './components/EventsPage.jsx'
-import HomeEventBanner from './components/HomeEventBanner.jsx'
-import { eventUtils } from './data/eventsData.js'
+// TEMPORARILY COMMENTED OUT - ADD BACK AFTER CREATING FILES:
+// import EventsPage from './components/EventsPage.jsx'
+// import HomeEventBanner from './components/HomeEventBanner.jsx'
+// import { eventUtils } from './data/eventsData.js'
 import './App.css'
 
 function App() {
@@ -33,10 +34,11 @@ function App() {
       case 'HOME':
         return (
           <div className="space-y-8">
-            {/* Event Banner - Shows only when there's a current event */}
+            {/* TEMPORARILY COMMENTED OUT - ADD BACK AFTER CREATING FILES:
             {eventUtils.shouldShowHomeBanner() && (
               <HomeEventBanner onEventClick={handleEventClick} />
             )}
+            */}
 
             <div className="text-center">
               <h1 className="text-4xl font-bold text-gray-800 mb-4">
@@ -129,7 +131,29 @@ function App() {
         )
       
       case 'Events':
-        return <EventsPage />
+        return (
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-gray-800">Foundation Events</h2>
+            <div className="bg-white p-6 rounded-lg shadow-md border">
+              <h3 className="text-xl font-semibold mb-4">Upcoming Events</h3>
+              <p className="text-gray-600 mb-4">
+                Join us for events celebrating Idaho's broadcasting heritage and connecting 
+                industry professionals past and present.
+              </p>
+              <div className="space-y-4">
+                <div className="border-l-4 border-blue-500 pl-4">
+                  <h4 className="font-semibold">Larry Lomax Memorial Tribute Luncheon</h4>
+                  <p className="text-gray-600">June 27th, 2025 - Honoring legendary radio personality "The Emperor"</p>
+                  <p className="text-sm text-gray-500 mt-2">RSVP: 208-853-7756 or KIBF@Q.com</p>
+                </div>
+                <div className="border-l-4 border-green-500 pl-4">
+                  <h4 className="font-semibold">Annual Broadcasting Heritage Dinner</h4>
+                  <p className="text-gray-600">Celebrating Idaho broadcasting pioneers</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
       
       case 'The Back Corner':
         return (
