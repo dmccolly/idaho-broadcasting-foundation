@@ -144,7 +144,7 @@ const NewsSocialFeed = () => {
     <input
       type="text"
       value={author}
-      onChange={(e) => setAuthor(e.target.value)}
+      onChange{(e) => setAuthor(e.target.value)}
       className="w-full p-2 border rounded"
     />
 
@@ -156,7 +156,7 @@ const NewsSocialFeed = () => {
       onChange={(e) => setNewPost(e.target.value)}
       className="w-full p-2 border rounded"
       rows="3"
-    />
+    ></textarea>
 
     <button
       onClick={handlePost}
