@@ -1,17 +1,17 @@
 // src/components/RadioPage.jsx
 
 import React, { useState } from 'react';
-import './RadioPage.css'; // Assuming you'll create a CSS file for styling
+import './RadioPage.css';
 
 // IMPORTANT: You need to upload these images to src/assets/images/
 import wowCountryLogo from '../assets/images/wow-country-104-3-logo.png';
 import q104Logo from '../assets/images/q104-logo.png';
-import radioConsoleDark from '../assets/images/RadioCOnsoleDark.png'; // New image import
+import radioConsoleDark from '../assets/images/RadioCOnsoleDark.png';
 
 const stationData = [
   {
     id: 'kidq',
-    name: 'KIDQ - 104.3 FM', // Corrected frequency
+    name: 'KIDQ - 104.3 FM',
     synopsis: (
       <>
         <img src={wowCountryLogo} alt="WOW! Country 104.3 Logo" className="station-logo" />
@@ -42,7 +42,7 @@ const stationData = [
   {
     id: 'kthi',
     name: 'KTHI - 107.1 FM',
-    synopsis: 'KTHI, "107.1 K-Hits," specializes in classic hits from the 70s, 80s, and 90s, bringing a nostalgic experience to its listeners. It’s celebrated for its timeless playlist and engaging throwback segments.',
+    synopsis: 'KTHI, "107.1 K-Hits," specializes in classic hits from the 70s, 80s, and 90s, bringing a nostalgic experience to its listeners. It's celebrated for its timeless playlist and engaging throwback segments.',
     history: `
       <p><strong>Founding:</strong> KTHI began broadcasting in [Year], carving out a niche by focusing exclusively on classic hits. This format immediately resonated with listeners looking to relive their favorite musical eras.</p>
       <p><strong>Golden Era:</strong> The station quickly became a go-to for nostalgic music, featuring themed weekends and special programming dedicated to specific decades. Its DJs often shared anecdotes about the music and artists.</p>
@@ -54,7 +54,7 @@ const stationData = [
   {
     id: 'kqxr',
     name: 'KQXR - 100.3 FM',
-    synopsis: 'KQXR, "100.3 The X," is Idaho\\'s premier rock station, delivering hard-hitting rock music and supporting local bands. Known for its edgy personality and commitment to the rock scene, it’s a favorite among rock enthusiasts.',
+    synopsis: 'KQXR, "100.3 The X," is Idaho\'s premier rock station, delivering hard-hitting rock music and supporting local bands. Known for its edgy personality and commitment to the rock scene, it\'s a favorite among rock enthusiasts.',
     history: `
       <p><strong>Establishment:</strong> KQXR hit the airwaves in [Year], quickly establishing itself as the voice of rock music in Idaho. Its aggressive programming and rebellious spirit set it apart from other stations.</p>
       <p><strong>Rise to Prominence:</strong> "The X" became a cultural touchstone for rock fans, hosting major concerts, band interviews, and promoting the local music scene. Its morning show gained a reputation for its irreverent humor.</p>
@@ -78,7 +78,7 @@ const stationData = [
   {
     id: 'kfxd',
     name: 'KFXD - 630 AM',
-    synopsis: 'KFXD, "The Fan," is Idaho\\'s leading sports talk radio station, offering live game broadcasts, expert analysis, and passionate discussions on local and national sports. It’s the go-to station for sports fans.',
+    synopsis: 'KFXD, "The Fan," is Idaho\'s leading sports talk radio station, offering live game broadcasts, expert analysis, and passionate discussions on local and national sports. It\'s the go-to station for sports fans.',
     history: `
       <p><strong>Launch:</strong> KFXD began its journey in [Year] with a clear mission: to be the voice of sports in Idaho. It quickly gained a following among avid sports enthusiasts.</p>
       <p><strong>Building a Reputation:</strong> The station became known for its comprehensive coverage of high school, collegiate, and professional sports. Its live play-by-play broadcasts and insightful commentary set it apart.</p>
