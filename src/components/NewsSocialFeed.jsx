@@ -107,10 +107,11 @@ const NewsSocialFeed = () => {
   }
 
   return (
-    <div className="space-y-4-y-6">
+    <div className="space-y-4">
       <h2 className="text-3xl font-bold text-gray-800">News & Social Feed</h2>
-           {/* RSS Feed Integration */}
-      <div className="bg-white pp-46 rounded-lg shadow-md border">
+      
+      {/* RSS Feed Integration */}
+      <div className="bg-white p-4 rounded-lg shadow-md border">
         <h3 className="text-xl font-semibold mb-4">Industry News</h3>
         <div className="space-y-3">
           <div className="border-l-4 border-indigo-500 pl-4 py-2">
@@ -130,45 +131,71 @@ const NewsSocialFeed = () => {
           </div>
         </div>
       </div>
-    </div>
- 
       
       {/* Post Creation */}
-<div className="bg-white p-4 rounded-lg shadow-md border">
-  <h3 className="text-xl font-semibold mb-4">Share an Update</h3>
+      <div className="bg-white p-4 rounded-lg shadow-md border">
+        <h3 className="text-xl font-semibold mb-4">Share an Update</h3>
 
-  <div className="space-y-3">
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      Your Name
-    </label>
-    <input
-      type="text"
-      value={author}
-      onChange{(e) => setAuthor(e.target.value)}
-      className="w-full p-2 border rounded"
-    />
+        <div className="space-y-3">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Your Name
+          </label>
+          <input
+            type="text"
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+            className="w-full p-2 border rounded"
+          />
 
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      Your Update
-    </label>
-    <textarea
-      value={newPost}
-      onChange={(e) => setNewPost(e.target.value)}
-      className="w-full p-2 border rounded"
-      rows="3"
-    ></textarea>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Your Update
+          </label>
+          <textarea
+            value={newPost}
+            onChange={(e) => setNewPost(e.target.value)}
+            className="w-full p-2 border rounded"
+            rows="3"
+          />
 
-    <button
-      onClick={handlePost}
-      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-    >
-      Post
-    </button>
-  </div>
-</div>
+          <button
+            onClick={handleSubmitPost}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Post
+          </button>
+        </div>
+      </div>
+
+      {/* Posts Display */}
+      <div className="space-y-4">
+        {posts.map((post) => (
+          <div
+            key={post.id}
+            className={`bg-white p-4 rounded-lg shadow-md border-l-4 ${getPostTypeColor(post.type)}`}
+          >
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <span className={`inline-block px-2 py-1 text-xs rounded text-white ${
+                  post.type === 'news' ? 'bg-blue-500' :
+                  post.type === 'community' ? 'bg-green-500' :
+                  post.type === 'historical' ? 'bg-purple-500' :
+                  post.type === 'event' ? 'bg-orange-500' :
+                  post.type === 'technical' ? 'bg-red-500' :
+                  'bg-gray-500'
+                }`}>
+                  {getPostTypeLabel(post.type)}
+                </span>
+              </div>
+              <span className="text-sm text-gray-500">{formatTimestamp(post.timestamp)}</span>
+            </div>
+            <p className="text-gray-800 mb-2">{post.content}</p>
+            <p className="text-sm text-gray-600">— {post.author}</p>
+          </div>
+        ))}
+      </div>
 
       {/* Social Media Integration Placeholder */}
-      <div className="bg-white pp-4rounded-lg shadow-md border">
+      <div className="bg-white p-4 rounded-lg shadow-md border">
         <h3 className="text-xl font-semibold mb-4">Social Media Integration</h3>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="bg-blue-50 p-4 rounded-lg">
@@ -187,9 +214,8 @@ const NewsSocialFeed = () => {
           </div>
         </div>
       </div>
-
+    </div>
   )
 }
 
 export default NewsSocialFeed
-
