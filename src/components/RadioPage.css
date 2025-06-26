@@ -12,36 +12,35 @@
 
 /* Header Graphic Section */
 .header-graphic {
-  background-color: #222; /* Dark background */
+  background-color: #222;
   color: #fff;
-  padding: 0; /* Remove padding as image will fill */
+  padding: 0;
   text-align: center;
   margin-bottom: 30px;
-  border-radius: 0; /* Squared */
+  border-radius: 0;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  position: relative; /* For positioning the text overlay */
-  overflow: hidden; /* To contain the image */
-  display: flex; /* For aligning text */
-  align-items: center; /* Vertically center text */
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
 }
 
 .header-image {
   width: 100%;
-  height: 200px; /* Set height to 200px */
-  object-fit: cover; /* Ensures the image covers the area without distortion */
-  display: block; /* Remove extra space below image */
+  height: 200px;
+  object-fit: cover;
+  display: block;
 }
 
 .header-title-overlay {
   position: absolute;
-  left: 20px; /* Position text to the left */
-  color: #fff; /* White text for contrast */
-  font-size: 2.8em; /* Adjust font size as needed */
-  margin: 0; /* Remove default margin */
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Stronger shadow for readability */
-  z-index: 2; /* Ensure text is above the image */
+  left: 20px;
+  color: #fff;
+  font-size: 2.8em;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  z-index: 2;
 }
-
 
 /* Grid for station cards */
 .station-cards-grid {
@@ -54,7 +53,7 @@
 .station-card {
   background-color: #fff;
   border: 1px solid #ddd;
-  border-radius: 0; /* Squared */
+  border-radius: 0;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   padding: 25px;
   display: flex;
@@ -68,35 +67,31 @@
 }
 
 .station-name {
-  font-size: 1.4em; /* Smaller and crisper header for station names */
+  font-size: 1.4em;
   color: #0056b3;
   margin-top: 0;
-  margin-bottom: 12px; /* Slightly reduced margin */
-  border-bottom: 1px solid #eee; /* Thinner border */
-  padding-bottom: 8px; /* Reduced padding */
-  letter-spacing: 0.5px; /* A bit more crisp */
+  margin-bottom: 12px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+  letter-spacing: 0.5px;
 }
 
 .station-synopsis {
-  font-size: 0.95em; /* Slightly smaller for a cleaner look */
+  font-size: 0.95em;
   line-height: 1.6;
   color: #555;
   margin-bottom: 20px;
-  flex-grow: 1; /* Allows synopsis to take available space */
-  display: flex; /* To align logo and text */
-  align-items: flex-start; /* Align items to the top */
-  flex-wrap: wrap; /* Allow logos to wrap if needed */
+  flex-grow: 1;
 }
 
-.station-logo {
-  max-width: 80px; /* Significantly size down the logos */
+.station-synopsis .station-logo {
+  max-width: 80px;
   height: auto;
-  margin-right: 10px; /* Space between logo and text */
-  margin-bottom: 5px; /* Space between logos if they wrap */
-  border-radius: 0; /* Ensure squared if applicable to logo */
-  flex-shrink: 0; /* Prevent logo from shrinking */
+  margin-right: 10px;
+  margin-bottom: 5px;
+  border-radius: 0;
+  flex-shrink: 0;
 }
-
 
 .read-more-button {
   background-color: #007bff;
@@ -105,10 +100,10 @@
   padding: 10px 18px;
   font-size: 0.95em;
   cursor: pointer;
-  border-radius: 0; /* Squared */
+  border-radius: 0;
   transition: background-color 0.3s ease;
-  align-self: flex-start; /* Align button to the start */
-  margin-top: auto; /* Push button to the bottom */
+  align-self: flex-start;
+  margin-top: auto;
 }
 
 .read-more-button:hover {
@@ -139,7 +134,7 @@
   }
 
   .station-cards-grid {
-    grid-template-columns: 1fr; /* Stack cards on smaller screens */
+    grid-template-columns: 1fr;
   }
 
   .station-card {
@@ -154,9 +149,9 @@
 @media (max-width: 480px) {
   .header-title-overlay {
     font-size: 1.8em;
-    left: 10px; /* Adjust position for smaller screens */
+    left: 10px;
   }
-  .station-logo {
-    max-width: 60px; /* Even smaller on very small screens */
+  .station-synopsis .station-logo {
+    max-width: 60px;
   }
 }
