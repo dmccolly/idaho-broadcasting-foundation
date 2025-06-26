@@ -3,11 +3,22 @@
 import React, { useState } from 'react';
 import './RadioPage.css';
 
+// IMPORTANT: Ensure these images are uploaded to src/assets/images/
+import wowCountryLogo from '../assets/images/wow-country-104-3-logo.png';
+import q104Logo from '../assets/images/q104-logo.png';
+import radioConsoleDark from '../assets/images/RadioCOnsoleDark.png';
+
 const stationData = [
   {
     id: 'kidq',
     name: 'KIDQ - 104.3 FM',
-    synopsis: 'KIDQ is a dynamic station, combining the best of country and rock to deliver a unique listening experience in the Treasure Valley. Known for its vibrant community engagement and diverse music selection, KIDQ aims to be a leading voice in Idaho radio.',
+    synopsis: (
+      <>
+        <img src={wowCountryLogo} alt="WOW! Country 104.3 Logo" className="station-logo" />
+        <img src={q104Logo} alt="Q104 Logo" className="station-logo" />
+        KIDQ is a dynamic station, combining the best of country and rock to deliver a unique listening experience in the Treasure Valley. Known for its vibrant community engagement and diverse music selection, KIDQ aims to be a leading voice in Idaho radio.
+      </>
+    ),
     history: `
       <p><strong>Early Days:</strong> KIDQ began broadcasting in [Year] with a focus on delivering a blend of popular music and local news. Its initial programming aimed to capture a broad audience in the region.</p>
       <p><strong>Evolution and Fusion:</strong> Over the years, KIDQ evolved to incorporate both country and rock formats, creating a distinctive sound that appeals to a wide range of listeners. This fusion has made it a unique presence in the Idaho radio landscape.</p>
@@ -19,7 +30,7 @@ const stationData = [
   {
     id: 'kcix',
     name: 'KCIX - 105.9 FM',
-    synopsis: 'KCIX, "Mix 105.9," offers a diverse blend of adult contemporary hits, making it a popular choice for a wide demographic. Its commitment to local events and community service has made it a staple in Idaho broadcasting.',
+    synopsis: `KCIX, "Mix 105.9," offers a diverse blend of adult contemporary hits, making it a popular choice for a wide demographic. Its commitment to local events and community service has made it a staple in Idaho broadcasting.`,
     history: `
       <p><strong>Inception:</strong> KCIX launched in [Year], aiming to fill a niche for adult contemporary music. Its initial format quickly gained traction among listeners seeking a mix of popular and classic hits.</p>
       <p><strong>Evolution:</strong> Over the years, KCIX adapted its playlist to reflect changing musical tastes while maintaining its core adult contemporary identity. It became known for its smooth transitions and engaging hosts.</p>
@@ -31,7 +42,7 @@ const stationData = [
   {
     id: 'kthi',
     name: 'KTHI - 107.1 FM',
-    synopsis: 'KTHI, "107.1 K-Hits," specializes in classic hits from the 70s, 80s, and 90s, bringing a nostalgic experience to its listeners. It is celebrated for its timeless playlist and engaging throwback segments.',
+    synopsis: `KTHI, "107.1 K-Hits," specializes in classic hits from the 70s, 80s, and 90s, bringing a nostalgic experience to its listeners. It’s celebrated for its timeless playlist and engaging throwback segments.`,
     history: `
       <p><strong>Founding:</strong> KTHI began broadcasting in [Year], carving out a niche by focusing exclusively on classic hits. This format immediately resonated with listeners looking to relive their favorite musical eras.</p>
       <p><strong>Golden Era:</strong> The station quickly became a go-to for nostalgic music, featuring themed weekends and special programming dedicated to specific decades. Its DJs often shared anecdotes about the music and artists.</p>
@@ -43,7 +54,7 @@ const stationData = [
   {
     id: 'kqxr',
     name: 'KQXR - 100.3 FM',
-    synopsis: 'KQXR, "100.3 The X," is Idaho premier rock station, delivering hard-hitting rock music and supporting local bands. Known for its edgy personality and commitment to the rock scene, it is a favorite among rock enthusiasts.',
+    synopsis: `KQXR, "100.3 The X," is Idaho's premier rock station, delivering hard-hitting rock music and supporting local bands. Known for its edgy personality and commitment to the rock scene, it’s a favorite among rock enthusiasts.`,
     history: `
       <p><strong>Establishment:</strong> KQXR hit the airwaves in [Year], quickly establishing itself as the voice of rock music in Idaho. Its aggressive programming and rebellious spirit set it apart from other stations.</p>
       <p><strong>Rise to Prominence:</strong> "The X" became a cultural touchstone for rock fans, hosting major concerts, band interviews, and promoting the local music scene. Its morning show gained a reputation for its irreverent humor.</p>
@@ -55,7 +66,7 @@ const stationData = [
   {
     id: 'kido',
     name: 'KIDO - 580 AM / 107.5 FM',
-    synopsis: 'KIDO is a prominent news/talk radio station, providing comprehensive coverage of local, state, and national issues. With a strong lineup of talk show hosts, KIDO is a key source for news and political commentary in Idaho.',
+    synopsis: `KIDO is a prominent news/talk radio station, providing comprehensive coverage of local, state, and national issues. With a strong lineup of talk show hosts, KIDO is a key source for news and political commentary in Idaho.`,
     history: `
       <p><strong>Historical Roots:</strong> KIDO has a long and storied history in Idaho broadcasting, dating back to [Year]. It initially served as a general entertainment station before evolving into its current news/talk format.</p>
       <p><strong>Transition to News/Talk:</strong> In the [Decade]s, KIDO shifted its focus to news and talk programming, responding to a growing demand for in-depth discussions on current events and public affairs.</p>
@@ -67,7 +78,7 @@ const stationData = [
   {
     id: 'kfxd',
     name: 'KFXD - 630 AM',
-    synopsis: 'KFXD, "The Fan," is Idaho leading sports talk radio station, offering live game broadcasts, expert analysis, and passionate discussions on local and national sports. It is the go-to station for sports fans.',
+    synopsis: `KFXD, "The Fan," is Idaho's leading sports talk radio station, offering live game broadcasts, expert analysis, and passionate discussions on local and national sports. It’s the go-to station for sports fans.`,
     history: `
       <p><strong>Launch:</strong> KFXD began its journey in [Year] with a clear mission: to be the voice of sports in Idaho. It quickly gained a following among avid sports enthusiasts.</p>
       <p><strong>Building a Reputation:</strong> The station became known for its comprehensive coverage of high school, collegiate, and professional sports. Its live play-by-play broadcasts and insightful commentary set it apart.</p>
@@ -79,7 +90,7 @@ const stationData = [
   {
     id: 'kbsu',
     name: 'KBSU - 90.3 FM',
-    synopsis: 'KBSU is Boise State Public Radio, an NPR member station providing in-depth news, cultural programming, and classical music. It is a vital source of unbiased information and enriching content for the community.',
+    synopsis: `KBSU is Boise State Public Radio, an NPR member station providing in-depth news, cultural programming, and classical music. It is a vital source of unbiased information and enriching content for the community.`,
     history: `
       <p><strong>Origins:</strong> KBSU, operated by Boise State University, first went on air in [Year] with a commitment to public service broadcasting. It quickly became an affiliate of NPR, bringing national and international news to Idaho.</p>
       <p><strong>Program Expansion:</strong> Over the decades, KBSU expanded its programming to include a wide range of cultural shows, classical music, and local public affairs discussions, enriching the intellectual life of the region.</p>
@@ -91,25 +102,25 @@ const stationData = [
   {
     id: 'kgem',
     name: 'KGEM - 1140 AM',
-    synopsis: 'KGEM is a heritage station in Idaho, known for its diverse programming that has evolved over decades. It has played various roles in the local media landscape, from music to talk, adapting to the changing needs of its audience.',
+    synopsis: `KGEM is a heritage station in Idaho, known for its diverse programming that has evolved over decades. It has played various roles in the local media landscape, from music to talk, adapting to the changing needs of its audience.`,
     history: `
-      <p><strong>Founding and Early Years:</strong> KGEM has a rich history dating back to [Year], making it one of Idaho oldest stations. It initially broadcast [original format, e.g., popular music, local news].</p>
+      <p><strong>Founding and Early Years:</strong> KGEM has a rich history dating back to [Year], making it one of Idaho's oldest stations. It initially broadcast [original format, e.g., popular music, local news].</p>
       <p><strong>Format Changes:</strong> Throughout its existence, KGEM has undergone several format changes, reflecting shifts in listener preferences and market demands. It has been a home for [mention various formats, e.g., country, easy listening, religious programming].</p>
       <p><strong>Resilience:</strong> Despite changes in the broadcasting landscape, KGEM has demonstrated remarkable resilience, continuing to serve the community in various capacities. Its long history is a testament to its adaptability.</p>
       <p><strong>Notable Moments:</strong> [Any significant historical events or broadcasts associated with KGEM]</p>
-      <p><strong>Enduring Presence:</strong> KGEM remains a part of Idaho radio heritage, symbolizing the enduring power of local broadcasting and its ability to connect with generations of listeners.</p>
+      <p><strong>Enduring Presence:</strong> KGEM remains a part of Idaho's radio heritage, symbolizing the enduring power of local broadcasting and its ability to connect with generations of listeners.</p>
     `
   },
   {
     id: 'kboi',
     name: 'KBOI - 670 AM / 93.1 FM',
-    synopsis: 'KBOI is a long-standing news and talk radio station, serving the Boise area with comprehensive news coverage, insightful commentary, and popular syndicated programs. It is a key source for local and national discussions.',
+    synopsis: `KBOI is a long-standing news and talk radio station, serving the Boise area with comprehensive news coverage, insightful commentary, and popular syndicated programs. It is a key source for local and national discussions.`,
     history: `
       <p><strong>Establishment:</strong> KBOI has been a fixture in Idaho radio since [Year], initially establishing itself as a dominant force in [original format, e.g., general entertainment, news].</p>
       <p><strong>Transition to News/Talk:</strong> Similar to other heritage AM stations, KBOI transitioned to a news and talk format, capitalizing on its strong signal and established listener base to deliver timely information and engaging discussions.</p>
       <p><strong>Market Leader:</strong> KBOI has consistently been a market leader in news and talk, attracting a wide audience interested in current events, politics, and local issues. Its hosts are often influential figures in the community.</p>
       <p><strong>Key Features:</strong> [Examples of news segments, call-in shows, or syndicated programs]</p>
-      <p><strong>Influence and Reach:</strong> KBOI influence extends across the Treasure Valley and beyond, making it a critical platform for public discourse and a trusted source of information for many Idahoans.</p>
+      <p><strong>Influence and Reach:</strong> KBOI's influence extends across the Treasure Valley and beyond, making it a critical platform for public discourse and a trusted source of information for many Idahoans.</p>
     `
   }
 ];
@@ -120,7 +131,7 @@ const StationCard = ({ station }) => {
   return (
     <div className="station-card">
       <h3 className="station-name">{station.name}</h3>
-      <p className="station-synopsis">{station.synopsis}</p>
+      <div className="station-synopsis">{station.synopsis}</div>
       <button
         className="read-more-button"
         onClick={() => setShowFullHistory(!showFullHistory)}
@@ -138,8 +149,8 @@ const RadioPage = () => {
   return (
     <div className="radio-page-container">
       <div className="header-graphic">
-        <h1 className="header-title">Idaho Radio History - an adventure in evolution!</h1>
-        <div className="radio-equipment-placeholder"></div>
+        <img src={radioConsoleDark} alt="Radio Console" className="header-image" />
+        <h1 className="header-title-overlay">Radio History</h1>
       </div>
 
       <div className="station-cards-grid">
