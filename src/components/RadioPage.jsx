@@ -3,17 +3,28 @@
 import React, { useState } from 'react';
 import './RadioPage.css'; // Assuming you'll create a CSS file for styling
 
+// Import your images (after you've uploaded them to your project)
+// IMPORTANT: Replace these paths with the actual paths to your uploaded images!
+import wowCountryLogo from '../assets/images/wow-country-104-3-logo.png'; // You need to upload this image
+import q104Logo from '../assets/images/q104-logo.png'; // You need to upload this image
+
 const stationData = [
   {
-    id: 'kawo',
-    name: 'KAWO - 104.3 FM',
-    synopsis: 'KAWO, "Wow Country 104.3," has been a cornerstone of country music in the Treasure Valley since its inception. Known for its vibrant community engagement and popular morning shows, KAWO continues to be a leading voice in Idaho radio.',
+    id: 'kidq', // Changed from 'kawo' to 'kidq'
+    name: 'KIDQ - 104.3 FM / 100.3 FM', // Updated name for KIDQ
+    synopsis: (
+      <>
+        <img src={wowCountryLogo} alt="WOW! Country 104.3 Logo" className="station-logo" />
+        <img src={q104Logo} alt="Q104 Logo" className="station-logo" />
+        KIDQ is a dynamic station, combining the best of country and rock to deliver a unique listening experience in the Treasure Valley. Known for its vibrant community engagement and diverse music selection, KIDQ aims to be a leading voice in Idaho radio.
+      </>
+    ),
     history: `
-      <p><strong>Early Days:</strong> KAWO began broadcasting in [Year] with a focus on delivering the latest country hits and local news. Its initial programming aimed to capture the growing country music audience in the region.</p>
-      <p><strong>Growth and Popularity:</strong> Throughout the [Decade]s, KAWO solidified its position, becoming synonymous with country music in Idaho. Its live broadcasts from local events and strong on-air personalities contributed significantly to its popularity.</p>
-      <p><strong>Modern Era:</strong> Today, KAWO maintains its commitment to country music, integrating digital platforms while preserving its traditional radio presence. It continues to host popular events and remains a beloved station for its loyal listeners.</p>
+      <p><strong>Early Days:</strong> KIDQ began broadcasting in [Year] with a focus on delivering a blend of popular music and local news. Its initial programming aimed to capture a broad audience in the region.</p>
+      <p><strong>Evolution and Fusion:</strong> Over the years, KIDQ evolved to incorporate both country and rock formats, creating a distinctive sound that appeals to a wide range of listeners. This fusion has made it a unique presence in the Idaho radio landscape.</p>
+      <p><strong>Modern Era:</strong> Today, KIDQ maintains its commitment to diverse programming, integrating digital platforms while preserving its traditional radio presence. It continues to host popular events and remains a beloved station for its loyal listeners.</p>
       <p><strong>Key Personalities:</strong> [List of notable DJs/personalities]</p>
-      <p><strong>Legacy:</strong> KAWO's legacy is built on its consistent delivery of quality country programming and its deep connection to the Idaho community.</p>
+      <p><strong>Legacy:</strong> KIDQ's legacy is built on its consistent delivery of quality programming and its deep connection to the Idaho community, offering something for every music lover.</p>
     `
   },
   {
@@ -43,7 +54,7 @@ const stationData = [
   {
     id: 'kqxr',
     name: 'KQXR - 100.3 FM',
-    synopsis: 'KQXR, "100.3 The X," is Idaho\'s premier rock station, delivering hard-hitting rock music and supporting local bands. Known for its edgy personality and commitment to the rock scene, it’s a favorite among rock enthusiasts.',
+    synopsis: 'KQXR, "100.3 The X," is Idaho\\\'s premier rock station, delivering hard-hitting rock music and supporting local bands. Known for its edgy personality and commitment to the rock scene, it’s a favorite among rock enthusiasts.', // Logos removed
     history: `
       <p><strong>Establishment:</strong> KQXR hit the airwaves in [Year], quickly establishing itself as the voice of rock music in Idaho. Its aggressive programming and rebellious spirit set it apart from other stations.</p>
       <p><strong>Rise to Prominence:</strong> "The X" became a cultural touchstone for rock fans, hosting major concerts, band interviews, and promoting the local music scene. Its morning show gained a reputation for its irreverent humor.</p>
@@ -67,11 +78,11 @@ const stationData = [
   {
     id: 'kfxd',
     name: 'KFXD - 630 AM',
-    synopsis: 'KFXD, "The Fan," is Idaho\'s leading sports talk radio station, offering live game broadcasts, expert analysis, and passionate discussions on local and national sports. It’s the go-to station for sports fans.',
+    synopsis: 'KFXD, "The Fan," is Idaho\\\'s leading sports talk radio station, offering live game broadcasts, expert analysis, and passionate discussions on local and national sports. It’s the go-to station for sports fans.',
     history: `
       <p><strong>Launch:</strong> KFXD began its journey in [Year] with a clear mission: to be the voice of sports in Idaho. It quickly gained a following among avid sports enthusiasts.</p>
       <p><strong>Building a Reputation:</strong> The station became known for its comprehensive coverage of high school, collegiate, and professional sports. Its live play-by-play broadcasts and insightful commentary set it apart.</p>
-      <p><strong>Current Status:</strong> KFXD continues to deliver unparalleled sports content, featuring popular local sports personalities and exclusive interviews with athletes and coaches. It remains an essential resource for Idaho sports fans.</p>
+      <p><strong>Current Status:</strong> KFXD continues to deliver unparalleled sports content, featuring popular local personalities and exclusive interviews with athletes and coaches. It remains an essential resource for Idaho sports fans.</p>
       <p><strong>Coverage Highlights:</strong> [Specific teams or events KFXD is known for covering]</p>
       <p><strong>Fan Engagement:</strong> KFXD fosters a strong sense of community among sports fans, providing a platform for discussion and shared passion.</p>
     `
