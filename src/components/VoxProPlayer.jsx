@@ -1,137 +1,38 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
-const VoxProPlayer = () => {
-  // State management
-  const [connectionStatus, setConnectionStatus] = useState('connecting');
-  const [statusMessage, setStatusMessage] = useState('Connecting to Supabase...');
-  const [assignments, setAssignments] = useState([]);
-  const [mediaViewers, setMediaViewers] = useState([]);
-  const [hoveredKey, setHoveredKey] = useState(null);
-  const [playingKeys, setPlayingKeys] = useState(new Set());
-  
-  // Audio visualization refs
+// Universal Media Player Component
+const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [mediaType, setMediaType] = useState(null);
+  const playerRef = useRef(null);
+  const canvasRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyzerRef = useRef(null);
-  const canvasRef = useRef(null);
   const animationRef = useRef(null);
 
-  // Initialize Supabase connection - NO POPUP CODE
   useEffect(() => {
-    const initializeConnection = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('assignments')
-          .select('*')
-          .limit(1);
-
-        if (error) {
-          console.error('Supabase connection error:', error);
-          setConnectionStatus('disconnected');
-          setStatusMessage('Failed to connect to Supabase');
-          return;
-        }
-
-        setConnectionStatus('connected');
-        setStatusMessage('Connected to Supabase');
-        loadAssignments();
-
-      } catch (error) {
-        console.error('Connection initialization error:', error);
-        setConnectionStatus('disconnected');
-        setStatusMessage('Connection initialization failed');
-      }
-    };
-
-    initializeConnection();
-  }, []);
-
-  // Load assignments from Supabase
-  const loadAssignments = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('assignments')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading assignments:', error);
-        return;
-      }
-
-      setAssignments(data || []);
-    } catch (error) {
-      console.error('Error loading assignments:', error);
+    if (assignment?.media_url) {
+      detectMediaType(assignment.media_url);
     }
-  };
+  }, [assignment]);
 
-  // Get assignment for a specific key
-  const getAssignmentForKey = (keySlot) => {
-    return assignments.find(assignment => assignment.key_slot === keySlot);
-  };
-
-  // Handle key click - open media viewer
-  const handleKeyClick = (keySlot) => {
-    const assignment = getAssignmentForKey(keySlot);
+  const detectMediaType = (url) => {
+    const extension = url.split('.').pop().toLowerCase();
     
-    if (!assignment) {
-      console.log(`No assignment for key ${keySlot}`);
-      return;
+    if (['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(extension)) {
+      setMediaType('video');
+    } else if (['mp3', 'wav', 'ogg', 'aac', 'm4a'].includes(extension)) {
+      setMediaType('audio');
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
+      setMediaType('image');
+    } else if (['pdf', 'doc', 'docx', 'txt'].includes(extension)) {
+      setMediaType('document');
+    } else {
+      setMediaType('unknown');
     }
-
-    // Check if this key is already playing
-    if (playingKeys.has(keySlot)) {
-      stopPlayback(keySlot);
-      return;
-    }
-
-    startPlayback(keySlot, assignment);
-  };
-
-  // Start playback for a key
-  const startPlayback = (keySlot, assignment) => {
-    setPlayingKeys(prev => new Set([...prev, keySlot]));
-    
-    const newViewer = {
-      id: Date.now(),
-      keySlot,
-      assignment,
-      isMinimized: false,
-      position: {
-        x: window.innerWidth - 520,
-        y: 100 + (mediaViewers.length * 30)
-      }
-    };
-
-    setMediaViewers(prev => [...prev, newViewer]);
-  };
-
-  // Stop playback for a key
-  const stopPlayback = (keySlot) => {
-    setPlayingKeys(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(keySlot);
-      return newSet;
-    });
-
-    setMediaViewers(prev => prev.filter(viewer => viewer.keySlot !== keySlot));
-  };
-
-  // Close media viewer
-  const closeViewer = (viewerId) => {
-    const viewer = mediaViewers.find(v => v.id === viewerId);
-    if (viewer) {
-      stopPlayback(viewer.keySlot);
-    }
-  };
-
-  // Minimize/restore viewer
-  const toggleMinimize = (viewerId) => {
-    setMediaViewers(prev => prev.map(viewer => 
-      viewer.id === viewerId 
-        ? { ...viewer, isMinimized: !viewer.isMinimized }
-        : viewer
-    ));
+    setIsLoading(false);
   };
 
   // Audio visualization setup
@@ -194,403 +95,464 @@ const VoxProPlayer = () => {
     }
   };
 
-  // Media content renderer
-  const renderMediaContent = (assignment) => {
-    const { media_url, media_type, title } = assignment;
-
-    if (media_type?.startsWith('video/')) {
+  const renderMediaContent = () => {
+    if (isLoading) {
       return (
-        <video 
-          controls 
-          className="w-full h-48 bg-black rounded"
-        >
-          <source src={media_url} type={media_type} />
-          Your browser does not support the video tag.
-        </video>
+        <div className="flex items-center justify-center h-64 bg-gray-800 rounded">
+          <div className="text-green-400">Loading media...</div>
+        </div>
       );
     }
 
-    if (media_type?.startsWith('audio/')) {
+    if (error) {
       return (
-        <div className="w-full">
-          <audio 
-            controls 
-            className="w-full mb-2"
-            onPlay={(e) => setupAudioVisualization(e.target)}
-            onPause={stopVisualization}
-            onEnded={stopVisualization}
+        <div className="flex items-center justify-center h-64 bg-gray-800 rounded text-red-400">
+          Error loading media: {error}
+        </div>
+      );
+    }
+
+    switch (mediaType) {
+      case 'video':
+        return (
+          <video
+            ref={playerRef}
+            controls
+            className="w-full h-64 bg-black rounded"
+            onError={() => setError('Failed to load video')}
           >
-            <source src={media_url} type={media_type} />
-            Your browser does not support the audio tag.
-          </audio>
-          <canvas 
-            ref={canvasRef}
-            width="300" 
-            height="100" 
-            className="w-full h-20 bg-gray-900 rounded border"
-          />
-        </div>
-      );
-    }
+            <source src={assignment.media_url} />
+            Your browser does not support the video tag.
+          </video>
+        );
 
-    if (media_type?.startsWith('image/')) {
-      return (
-        <img 
-          src={media_url} 
-          alt={title}
-          className="w-full h-48 object-contain bg-black rounded"
-        />
-      );
-    }
+      case 'audio':
+        return (
+          <div className="bg-gray-800 rounded p-4">
+            <div className="flex items-center justify-center h-32 mb-4">
+              <div className="text-green-400 text-6xl">🎵</div>
+            </div>
+            <audio
+              ref={playerRef}
+              controls
+              className="w-full mb-2"
+              onPlay={(e) => setupAudioVisualization(e.target)}
+              onPause={stopVisualization}
+              onEnded={stopVisualization}
+              onError={() => setError('Failed to load audio')}
+            >
+              <source src={assignment.media_url} />
+              Your browser does not support the audio tag.
+            </audio>
+            <canvas 
+              ref={canvasRef}
+              width="300" 
+              height="80" 
+              className="w-full h-16 bg-gray-900 rounded border"
+            />
+          </div>
+        );
 
+      case 'image':
+        return (
+          <div className="bg-gray-800 rounded p-2">
+            <img
+              src={assignment.media_url}
+              alt={assignment.title}
+              className="w-full h-64 object-contain rounded"
+              onError={() => setError('Failed to load image')}
+            />
+          </div>
+        );
+
+      case 'document':
+        return (
+          <div className="bg-gray-800 rounded p-6 h-64 flex flex-col items-center justify-center">
+            <div className="text-yellow-400 text-6xl mb-4">📄</div>
+            <div className="text-white text-center mb-4">
+              <div className="font-semibold">{assignment.title}</div>
+              <div className="text-sm text-gray-400">Document File</div>
+            </div>
+            <button
+              onClick={() => window.open(assignment.media_url, '_blank')}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors"
+            >
+              Open Document
+            </button>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="bg-gray-800 rounded p-6 h-64 flex flex-col items-center justify-center">
+            <div className="text-gray-400 text-6xl mb-4">📎</div>
+            <div className="text-white text-center mb-4">
+              <div className="font-semibold">{assignment.title}</div>
+              <div className="text-sm text-gray-400">Unknown File Type</div>
+            </div>
+            <button
+              onClick={() => window.open(assignment.media_url, '_blank')}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors"
+            >
+              Download File
+            </button>
+          </div>
+        );
+    }
+  };
+
+  if (isMinimized) {
     return (
-      <div className="w-full h-48 bg-gray-800 rounded flex flex-col items-center justify-center">
-        <div className="text-4xl mb-2">📄</div>
-        <div className="text-sm text-gray-300 text-center">
-          <div className="font-medium">{title}</div>
-          <div className="text-xs mt-1">Click to open document</div>
+      <div className="fixed bottom-4 right-4 bg-gray-800 border border-gray-600 rounded-lg p-2 shadow-lg z-50">
+        <div className="flex items-center justify-between min-w-48">
+          <span className="text-white text-sm truncate">{assignment?.title || 'Media Player'}</span>
+          <div className="flex gap-1 ml-2">
+            <button
+              onClick={() => onMinimize(false)}
+              className="text-gray-400 hover:text-white p-1"
+              title="Restore"
+            >
+              ⬜
+            </button>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-red-400 p-1"
+              title="Close"
+            >
+              ✕
+            </button>
+          </div>
         </div>
-        <a 
-          href={media_url} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="mt-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
-        >
-          Open Document
-        </a>
       </div>
+    );
+  }
+
+  return (
+    <div className="fixed bottom-4 right-4 bg-gray-900 border border-gray-600 rounded-lg shadow-2xl z-40 w-[800px] max-h-[600px] overflow-hidden">
+      {/* Window Title Bar */}
+      <div className="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-600">
+        <div className="flex items-center gap-2">
+          <div className="text-green-400">▶</div>
+          <span className="text-white font-medium">Universal Player</span>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onMinimize(true)}
+            className="text-gray-400 hover:text-white px-2 py-1 rounded"
+            title="Minimize"
+          >
+            −
+          </button>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-red-400 px-2 py-1 rounded"
+            title="Close"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="flex h-96">
+        {/* Media Player Section */}
+        <div className="flex-1 p-4">
+          <div className="mb-2">
+            <h3 className="text-white font-semibold text-lg">{assignment?.title || 'No Title'}</h3>
+            <p className="text-gray-400 text-sm">Key: {assignment?.key_slot} | Type: {mediaType || 'Unknown'}</p>
+          </div>
+          {renderMediaContent()}
+        </div>
+
+        {/* Description Panel */}
+        <div className="w-80 bg-gray-800 border-l border-gray-600 p-4">
+          <h4 className="text-green-400 font-semibold mb-3">Media Description</h4>
+          <div className="text-gray-300 text-sm leading-relaxed max-h-80 overflow-y-auto">
+            {assignment?.description || 'No description available for this media file.'}
+          </div>
+
+          {/* Additional Info */}
+          <div className="mt-4 pt-4 border-t border-gray-700">
+            <div className="text-xs text-gray-500 space-y-1">
+              <div><strong>Submitted by:</strong> {assignment?.submitted_by || 'Unknown'}</div>
+              <div><strong>Created:</strong> {assignment?.created_at ? new Date(assignment.created_at).toLocaleDateString() : 'Unknown'}</div>
+              <div><strong>File Type:</strong> {assignment?.media_type || 'Auto-detected'}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const VoxProPlayer = () => {
+  // State management
+  const [connectionStatus, setConnectionStatus] = useState('connecting');
+  const [statusMessage, setStatusMessage] = useState('Connecting to Supabase...');
+  const [assignments, setAssignments] = useState([]);
+  const [activeWindows, setActiveWindows] = useState([]);
+  const [windowCounter, setWindowCounter] = useState(0);
+  const [playingKeys, setPlayingKeys] = useState(new Set());
+
+  // Initialize Supabase connection - NO POPUP CODE
+  useEffect(() => {
+    const initializeConnection = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('assignments')
+          .select('*')
+          .limit(1);
+
+        if (error) {
+          console.error('Supabase connection error:', error);
+          setConnectionStatus('disconnected');
+          setStatusMessage('Failed to connect to Supabase');
+          return;
+        }
+
+        setConnectionStatus('connected');
+        setStatusMessage('Connected to Supabase');
+        loadAssignments();
+      } catch (err) {
+        console.error('Connection initialization error:', err);
+        setConnectionStatus('error');
+        setStatusMessage('Connection error occurred');
+      }
+    };
+
+    initializeConnection();
+  }, []);
+
+  const loadAssignments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('assignments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading assignments:', error);
+        return;
+      }
+
+      setAssignments(data || []);
+    } catch (err) {
+      console.error('Error in loadAssignments:', err);
+    }
+  };
+
+  const getKeyAssignment = (keySlot) => {
+    return assignments.find(a => a.key_slot === keySlot);
+  };
+
+  const handleKeyClick = async (keySlot) => {
+    const assignment = getKeyAssignment(keySlot);
+    
+    if (!assignment) {
+      console.log(`No assignment found for key ${keySlot}`);
+      return;
+    }
+
+    // Check if this key is currently playing
+    if (playingKeys.has(keySlot)) {
+      // Stop playback
+      setPlayingKeys(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(keySlot);
+        return newSet;
+      });
+      
+      // Close the window
+      setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== keySlot));
+      return;
+    }
+
+    // Start playback
+    setPlayingKeys(prev => new Set([...prev, keySlot]));
+
+    // Check if window is already open for this assignment
+    const existingWindow = activeWindows.find(w => w.assignment.id === assignment.id);
+    if (existingWindow) {
+      // If minimized, restore it
+      if (existingWindow.isMinimized) {
+        setActiveWindows(prev => 
+          prev.map(w => 
+            w.id === existingWindow.id 
+              ? { ...w, isMinimized: false }
+              : w
+          )
+        );
+      }
+      return;
+    }
+
+    // Create new window
+    const newWindow = {
+      id: windowCounter,
+      assignment,
+      isMinimized: false
+    };
+
+    setActiveWindows(prev => [...prev, newWindow]);
+    setWindowCounter(prev => prev + 1);
+  };
+
+  const closeWindow = (windowId) => {
+    const window = activeWindows.find(w => w.id === windowId);
+    if (window) {
+      // Stop playback for this key
+      setPlayingKeys(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(window.assignment.key_slot);
+        return newSet;
+      });
+    }
+    
+    setActiveWindows(prev => prev.filter(w => w.id !== windowId));
+  };
+
+  const minimizeWindow = (windowId, minimize) => {
+    setActiveWindows(prev => 
+      prev.map(w => 
+        w.id === windowId 
+          ? { ...w, isMinimized: minimize }
+          : w
+      )
     );
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">The Back Corner</h1>
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">VoxPro Media Player</h2>
-          <p className="text-gray-600">Professional media player for broadcasting operations.</p>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-green-400 mb-2">The Back Corner</h1>
+          <h2 className="text-2xl text-gray-300 mb-4">VoxPro Media Player</h2>
+          <p className="text-gray-400">Compact professional media player for broadcasting operations.</p>
         </div>
-      </div>
 
-      {/* VoxPro Player Interface - PERFECT ORIGINAL SLEEK DESIGN */}
-      <div className="max-w-3xl mx-auto">
-        <div 
-          className="relative bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 rounded-2xl shadow-2xl p-8"
-          style={{
-            background: 'linear-gradient(145deg, #2d3748, #1a202c)',
-            boxShadow: '20px 20px 60px #1a1a1a, -20px -20px 60px #2a2a2a'
-          }}
-        >
-          {/* Clean Header */}
+        {/* Main Control Panel */}
+        <div className="max-w-2xl mx-auto bg-gray-800 rounded-lg p-8 shadow-2xl border border-gray-600">
+          {/* VoxPro Header */}
           <div className="text-center mb-6">
-            <h2 
-              className="text-3xl font-bold mb-2"
-              style={{
-                background: 'linear-gradient(45deg, #10b981, #34d399, #6ee7b7)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textShadow: '0 0 20px rgba(16, 185, 129, 0.5)'
-              }}
-            >
-              VoxPro Media Player
-            </h2>
+            <h3 className="text-3xl font-bold text-green-400 mb-2">VoxPro Media Player</h3>
             <p className="text-gray-400 text-sm">Professional Broadcasting Control System</p>
-          </div>
-
-          {/* Control Panel */}
-          <div 
-            className="rounded-xl p-6 mb-6"
-            style={{
-              background: 'linear-gradient(145deg, #374151, #1f2937)',
-              boxShadow: 'inset 5px 5px 15px #1a1a1a, inset -5px -5px 15px #404040'
-            }}
-          >
-            {/* VoxPro Logo */}
-            <div className="text-center mb-4">
-              <div 
-                className="text-2xl font-bold mb-2"
-                style={{
-                  background: 'linear-gradient(45deg, #10b981, #34d399)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  textShadow: '0 0 15px rgba(16, 185, 129, 0.7)'
-                }}
-              >
-                VoxPro
-              </div>
-              <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+            
+            {/* Connection Status */}
+            <div className="mt-4">
+              <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
                 connectionStatus === 'connected' 
-                  ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/30' 
-                  : 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/30'
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-red-600 text-white'
               }`}>
-                <div className={`w-3 h-3 rounded-full mr-2 ${
+                <div className={`w-2 h-2 rounded-full mr-2 ${
                   connectionStatus === 'connected' ? 'bg-green-300' : 'bg-red-300'
                 } animate-pulse`}></div>
                 {statusMessage}
               </div>
             </div>
+          </div>
 
-            {/* START Keys - Clean Professional Design */}
-            <div className="grid grid-cols-5 gap-4 mb-6">
-              {[1, 2, 3, 4, 5].map((keyNum) => {
-                const assignment = getAssignmentForKey(keyNum.toString());
-                const isPlaying = playingKeys.has(keyNum.toString());
+          {/* START Keys - Using Reference File Styling */}
+          <div className="mb-6">
+            <div className="grid grid-cols-5 gap-3 justify-center">
+              {[1, 2, 3, 4, 5].map((key) => {
+                const assignment = getKeyAssignment(key.toString());
+                const isPlaying = playingKeys.has(key.toString());
                 
                 return (
                   <button
-                    key={keyNum}
-                    onClick={() => handleKeyClick(keyNum.toString())}
-                    onMouseEnter={() => setHoveredKey(keyNum.toString())}
-                    onMouseLeave={() => setHoveredKey(null)}
-                    className={`h-14 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-110 active:scale-95 ${
-                      isPlaying
-                        ? 'text-white shadow-2xl'
-                        : assignment
-                        ? 'text-white shadow-2xl'
-                        : 'text-gray-400 shadow-lg'
-                    }`}
-                    style={{
-                      background: isPlaying
-                        ? 'linear-gradient(145deg, #10b981, #059669)'
-                        : assignment
-                        ? 'linear-gradient(145deg, #dc2626, #b91c1c)'
-                        : 'linear-gradient(145deg, #6b7280, #4b5563)',
-                      boxShadow: isPlaying
-                        ? '8px 8px 16px #0d4f3c, -8px -8px 16px #13c896, inset 2px 2px 4px rgba(255,255,255,0.1)'
-                        : assignment
-                        ? '8px 8px 16px #7f1d1d, -8px -8px 16px #ef4444, inset 2px 2px 4px rgba(255,255,255,0.1)'
-                        : '8px 8px 16px #374151, -8px -8px 16px #9ca3af, inset 2px 2px 4px rgba(255,255,255,0.1)'
+                    key={key}
+                    onClick={() => handleKeyClick(key.toString())}
+                    onMouseEnter={() => {
+                      if (assignment) {
+                        setStatusMessage(`Key ${key}: ${assignment.title}`);
+                      }
                     }}
-                    title={assignment ? assignment.title : `Key ${keyNum} - No assignment`}
+                    onMouseLeave={() => {
+                      setStatusMessage(connectionStatus === 'connected' ? 'Connected to Supabase' : statusMessage);
+                    }}
+                    className={`
+                      w-20 h-20 rounded-lg font-bold text-white text-xl
+                      transition-all duration-200 transform hover:scale-105
+                      ${isPlaying
+                        ? 'bg-gradient-to-b from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 shadow-lg' 
+                        : assignment 
+                        ? 'bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 shadow-lg' 
+                        : 'bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700'
+                      }
+                      border-2 border-gray-500 shadow-md
+                    `}
+                    title={assignment ? assignment.title : `Key ${key} - No Assignment`}
                   >
-                    {isPlaying ? 'STOP' : keyNum}
+                    {isPlaying ? 'STOP' : key}
                   </button>
                 );
               })}
             </div>
+          </div>
 
-            {/* Control Buttons */}
-            <div className="grid grid-cols-4 gap-3 mb-4">
-              {['A', 'B', 'C', 'D'].map((letter) => (
-                <button
-                  key={letter}
-                  className="h-12 text-black font-bold text-sm rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
-                  style={{
-                    background: 'linear-gradient(145deg, #fbbf24, #f59e0b)',
-                    boxShadow: '6px 6px 12px #d97706, -6px -6px 12px #fcd34d, inset 2px 2px 4px rgba(255,255,255,0.2)'
-                  }}
-                >
-                  {letter}
-                </button>
-              ))}
-            </div>
-
-            {/* Function Buttons */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <button 
-                className="h-12 text-white font-bold text-sm rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
-                style={{
-                  background: 'linear-gradient(145deg, #3b82f6, #2563eb)',
-                  boxShadow: '6px 6px 12px #1d4ed8, -6px -6px 12px #60a5fa, inset 2px 2px 4px rgba(255,255,255,0.1)'
-                }}
-              >
-                DUP
-              </button>
-              <button 
-                className="h-12 text-white font-bold text-sm rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
-                style={{
-                  background: 'linear-gradient(145deg, #f97316, #ea580c)',
-                  boxShadow: '6px 6px 12px #c2410c, -6px -6px 12px #fb923c, inset 2px 2px 4px rgba(255,255,255,0.1)'
-                }}
-              >
-                CUE
-              </button>
-              <button 
-                className="h-12 text-white font-bold text-sm rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
-                style={{
-                  background: 'linear-gradient(145deg, #dc2626, #b91c1c)',
-                  boxShadow: '6px 6px 12px #991b1b, -6px -6px 12px #ef4444, inset 2px 2px 4px rgba(255,255,255,0.1)'
-                }}
-              >
-                REC
-              </button>
-            </div>
-
-            {/* Status Display */}
-            <div className="text-center">
-              <div 
-                className="text-sm font-medium"
-                style={{
-                  color: '#10b981',
-                  textShadow: '0 0 10px rgba(16, 185, 129, 0.5)'
-                }}
-              >
-                Active Windows: {mediaViewers.filter(v => !v.isMinimized).length} | 
-                Minimized: {mediaViewers.filter(v => v.isMinimized).length}
+          {/* Control Buttons - Using Reference File Styling */}
+          <div className="grid grid-cols-4 gap-3 mb-6">
+            {/* Row 1 */}
+            <button className="w-16 h-12 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all">A</button>
+            <button className="w-16 h-12 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all">B</button>
+            <button className="w-16 h-12 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all">C</button>
+            <button className="w-16 h-12 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all">D</button>
+            
+            {/* Row 2 */}
+            <button className="w-16 h-12 bg-gradient-to-b from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">DUP</button>
+            <button className="w-16 h-12 bg-gradient-to-b from-yellow-600 to-yellow-800 hover:from-yellow-500 hover:to-yellow-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">CUE</button>
+            <button className="w-16 h-12 bg-gradient-to-b from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">REC</button>
+            <div className="w-16 h-12 bg-gradient-to-b from-gray-700 to-gray-900 rounded border-2 border-gray-500 flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
               </div>
             </div>
           </div>
 
-          {/* Current Assignments Display */}
-          {assignments.length > 0 && (
-            <div 
-              className="rounded-lg p-4"
-              style={{
-                background: 'linear-gradient(145deg, #374151, #1f2937)',
-                boxShadow: 'inset 3px 3px 8px #1a1a1a, inset -3px -3px 8px #404040'
-              }}
-            >
-              <h3 
-                className="text-lg font-semibold mb-3"
-                style={{
-                  background: 'linear-gradient(45deg, #10b981, #34d399)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}
-              >
-                Current Assignments
-              </h3>
-              <div className="space-y-2">
-                {[1, 2, 3, 4, 5].map((keyNum) => {
-                  const assignment = getAssignmentForKey(keyNum.toString());
-                  return (
-                    <div key={keyNum} className="flex items-center justify-between text-sm">
-                      <span className={`font-medium ${
-                        playingKeys.has(keyNum.toString()) 
-                          ? 'text-green-400' 
-                          : 'text-gray-300'
-                      }`}>
-                        Key {keyNum}:
-                      </span>
-                      <span className="text-gray-400 truncate ml-2">
-                        {assignment ? assignment.title : 'No assignment'}
-                      </span>
-                    </div>
-                  );
-                })}
+          {/* Status Display */}
+          <div className="text-center">
+            <div className="bg-gray-800 px-4 py-2 rounded border border-gray-600">
+              <div className="text-green-400 text-sm font-medium">
+                Active Windows: {activeWindows.filter(w => !w.isMinimized).length} | 
+                Minimized: {activeWindows.filter(w => w.isMinimized).length}
               </div>
             </div>
-          )}
+          </div>
+        </div>
+
+        {/* Assignment List */}
+        <div className="mt-8 bg-gray-800 rounded-lg p-6 max-w-6xl mx-auto">
+          <h3 className="text-green-400 font-semibold text-lg mb-4">Current Key Assignments</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {assignments.map((assignment) => (
+              <div key={assignment.id} className="bg-gray-700 rounded p-4 border border-gray-600">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-green-400 font-bold">Key {assignment.key_slot}</span>
+                  <span className="text-xs text-gray-400">{assignment.media_type}</span>
+                </div>
+                <h4 className="text-white font-medium mb-1">{assignment.title}</h4>
+                <p className="text-gray-400 text-sm mb-2 line-clamp-2">{assignment.description}</p>
+                <div className="text-xs text-gray-500">
+                  By: {assignment.submitted_by} | {new Date(assignment.created_at).toLocaleDateString()}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Media Viewer Windows - Clean Professional Design */}
-      {mediaViewers.map((viewer) => (
-        <div
-          key={viewer.id}
-          className={`fixed rounded-lg shadow-2xl border border-gray-600 transition-all duration-300 ${
-            viewer.isMinimized ? 'w-80 h-14' : 'w-[500px] h-auto'
-          }`}
-          style={{
-            left: `${viewer.position.x}px`,
-            top: `${viewer.position.y}px`,
-            zIndex: 1000 + viewer.id,
-            background: 'linear-gradient(145deg, #374151, #1f2937)',
-            boxShadow: '15px 15px 30px #1a1a1a, -15px -15px 30px #404040'
-          }}
-        >
-          {/* Window Header */}
-          <div 
-            className="flex items-center justify-between text-white p-3 rounded-t-lg"
-            style={{
-              background: 'linear-gradient(145deg, #10b981, #059669)',
-              boxShadow: 'inset 2px 2px 4px rgba(255,255,255,0.1), inset -2px -2px 4px rgba(0,0,0,0.2)'
-            }}
-          >
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-green-300 rounded-full mr-2 animate-pulse"></div>
-              <span className="text-sm font-medium">Universal Player</span>
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => toggleMinimize(viewer.id)}
-                className="w-7 h-7 rounded font-bold text-xs transition-all duration-200 transform hover:scale-110"
-                style={{
-                  background: 'linear-gradient(145deg, #fbbf24, #f59e0b)',
-                  color: 'black',
-                  boxShadow: '3px 3px 6px #d97706, -3px -3px 6px #fcd34d'
-                }}
-              >
-                {viewer.isMinimized ? '□' : '−'}
-              </button>
-              <button
-                onClick={() => closeViewer(viewer.id)}
-                className="w-7 h-7 rounded text-white font-bold text-xs transition-all duration-200 transform hover:scale-110"
-                style={{
-                  background: 'linear-gradient(145deg, #dc2626, #b91c1c)',
-                  boxShadow: '3px 3px 6px #991b1b, -3px -3px 6px #ef4444'
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-
-          {/* Window Content */}
-          {!viewer.isMinimized && (
-            <div className="p-4">
-              <div className="grid grid-cols-3 gap-4">
-                {/* Media Content */}
-                <div className="col-span-2">
-                  {renderMediaContent(viewer.assignment)}
-                </div>
-
-                {/* Media Information */}
-                <div 
-                  className="rounded p-3"
-                  style={{
-                    background: 'linear-gradient(145deg, #4b5563, #374151)',
-                    boxShadow: 'inset 3px 3px 6px #2d3748, inset -3px -3px 6px #6b7280'
-                  }}
-                >
-                  <h4 
-                    className="font-medium text-sm mb-3"
-                    style={{
-                      background: 'linear-gradient(45deg, #10b981, #34d399)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent'
-                    }}
-                  >
-                    Media Description
-                  </h4>
-                  <div className="space-y-2 text-xs">
-                    <div>
-                      <span className="text-gray-400">Title:</span>
-                      <div className="text-white font-medium">{viewer.assignment.title}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Type:</span>
-                      <div className="text-white">{viewer.assignment.media_type || 'Auto-detected'}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Submitted by:</span>
-                      <div className="text-white">{viewer.assignment.submitted_by}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Created:</span>
-                      <div className="text-white">{new Date(viewer.assignment.created_at).toLocaleDateString()}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Key:</span>
-                      <div className="text-white">Key {viewer.assignment.key_slot}</div>
-                    </div>
-                  </div>
-                  
-                  {/* Description */}
-                  {viewer.assignment.description && (
-                    <div className="mt-3">
-                      <span className="text-gray-400 text-xs">Description:</span>
-                      <div className="text-white text-xs mt-1 max-h-24 overflow-y-auto">
-                        {viewer.assignment.description}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+      {/* Floating Windows */}
+      {activeWindows.map((window) => (
+        <UniversalMediaPlayer
+          key={window.id}
+          assignment={window.assignment}
+          onClose={() => closeWindow(window.id)}
+          onMinimize={(minimize) => minimizeWindow(window.id, minimize)}
+          isMinimized={window.isMinimized}
+          windowId={window.id}
+        />
       ))}
     </div>
   );
