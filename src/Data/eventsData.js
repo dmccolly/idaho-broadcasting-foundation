@@ -1,4 +1,3 @@
-// eventsData.js - Complete file contents
 export const eventsData = {
   current: {
     id: 'larry-lomax-tribute-2025',
