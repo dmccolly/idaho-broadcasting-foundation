@@ -14,7 +14,7 @@ const stationData = [
     name: 'KIDQ - 104.3 FM',
     synopsis: (
       <>
-        <img src={wowCountryLogo} alt="WOW! Country 104.3 Logo" className="station-logo" />
+        {/* Removed wowCountryLogo as requested */}
         <img src={q104Logo} alt="Q104 Logo" className="station-logo" />
         KIDQ is a dynamic station, combining the best of country and rock to deliver a unique listening experience in the Treasure Valley. Known for its vibrant community engagement and diverse music selection, KIDQ aims to be a leading voice in Idaho radio.
       </>
@@ -150,7 +150,10 @@ const RadioPage = () => {
     <div className="radio-page-container">
       <div className="header-graphic">
         <img src={radioConsoleDark} alt="Radio Console" className="header-image" />
-        <h1 className="header-title-overlay">Radio History</h1>
+        <div className="header-text-container">
+          <h1 className="header-title-overlay">Radio History</h1>
+          <p className="header-subtitle-overlay">an adventure in evolution</p>
+        </div>
       </div>
 
       <div className="station-cards-grid">
