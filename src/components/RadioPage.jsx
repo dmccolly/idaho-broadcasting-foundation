@@ -3,22 +3,11 @@
 import React, { useState } from 'react';
 import './RadioPage.css';
 
-// IMPORTANT: You need to upload these images to src/assets/images/
-import wowCountryLogo from '../assets/images/wow-country-104-3-logo.png';
-import q104Logo from '../assets/images/q104-logo.png';
-import radioConsoleDark from '../assets/images/RadioCOnsoleDark.png';
-
 const stationData = [
   {
     id: 'kidq',
     name: 'KIDQ - 104.3 FM',
-    synopsis: (
-      <>
-        <img src={wowCountryLogo} alt="WOW! Country 104.3 Logo" className="station-logo" />
-        <img src={q104Logo} alt="Q104 Logo" className="station-logo" />
-        KIDQ is a dynamic station, combining the best of country and rock to deliver a unique listening experience in the Treasure Valley. Known for its vibrant community engagement and diverse music selection, KIDQ aims to be a leading voice in Idaho radio.
-      </>
-    ),
+    synopsis: 'KIDQ is a dynamic station, combining the best of country and rock to deliver a unique listening experience in the Treasure Valley. Known for its vibrant community engagement and diverse music selection, KIDQ aims to be a leading voice in Idaho radio.',
     history: `
       <p><strong>Early Days:</strong> KIDQ began broadcasting in [Year] with a focus on delivering a blend of popular music and local news. Its initial programming aimed to capture a broad audience in the region.</p>
       <p><strong>Evolution and Fusion:</strong> Over the years, KIDQ evolved to incorporate both country and rock formats, creating a distinctive sound that appeals to a wide range of listeners. This fusion has made it a unique presence in the Idaho radio landscape.</p>
@@ -42,7 +31,7 @@ const stationData = [
   {
     id: 'kthi',
     name: 'KTHI - 107.1 FM',
-    synopsis: 'KTHI, "107.1 K-Hits," specializes in classic hits from the 70s, 80s, and 90s, bringing a nostalgic experience to its listeners. It's celebrated for its timeless playlist and engaging throwback segments.',
+    synopsis: 'KTHI, "107.1 K-Hits," specializes in classic hits from the 70s, 80s, and 90s, bringing a nostalgic experience to its listeners. It is celebrated for its timeless playlist and engaging throwback segments.',
     history: `
       <p><strong>Founding:</strong> KTHI began broadcasting in [Year], carving out a niche by focusing exclusively on classic hits. This format immediately resonated with listeners looking to relive their favorite musical eras.</p>
       <p><strong>Golden Era:</strong> The station quickly became a go-to for nostalgic music, featuring themed weekends and special programming dedicated to specific decades. Its DJs often shared anecdotes about the music and artists.</p>
@@ -54,7 +43,7 @@ const stationData = [
   {
     id: 'kqxr',
     name: 'KQXR - 100.3 FM',
-    synopsis: 'KQXR, "100.3 The X," is Idaho\'s premier rock station, delivering hard-hitting rock music and supporting local bands. Known for its edgy personality and commitment to the rock scene, it\'s a favorite among rock enthusiasts.',
+    synopsis: 'KQXR, "100.3 The X," is Idaho premier rock station, delivering hard-hitting rock music and supporting local bands. Known for its edgy personality and commitment to the rock scene, it is a favorite among rock enthusiasts.',
     history: `
       <p><strong>Establishment:</strong> KQXR hit the airwaves in [Year], quickly establishing itself as the voice of rock music in Idaho. Its aggressive programming and rebellious spirit set it apart from other stations.</p>
       <p><strong>Rise to Prominence:</strong> "The X" became a cultural touchstone for rock fans, hosting major concerts, band interviews, and promoting the local music scene. Its morning show gained a reputation for its irreverent humor.</p>
@@ -78,7 +67,7 @@ const stationData = [
   {
     id: 'kfxd',
     name: 'KFXD - 630 AM',
-    synopsis: 'KFXD, "The Fan," is Idaho\'s leading sports talk radio station, offering live game broadcasts, expert analysis, and passionate discussions on local and national sports. It\'s the go-to station for sports fans.',
+    synopsis: 'KFXD, "The Fan," is Idaho leading sports talk radio station, offering live game broadcasts, expert analysis, and passionate discussions on local and national sports. It is the go-to station for sports fans.',
     history: `
       <p><strong>Launch:</strong> KFXD began its journey in [Year] with a clear mission: to be the voice of sports in Idaho. It quickly gained a following among avid sports enthusiasts.</p>
       <p><strong>Building a Reputation:</strong> The station became known for its comprehensive coverage of high school, collegiate, and professional sports. Its live play-by-play broadcasts and insightful commentary set it apart.</p>
@@ -104,11 +93,11 @@ const stationData = [
     name: 'KGEM - 1140 AM',
     synopsis: 'KGEM is a heritage station in Idaho, known for its diverse programming that has evolved over decades. It has played various roles in the local media landscape, from music to talk, adapting to the changing needs of its audience.',
     history: `
-      <p><strong>Founding and Early Years:</strong> KGEM has a rich history dating back to [Year], making it one of Idaho's oldest stations. It initially broadcast [original format, e.g., popular music, local news].</p>
+      <p><strong>Founding and Early Years:</strong> KGEM has a rich history dating back to [Year], making it one of Idaho oldest stations. It initially broadcast [original format, e.g., popular music, local news].</p>
       <p><strong>Format Changes:</strong> Throughout its existence, KGEM has undergone several format changes, reflecting shifts in listener preferences and market demands. It has been a home for [mention various formats, e.g., country, easy listening, religious programming].</p>
       <p><strong>Resilience:</strong> Despite changes in the broadcasting landscape, KGEM has demonstrated remarkable resilience, continuing to serve the community in various capacities. Its long history is a testament to its adaptability.</p>
       <p><strong>Notable Moments:</strong> [Any significant historical events or broadcasts associated with KGEM]</p>
-      <p><strong>Enduring Presence:</strong> KGEM remains a part of Idaho's radio heritage, symbolizing the enduring power of local broadcasting and its ability to connect with generations of listeners.</p>
+      <p><strong>Enduring Presence:</strong> KGEM remains a part of Idaho radio heritage, symbolizing the enduring power of local broadcasting and its ability to connect with generations of listeners.</p>
     `
   },
   {
@@ -120,7 +109,7 @@ const stationData = [
       <p><strong>Transition to News/Talk:</strong> Similar to other heritage AM stations, KBOI transitioned to a news and talk format, capitalizing on its strong signal and established listener base to deliver timely information and engaging discussions.</p>
       <p><strong>Market Leader:</strong> KBOI has consistently been a market leader in news and talk, attracting a wide audience interested in current events, politics, and local issues. Its hosts are often influential figures in the community.</p>
       <p><strong>Key Features:</strong> [Examples of news segments, call-in shows, or syndicated programs]</p>
-      <p><strong>Influence and Reach:</strong> KBOI's influence extends across the Treasure Valley and beyond, making it a critical platform for public discourse and a trusted source of information for many Idahoans.</p>
+      <p><strong>Influence and Reach:</strong> KBOI influence extends across the Treasure Valley and beyond, making it a critical platform for public discourse and a trusted source of information for many Idahoans.</p>
     `
   }
 ];
@@ -149,8 +138,8 @@ const RadioPage = () => {
   return (
     <div className="radio-page-container">
       <div className="header-graphic">
-        <img src={radioConsoleDark} alt="Radio Console" className="header-image" />
-        <h1 className="header-title-overlay">Radio History</h1>
+        <h1 className="header-title">Idaho Radio History - an adventure in evolution!</h1>
+        <div className="radio-equipment-placeholder"></div>
       </div>
 
       <div className="station-cards-grid">
