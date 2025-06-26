@@ -1,224 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
-// Universal Media Player Component (same as in Player)
-const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [mediaType, setMediaType] = useState(null);
-  const playerRef = useRef(null);
-
-  useEffect(() => {
-    if (assignment?.media_url) {
-      detectMediaType(assignment.media_url);
-    }
-  }, [assignment]);
-
-  const detectMediaType = (url) => {
-    const extension = url.split('.').pop().toLowerCase();
-    
-    if (['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(extension)) {
-      setMediaType('video');
-    } else if (['mp3', 'wav', 'ogg', 'aac', 'm4a'].includes(extension)) {
-      setMediaType('audio');
-    } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
-      setMediaType('image');
-    } else if (['pdf', 'doc', 'docx', 'txt'].includes(extension)) {
-      setMediaType('document');
-    } else {
-      setMediaType('unknown');
-    }
-    setIsLoading(false);
-  };
-
-  const renderMediaContent = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center h-64 bg-gray-800 rounded">
-          <div className="text-green-400">Loading media...</div>
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="flex items-center justify-center h-64 bg-gray-800 rounded text-red-400">
-          Error loading media: {error}
-        </div>
-      );
-    }
-
-    switch (mediaType) {
-      case 'video':
-        return (
-          <video
-            ref={playerRef}
-            controls
-            className="w-full h-64 bg-black rounded"
-            onError={() => setError('Failed to load video')}
-          >
-            <source src={assignment.media_url} />
-            Your browser does not support the video tag.
-          </video>
-        );
-
-      case 'audio':
-        return (
-          <div className="bg-gray-800 rounded p-4">
-            <div className="flex items-center justify-center h-32 mb-4">
-              <div className="text-green-400 text-6xl">🎵</div>
-            </div>
-            <audio
-              ref={playerRef}
-              controls
-              className="w-full"
-              onError={() => setError('Failed to load audio')}
-            >
-              <source src={assignment.media_url} />
-              Your browser does not support the audio tag.
-            </audio>
-          </div>
-        );
-
-      case 'image':
-        return (
-          <div className="bg-gray-800 rounded p-2">
-            <img
-              src={assignment.media_url}
-              alt={assignment.title}
-              className="w-full h-64 object-contain rounded"
-              onError={() => setError('Failed to load image')}
-            />
-          </div>
-        );
-
-      case 'document':
-        return (
-          <div className="bg-gray-800 rounded p-6 h-64 flex flex-col items-center justify-center">
-            <div className="text-yellow-400 text-6xl mb-4">📄</div>
-            <div className="text-white text-center mb-4">
-              <div className="font-semibold">{assignment.title}</div>
-              <div className="text-sm text-gray-400">Document File</div>
-            </div>
-            <button
-              onClick={() => window.open(assignment.media_url, '_blank')}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors"
-            >
-              Open Document
-            </button>
-          </div>
-        );
-
-      default:
-        return (
-          <div className="bg-gray-800 rounded p-6 h-64 flex flex-col items-center justify-center">
-            <div className="text-gray-400 text-6xl mb-4">📎</div>
-            <div className="text-white text-center mb-4">
-              <div className="font-semibold">{assignment.title}</div>
-              <div className="text-sm text-gray-400">Unknown File Type</div>
-            </div>
-            <button
-              onClick={() => window.open(assignment.media_url, '_blank')}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors"
-            >
-              Download File
-            </button>
-          </div>
-        );
-    }
-  };
-
-  if (isMinimized) {
-    return (
-      <div className="fixed bottom-4 right-4 bg-gray-800 border border-gray-600 rounded-lg p-2 shadow-lg z-50">
-        <div className="flex items-center justify-between min-w-48">
-          <span className="text-white text-sm truncate">{assignment?.title || 'Media Player'}</span>
-          <div className="flex gap-1 ml-2">
-            <button
-              onClick={() => onMinimize(false)}
-              className="text-gray-400 hover:text-white p-1"
-              title="Restore"
-            >
-              ⬜
-            </button>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-red-400 p-1"
-              title="Close"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="fixed bottom-4 right-4 bg-gray-900 border border-gray-600 rounded-lg shadow-2xl z-40 w-[800px] max-h-[600px] overflow-hidden">
-      {/* Window Title Bar */}
-      <div className="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-600">
-        <div className="flex items-center gap-2">
-          <div className="text-green-400">▶</div>
-          <span className="text-white font-medium">Universal Player</span>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => onMinimize(true)}
-            className="text-gray-400 hover:text-white px-2 py-1 rounded"
-            title="Minimize"
-          >
-            −
-          </button>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-red-400 px-2 py-1 rounded"
-            title="Close"
-          >
-            ✕
-          </button>
-        </div>
-      </div>
-
-      {/* Content Area */}
-      <div className="flex h-96">
-        {/* Media Player Section */}
-        <div className="flex-1 p-4">
-          <div className="mb-2">
-            <h3 className="text-white font-semibold text-lg">{assignment?.title || 'No Title'}</h3>
-            <p className="text-gray-400 text-sm">Key: {assignment?.key_slot} | Type: {mediaType || 'Unknown'}</p>
-          </div>
-          {renderMediaContent()}
-        </div>
-
-        {/* Description Panel */}
-        <div className="w-80 bg-gray-800 border-l border-gray-600 p-4">
-          <h4 className="text-green-400 font-semibold mb-3">Media Description</h4>
-          <div className="text-gray-300 text-sm leading-relaxed max-h-80 overflow-y-auto">
-            {assignment?.description || 'No description available for this media file.'}
-          </div>
-          
-          {/* Additional Info */}
-          <div className="mt-4 pt-4 border-t border-gray-700">
-            <div className="text-xs text-gray-500 space-y-1">
-              <div><strong>Submitted by:</strong> {assignment?.submitted_by || 'Unknown'}</div>
-              <div><strong>Created:</strong> {assignment?.created_at ? new Date(assignment.created_at).toLocaleDateString() : 'Unknown'}</div>
-              <div><strong>File Type:</strong> {assignment?.media_type || 'Auto-detected'}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const VoxProManagement = () => {
   // State management
   const [connectionStatus, setConnectionStatus] = useState('connecting');
   const [statusMessage, setStatusMessage] = useState('Connecting to Supabase...');
   const [assignments, setAssignments] = useState([]);
-  const [activeWindows, setActiveWindows] = useState([]);
-  const [windowCounter, setWindowCounter] = useState(0);
+  const [mediaViewers, setMediaViewers] = useState([]);
+  const [playingKeys, setPlayingKeys] = useState(new Set());
   
   // Form state
   const [formData, setFormData] = useState({
@@ -231,15 +20,21 @@ const VoxProManagement = () => {
   
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadStatus, setUploadStatus] = useState('');
 
   // File input ref for direct access
   const fileInputRef = useRef(null);
+  
+  // Audio visualization refs
+  const audioContextRef = useRef(null);
+  const analyzerRef = useRef(null);
+  const canvasRef = useRef(null);
+  const animationRef = useRef(null);
 
   // Initialize Supabase connection
   useEffect(() => {
     const initializeConnection = async () => {
       try {
+        // Test Supabase connection
         const { data, error } = await supabase
           .from('assignments')
           .select('*')
@@ -252,19 +47,24 @@ const VoxProManagement = () => {
           return;
         }
 
+        // Connection successful
         setConnectionStatus('connected');
         setStatusMessage('Connected to Supabase');
+        
+        // Load current assignments
         loadAssignments();
-      } catch (err) {
-        console.error('Connection initialization error:', err);
-        setConnectionStatus('error');
-        setStatusMessage('Connection error occurred');
+
+      } catch (error) {
+        console.error('Connection initialization error:', error);
+        setConnectionStatus('disconnected');
+        setStatusMessage('Connection initialization failed');
       }
     };
 
     initializeConnection();
   }, []);
 
+  // Load assignments from Supabase
   const loadAssignments = async () => {
     try {
       const { data, error } = await supabase
@@ -278,115 +78,151 @@ const VoxProManagement = () => {
       }
 
       setAssignments(data || []);
-    } catch (err) {
-      console.error('Error in loadAssignments:', err);
+    } catch (error) {
+      console.error('Error loading assignments:', error);
     }
   };
 
-  const handleKeyClick = async (keySlot) => {
-    // Find assignment for this key
-    const assignment = assignments.find(a => a.key_slot === keySlot);
+  // Get assignment for a specific key
+  const getAssignmentForKey = (keySlot) => {
+    return assignments.find(assignment => assignment.key_slot === keySlot);
+  };
+
+  // Handle key click - open media viewer
+  const handleKeyClick = (keySlot) => {
+    const assignment = getAssignmentForKey(keySlot);
     
     if (!assignment) {
-      console.log(`No assignment found for key ${keySlot}`);
+      console.log(`No assignment for key ${keySlot}`);
       return;
     }
 
-    // Check if window is already open for this assignment
-    const existingWindow = activeWindows.find(w => w.assignment.id === assignment.id);
-    if (existingWindow) {
-      // If minimized, restore it
-      if (existingWindow.isMinimized) {
-        setActiveWindows(prev => 
-          prev.map(w => 
-            w.id === existingWindow.id 
-              ? { ...w, isMinimized: false }
-              : w
-          )
-        );
-      }
+    // Check if this key is already playing
+    if (playingKeys.has(keySlot)) {
+      // Stop playback
+      stopPlayback(keySlot);
       return;
     }
 
-    // Create new window
-    const newWindow = {
-      id: windowCounter,
+    // Start playback
+    startPlayback(keySlot, assignment);
+  };
+
+  // Start playback for a key
+  const startPlayback = (keySlot, assignment) => {
+    setPlayingKeys(prev => new Set([...prev, keySlot]));
+    
+    // Create new media viewer window
+    const newViewer = {
+      id: Date.now(),
+      keySlot,
       assignment,
-      isMinimized: false
+      isMinimized: false,
+      position: {
+        x: 20 + (mediaViewers.length * 30),
+        y: 20 + (mediaViewers.length * 30)
+      }
     };
 
-    setActiveWindows(prev => [...prev, newWindow]);
-    setWindowCounter(prev => prev + 1);
+    setMediaViewers(prev => [...prev, newViewer]);
   };
 
-  const closeWindow = (windowId) => {
-    setActiveWindows(prev => prev.filter(w => w.id !== windowId));
+  // Stop playback for a key
+  const stopPlayback = (keySlot) => {
+    setPlayingKeys(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(keySlot);
+      return newSet;
+    });
+
+    // Close the media viewer for this key
+    setMediaViewers(prev => prev.filter(viewer => viewer.keySlot !== keySlot));
   };
 
-  const minimizeWindow = (windowId, minimize) => {
-    setActiveWindows(prev => 
-      prev.map(w => 
-        w.id === windowId 
-          ? { ...w, isMinimized: minimize }
-          : w
-      )
-    );
+  // Close media viewer
+  const closeViewer = (viewerId) => {
+    const viewer = mediaViewers.find(v => v.id === viewerId);
+    if (viewer) {
+      stopPlayback(viewer.keySlot);
+    }
   };
 
-  const getKeyAssignment = (keySlot) => {
-    return assignments.find(a => a.key_slot === keySlot);
+  // Minimize/restore viewer
+  const toggleMinimize = (viewerId) => {
+    setMediaViewers(prev => prev.map(viewer => 
+      viewer.id === viewerId 
+        ? { ...viewer, isMinimized: !viewer.isMinimized }
+        : viewer
+    ));
   };
 
+  // Trigger file input
   const triggerFileInput = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
 
+  // Handle file selection - ALLOW ALL FILE TYPES
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
       setFormData(prev => ({ ...prev, mediaFile: file }));
-      setUploadStatus(`Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
     }
   };
 
+  // Handle form input changes
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleUpload = async () => {
+  // Handle key selection
+  const handleKeySelection = (keySlot) => {
+    setFormData(prev => ({ ...prev, keySlot }));
+  };
+
+  // Upload and assign media
+  const uploadAndAssignMedia = async () => {
     if (!formData.mediaFile || !formData.title || !formData.keySlot) {
-      setUploadStatus('Please fill in all required fields and select a file');
+      alert('Please fill in all required fields and select a file');
       return;
     }
 
     setIsUploading(true);
     setUploadProgress(0);
-    setUploadStatus('Uploading file...');
 
     try {
       // Upload file to Supabase Storage
       const fileExt = formData.mediaFile.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `media/${fileName}`;
+
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('media-files')
-        .upload(fileName, formData.mediaFile);
+        .upload(filePath, formData.mediaFile);
 
       if (uploadError) {
-        throw uploadError;
+        console.error('Upload error:', uploadError);
+        alert('Failed to upload file');
+        return;
       }
 
       setUploadProgress(50);
-      setUploadStatus('Creating assignment...');
 
       // Get public URL
       const { data: urlData } = supabase.storage
         .from('media-files')
-        .getPublicUrl(fileName);
+        .getPublicUrl(filePath);
 
-      // Create assignment record
+      setUploadProgress(75);
+
+      // Delete existing assignment for this key
+      await supabase
+        .from('assignments')
+        .delete()
+        .eq('key_slot', formData.keySlot);
+
+      // Create new assignment record
       const { data: assignmentData, error: assignmentError } = await supabase
         .from('assignments')
         .insert([
@@ -398,34 +234,32 @@ const VoxProManagement = () => {
             media_type: formData.mediaFile.type,
             key_slot: formData.keySlot
           }
-        ])
-        .select();
+        ]);
 
       if (assignmentError) {
-        throw assignmentError;
+        console.error('Assignment error:', assignmentError);
+        alert('Failed to create assignment');
+        return;
       }
 
       setUploadProgress(100);
-      setUploadStatus('Upload completed successfully!');
       
-      // Clear form
+      // Clear form and reload assignments
       clearForm();
-      
-      // Reload assignments
       loadAssignments();
+      
+      alert('Media uploaded and assigned successfully!');
 
     } catch (error) {
-      console.error('Upload error:', error);
-      setUploadStatus(`Upload failed: ${error.message}`);
+      console.error('Upload process error:', error);
+      alert('Upload failed');
     } finally {
       setIsUploading(false);
-      setTimeout(() => {
-        setUploadProgress(0);
-        setUploadStatus('');
-      }, 3000);
+      setUploadProgress(0);
     }
   };
 
+  // Clear form
   const clearForm = () => {
     setFormData({
       title: '',
@@ -434,14 +268,15 @@ const VoxProManagement = () => {
       keySlot: '',
       mediaFile: null
     });
+    
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    setUploadStatus('');
   };
 
-  const deleteAssignment = async (assignmentId) => {
-    if (!confirm('Are you sure you want to delete this assignment?')) {
+  // Delete assignment
+  const deleteAssignment = async (keySlot) => {
+    if (!confirm(`Are you sure you want to delete the assignment for Key ${keySlot}?`)) {
       return;
     }
 
@@ -449,305 +284,565 @@ const VoxProManagement = () => {
       const { error } = await supabase
         .from('assignments')
         .delete()
-        .eq('id', assignmentId);
+        .eq('key_slot', keySlot);
 
       if (error) {
-        throw error;
+        console.error('Delete error:', error);
+        alert('Failed to delete assignment');
+        return;
+      }
+
+      // Stop playback if this key is playing
+      if (playingKeys.has(keySlot)) {
+        stopPlayback(keySlot);
       }
 
       loadAssignments();
-      setUploadStatus('Assignment deleted successfully');
+      alert('Assignment deleted successfully');
+
     } catch (error) {
-      console.error('Delete error:', error);
-      setUploadStatus(`Delete failed: ${error.message}`);
+      console.error('Delete process error:', error);
+      alert('Delete failed');
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-green-400 mb-2">VoxPro Management Console</h1>
-          <p className="text-gray-400">Professional Broadcasting Control & Assignment System</p>
+  // Audio visualization setup
+  const setupAudioVisualization = (audioElement) => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      analyzerRef.current = audioContextRef.current.createAnalyser();
+      analyzerRef.current.fftSize = 256;
+    }
+
+    const source = audioContextRef.current.createMediaElementSource(audioElement);
+    source.connect(analyzerRef.current);
+    analyzerRef.current.connect(audioContextRef.current.destination);
+
+    startVisualization();
+  };
+
+  // Start audio visualization animation
+  const startVisualization = () => {
+    if (!canvasRef.current || !analyzerRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const bufferLength = analyzerRef.current.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    const draw = () => {
+      analyzerRef.current.getByteFrequencyData(dataArray);
+
+      ctx.fillStyle = 'rgb(20, 20, 30)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const barWidth = (canvas.width / bufferLength) * 2.5;
+      let barHeight;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        barHeight = (dataArray[i] / 255) * canvas.height * 0.8;
+
+        const r = barHeight + 25 * (i / bufferLength);
+        const g = 250 * (i / bufferLength);
+        const b = 50;
+
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+        x += barWidth + 1;
+      }
+
+      animationRef.current = requestAnimationFrame(draw);
+    };
+
+    draw();
+  };
+
+  // Stop visualization
+  const stopVisualization = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+  };
+
+  // Media content renderer
+  const renderMediaContent = (assignment) => {
+    const { media_url, media_type, title } = assignment;
+
+    if (media_type?.startsWith('video/')) {
+      return (
+        <video 
+          controls 
+          className="w-full h-48 bg-black rounded"
+        >
+          <source src={media_url} type={media_type} />
+          Your browser does not support the video tag.
+        </video>
+      );
+    }
+
+    if (media_type?.startsWith('audio/')) {
+      return (
+        <div className="w-full">
+          <audio 
+            controls 
+            className="w-full mb-2"
+            onPlay={(e) => setupAudioVisualization(e.target)}
+            onPause={stopVisualization}
+            onEnded={stopVisualization}
+          >
+            <source src={media_url} type={media_type} />
+            Your browser does not support the audio tag.
+          </audio>
+          <canvas 
+            ref={canvasRef}
+            width="300" 
+            height="100" 
+            className="w-full h-20 bg-gray-900 rounded border"
+          />
         </div>
+      );
+    }
 
-        {/* Main Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Left Column - VoxPro Control Panel */}
-          <div className="lg:col-span-1">
-            <div className="bg-gradient-to-br from-gray-700 to-gray-900 p-6 rounded-xl border-2 border-gray-600 shadow-2xl">
-              {/* VoxPro Header */}
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-green-400 mb-2">VoxPro</h2>
-                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
-                  connectionStatus === 'connected' ? 'bg-green-600' : 'bg-red-600'
-                }`}>
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                  <span className="text-white font-semibold">{statusMessage}</span>
-                </div>
-              </div>
+    if (media_type?.startsWith('image/')) {
+      return (
+        <img 
+          src={media_url} 
+          alt={title}
+          className="w-full h-48 object-contain bg-black rounded"
+        />
+      );
+    }
 
-              {/* START Keys */}
-              <div className="mb-4">
-                <div className="grid grid-cols-5 gap-2 mb-4">
-                  {[1, 2, 3, 4, 5].map((key) => {
-                    const assignment = getKeyAssignment(key.toString());
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => handleKeyClick(key.toString())}
-                        onMouseEnter={() => {
-                          if (assignment) {
-                            setStatusMessage(`Key ${key}: ${assignment.title}`);
-                          }
-                        }}
-                        onMouseLeave={() => {
-                          setStatusMessage(connectionStatus === 'connected' ? 'Connected to Supabase' : statusMessage);
-                        }}
-                        className={`
-                          w-14 h-14 rounded-lg font-bold text-white text-lg
-                          transition-all duration-200 transform hover:scale-105
-                          ${assignment 
-                            ? 'bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 shadow-lg' 
-                            : 'bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700'
-                          }
-                          border-2 border-gray-500 shadow-md
-                        `}
-                        title={assignment ? assignment.title : `Key ${key} - No Assignment`}
-                      >
-                        {key}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+    // Documents and other files
+    return (
+      <div className="w-full h-48 bg-gray-800 rounded flex flex-col items-center justify-center">
+        <div className="text-4xl mb-2">📄</div>
+        <div className="text-sm text-gray-300 text-center">
+          <div className="font-medium">{title}</div>
+          <div className="text-xs mt-1">Click to open document</div>
+        </div>
+        <a 
+          href={media_url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="mt-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+        >
+          Open Document
+        </a>
+      </div>
+    );
+  };
 
-              {/* Control Buttons */}
-              <div className="grid grid-cols-4 gap-2 mb-4">
-                {/* Row 1 */}
-                <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">A</button>
-                <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">B</button>
-                <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">C</button>
-                <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">D</button>
-                
-                {/* Row 2 */}
-                <button className="w-12 h-10 bg-gradient-to-b from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">DUP</button>
-                <button className="w-12 h-10 bg-gradient-to-b from-yellow-600 to-yellow-800 hover:from-yellow-500 hover:to-yellow-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">CUE</button>
-                <button className="w-12 h-10 bg-gradient-to-b from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">REC</button>
-                <div className="w-12 h-10 bg-gradient-to-b from-gray-700 to-gray-900 rounded border-2 border-gray-500 flex items-center justify-center">
-                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status Display */}
-              <div className="text-center">
-                <div className="bg-gray-800 px-3 py-2 rounded border border-gray-600">
-                  <div className="text-green-400 text-xs font-medium">
-                    Windows: {activeWindows.filter(w => !w.isMinimized).length} | Min: {activeWindows.filter(w => w.isMinimized).length}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Center Column - Management Interface */}
-          <div className="lg:col-span-2">
-            <div className="bg-gray-800 rounded-xl p-6 border border-gray-600">
-              <h3 className="text-green-400 font-semibold text-xl mb-6">Key Assignment Management</h3>
-              
-              {/* Current Assignments */}
-              <div className="mb-8">
-                <h4 className="text-white font-medium mb-4">Current Key Assignments</h4>
-                <div className="bg-gray-700 rounded-lg p-4">
-                  {[1, 2, 3, 4, 5].map((key) => {
-                    const assignment = getKeyAssignment(key.toString());
-                    return (
-                      <div key={key} className="flex items-center justify-between py-2 border-b border-gray-600 last:border-b-0">
-                        <div className="flex items-center gap-4">
-                          <span className="text-green-400 font-bold w-12">Key {key}</span>
-                          <div className="flex-1">
-                            {assignment ? (
-                              <div>
-                                <div className="text-white font-medium">{assignment.title}</div>
-                                <div className="text-gray-400 text-sm">{assignment.media_type}</div>
-                              </div>
-                            ) : (
-                              <div className="text-gray-500 italic">No assignment</div>
-                            )}
-                          </div>
-                        </div>
-                        {assignment && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleKeyClick(key.toString())}
-                              className="text-green-400 hover:text-green-300 px-2 py-1 text-sm"
-                            >
-                              Play
-                            </button>
-                            <button
-                              onClick={() => deleteAssignment(assignment.id)}
-                              className="text-red-400 hover:text-red-300 px-2 py-1 text-sm"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Upload & Assignment Form */}
-              <div className="bg-gray-700 rounded-lg p-6">
-                <h4 className="text-green-400 font-medium mb-4">Upload & Assign Media</h4>
-                
-                {/* File Upload */}
-                <div className="mb-4">
-                  <label className="block text-white font-medium mb-2">Media File</label>
-                  <div
-                    onClick={triggerFileInput}
-                    className="border-2 border-dashed border-gray-500 rounded-lg p-6 text-center cursor-pointer hover:border-green-400 transition-colors"
-                  >
-                    <div className="text-4xl mb-2">📁</div>
-                    <div className="text-white mb-1">Click to select file or drag & drop here</div>
-                    <div className="text-gray-400 text-sm">Supports video, audio, images, and documents</div>
-                  </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    accept="video/*,audio/*,image/*,.pdf,.doc,.docx,.txt"
-                  />
-                  {formData.mediaFile && (
-                    <div className="mt-2 text-green-400 text-sm">
-                      Selected: {formData.mediaFile.name}
-                    </div>
-                  )}
-                </div>
-
-                {/* Form Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-white font-medium mb-2">Title *</label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => handleInputChange('title', e.target.value)}
-                      className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-green-400 focus:outline-none"
-                      placeholder="Enter media title"
-                      maxLength={100}
-                    />
-                    <div className="text-right text-gray-400 text-xs mt-1">
-                      {formData.title.length}/100
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-white font-medium mb-2">Submitted By</label>
-                    <input
-                      type="text"
-                      value={formData.submittedBy}
-                      onChange={(e) => handleInputChange('submittedBy', e.target.value)}
-                      className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-green-400 focus:outline-none"
-                      placeholder="Your name"
-                    />
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-white font-medium mb-2">Description (300 words max)</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-green-400 focus:outline-none h-24 resize-vertical"
-                    placeholder="Enter detailed description of the media content"
-                    maxLength={2000}
-                  />
-                  <div className="text-right text-gray-400 text-xs mt-1">
-                    {formData.description.length}/2000 characters
-                  </div>
-                </div>
-
-                {/* Key Selection */}
-                <div className="mb-6">
-                  <label className="block text-white font-medium mb-2">Assign to Key *</label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((key) => (
-                      <button
-                        key={key}
-                        onClick={() => handleInputChange('keySlot', key.toString())}
-                        className={`
-                          w-12 h-12 rounded font-bold text-white transition-all
-                          ${formData.keySlot === key.toString()
-                            ? 'bg-green-600 border-2 border-green-400'
-                            : 'bg-gray-600 hover:bg-gray-500 border-2 border-gray-500'
-                          }
-                        `}
-                      >
-                        {key}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-4">
-                  <button
-                    onClick={handleUpload}
-                    disabled={isUploading || !formData.mediaFile || !formData.title || !formData.keySlot}
-                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded transition-colors"
-                  >
-                    {isUploading ? 'Uploading...' : 'Upload & Assign Media'}
-                  </button>
-                  <button
-                    onClick={clearForm}
-                    disabled={isUploading}
-                    className="bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 text-white font-bold py-3 px-6 rounded transition-colors"
-                  >
-                    Clear Form
-                  </button>
-                </div>
-
-                {/* Upload Progress */}
-                {isUploading && (
-                  <div className="mt-4">
-                    <div className="bg-gray-600 rounded-full h-2">
-                      <div
-                        className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Status Message */}
-                {uploadStatus && (
-                  <div className="mt-4 p-3 rounded bg-gray-600 text-white text-sm">
-                    {uploadStatus}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+  return (
+    <div className="min-h-screen bg-gray-100 p-4">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Admin Portal</h1>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">VoxPro Management Tool</h2>
+          <p className="text-gray-600">Administrative access for media upload, assignment, and system management.</p>
         </div>
       </div>
 
-      {/* Floating Windows */}
-      {activeWindows.map((window) => (
-        <UniversalMediaPlayer
-          key={window.id}
-          assignment={window.assignment}
-          onClose={() => closeWindow(window.id)}
-          onMinimize={(minimize) => minimizeWindow(window.id, minimize)}
-          isMinimized={window.isMinimized}
-          windowId={window.id}
-        />
+      {/* Main Interface - Three Column Layout */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Column 1: VoxPro Control Panel - Compact */}
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-4">
+          <div className="text-center mb-3">
+            <h2 className="text-xl font-bold text-green-400 mb-1">VoxPro Management Console</h2>
+            <p className="text-gray-400 text-xs">Professional Broadcasting Control & Assignment System</p>
+          </div>
+
+          {/* Control Panel - Compact */}
+          <div className="bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg p-3">
+            <div className="text-center mb-3">
+              <div className="text-lg font-bold text-green-400">VoxPro</div>
+              <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                connectionStatus === 'connected' 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-red-600 text-white'
+              }`}>
+                <div className={`w-2 h-2 rounded-full mr-2 ${
+                  connectionStatus === 'connected' ? 'bg-green-300' : 'bg-red-300'
+                } animate-pulse`}></div>
+                {statusMessage}
+              </div>
+            </div>
+
+            {/* START Keys - Compact */}
+            <div className="grid grid-cols-5 gap-1 mb-2">
+              {[1, 2, 3, 4, 5].map((keyNum) => {
+                const assignment = getAssignmentForKey(keyNum.toString());
+                const isPlaying = playingKeys.has(keyNum.toString());
+                
+                return (
+                  <button
+                    key={keyNum}
+                    onClick={() => handleKeyClick(keyNum.toString())}
+                    className={`h-10 rounded font-bold text-xs transition-all duration-200 transform hover:scale-105 ${
+                      isPlaying
+                        ? 'bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg shadow-green-500/30'
+                        : assignment
+                        ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-500/30'
+                        : 'bg-gradient-to-br from-gray-500 to-gray-600 text-gray-300'
+                    }`}
+                    title={assignment ? assignment.title : `Key ${keyNum} - No assignment`}
+                  >
+                    {isPlaying ? 'STOP' : keyNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Control Buttons - Compact */}
+            <div className="grid grid-cols-4 gap-1 mb-2">
+              {['A', 'B', 'C', 'D'].map((letter) => (
+                <button
+                  key={letter}
+                  className="h-8 bg-gradient-to-br from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-bold text-xs rounded transition-all duration-200 transform hover:scale-105 shadow-lg shadow-yellow-500/30"
+                >
+                  {letter}
+                </button>
+              ))}
+            </div>
+
+            {/* Function Buttons - Compact */}
+            <div className="grid grid-cols-3 gap-1">
+              <button className="h-8 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-bold text-xs rounded transition-all duration-200 transform hover:scale-105 shadow-lg shadow-blue-500/30">
+                DUP
+              </button>
+              <button className="h-8 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-bold text-xs rounded transition-all duration-200 transform hover:scale-105 shadow-lg shadow-orange-500/30">
+                CUE
+              </button>
+              <button className="h-8 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 text-white font-bold text-xs rounded transition-all duration-200 transform hover:scale-105 shadow-lg shadow-red-500/30">
+                REC
+              </button>
+            </div>
+
+            {/* Status Display */}
+            <div className="mt-2 text-center">
+              <div className="text-xs text-gray-400">
+                Windows: {mediaViewers.filter(v => !v.isMinimized).length} | Min: {mediaViewers.filter(v => v.isMinimized).length}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Column 2: Key Assignment Management */}
+        <div className="bg-white rounded-xl shadow-lg p-4">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">Key Assignment Management</h3>
+          
+          {/* Current Assignments */}
+          <div className="mb-6">
+            <h4 className="text-md font-semibold text-gray-700 mb-3">Current Key Assignments</h4>
+            <div className="space-y-2">
+              {[1, 2, 3, 4, 5].map((keyNum) => {
+                const assignment = getAssignmentForKey(keyNum.toString());
+                return (
+                  <div key={keyNum} className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded font-bold text-sm ${
+                          playingKeys.has(keyNum.toString()) 
+                            ? 'bg-green-500 text-white' 
+                            : assignment 
+                            ? 'bg-red-500 text-white' 
+                            : 'bg-gray-400 text-white'
+                        }`}>
+                          Key {keyNum}
+                        </span>
+                        <div className="ml-3">
+                          <div className="font-medium text-sm text-gray-800">
+                            {assignment ? assignment.title : 'No assignment'}
+                          </div>
+                          {assignment && (
+                            <div className="text-xs text-gray-500">
+                              {assignment.media_type} • {assignment.submitted_by}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {assignment && (
+                        <div className="flex space-x-1">
+                          <button
+                            onClick={() => handleKeyClick(keyNum.toString())}
+                            className="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded transition-colors"
+                          >
+                            {playingKeys.has(keyNum.toString()) ? 'Stop' : 'Play'}
+                          </button>
+                          <button
+                            onClick={() => deleteAssignment(keyNum.toString())}
+                            className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Upload & Assign Media */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="text-md font-semibold text-gray-700 mb-3">Upload & Assign Media</h4>
+            
+            {/* File Upload - ALLOW ALL FILE TYPES */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Media File</label>
+              <div 
+                onClick={triggerFileInput}
+                className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 transition-colors"
+              >
+                <div className="text-2xl mb-2">📁</div>
+                <div className="text-sm text-gray-600">
+                  {formData.mediaFile ? formData.mediaFile.name : 'Click to select file or drag & drop here'}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  All file types supported - no restrictions
+                </div>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileSelect}
+                className="hidden"
+                accept="*/*"
+              />
+            </div>
+
+            {/* Form Fields */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  placeholder="Enter media title"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  maxLength={100}
+                />
+                <div className="text-xs text-gray-500 mt-1">{formData.title.length}/100</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Submitted By</label>
+                <input
+                  type="text"
+                  value={formData.submittedBy}
+                  onChange={(e) => handleInputChange('submittedBy', e.target.value)}
+                  placeholder="Your name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description (300 words max)</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                placeholder="Enter detailed description of the media content"
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                maxLength={2000}
+              />
+              <div className="text-xs text-gray-500 mt-1">{formData.description.length}/2000 characters</div>
+            </div>
+
+            {/* Key Selection */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Assign to Key *</label>
+              <div className="grid grid-cols-5 gap-2">
+                {[1, 2, 3, 4, 5].map((keyNum) => (
+                  <button
+                    key={keyNum}
+                    onClick={() => handleKeySelection(keyNum.toString())}
+                    className={`h-10 rounded font-bold text-sm transition-all duration-200 ${
+                      formData.keySlot === keyNum.toString()
+                        ? 'bg-blue-500 text-white shadow-lg'
+                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                    }`}
+                  >
+                    {keyNum}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Upload Progress */}
+            {isUploading && (
+              <div className="mb-4">
+                <div className="bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  ></div>
+                </div>
+                <div className="text-xs text-gray-600 mt-1">Uploading... {uploadProgress}%</div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              <button
+                onClick={uploadAndAssignMedia}
+                disabled={isUploading || !formData.mediaFile || !formData.title || !formData.keySlot}
+                className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded transition-colors text-sm"
+              >
+                {isUploading ? 'Uploading...' : 'Upload & Assign Media'}
+              </button>
+              <button
+                onClick={clearForm}
+                disabled={isUploading}
+                className="bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 text-white font-bold py-2 px-4 rounded transition-colors text-sm"
+              >
+                Clear Form
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Column 3: Universal Player (when active) */}
+        <div className="bg-gray-800 rounded-xl shadow-lg p-4">
+          <h3 className="text-lg font-bold text-green-400 mb-4">Universal Player</h3>
+          {mediaViewers.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              <div className="text-4xl mb-2">🎵</div>
+              <div className="text-sm">Click a key to open media player</div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {mediaViewers.slice(0, 1).map((viewer) => (
+                <div key={viewer.id} className="bg-gray-700 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-green-400 font-medium text-sm">Key {viewer.keySlot} - {viewer.assignment.title}</div>
+                    <button
+                      onClick={() => closeViewer(viewer.id)}
+                      className="w-6 h-6 bg-red-500 hover:bg-red-400 rounded text-white text-xs font-bold transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  
+                  <div className="mb-3">
+                    {renderMediaContent(viewer.assignment)}
+                  </div>
+
+                  {/* Media Information */}
+                  <div className="bg-gray-600 rounded p-2">
+                    <div className="text-xs space-y-1">
+                      <div><span className="text-gray-400">Type:</span> <span className="text-white">{viewer.assignment.media_type || 'Auto-detected'}</span></div>
+                      <div><span className="text-gray-400">Submitted by:</span> <span className="text-white">{viewer.assignment.submitted_by}</span></div>
+                      <div><span className="text-gray-400">Created:</span> <span className="text-white">{new Date(viewer.assignment.created_at).toLocaleDateString()}</span></div>
+                    </div>
+                    
+                    {viewer.assignment.description && (
+                      <div className="mt-2">
+                        <span className="text-gray-400 text-xs">Description:</span>
+                        <div className="text-white text-xs mt-1 max-h-16 overflow-y-auto">
+                          {viewer.assignment.description}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Floating Media Viewer Windows (for additional windows) */}
+      {mediaViewers.slice(1).map((viewer) => (
+        <div
+          key={viewer.id}
+          className={`fixed bg-gray-800 rounded-lg shadow-2xl border border-gray-600 transition-all duration-300 ${
+            viewer.isMinimized ? 'w-64 h-12' : 'w-96 h-auto'
+          }`}
+          style={{
+            left: `${viewer.position.x}px`,
+            top: `${viewer.position.y}px`,
+            zIndex: 1000 + viewer.id
+          }}
+        >
+          {/* Window Header */}
+          <div className="flex items-center justify-between bg-gradient-to-r from-green-600 to-green-700 text-white p-2 rounded-t-lg">
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-green-300 rounded-full mr-2 animate-pulse"></div>
+              <span className="text-sm font-medium">Universal Player</span>
+            </div>
+            <div className="flex space-x-1">
+              <button
+                onClick={() => toggleMinimize(viewer.id)}
+                className="w-6 h-6 bg-yellow-500 hover:bg-yellow-400 rounded text-black text-xs font-bold transition-colors"
+              >
+                {viewer.isMinimized ? '□' : '−'}
+              </button>
+              <button
+                onClick={() => closeViewer(viewer.id)}
+                className="w-6 h-6 bg-red-500 hover:bg-red-400 rounded text-white text-xs font-bold transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {/* Window Content */}
+          {!viewer.isMinimized && (
+            <div className="p-3">
+              <div className="grid grid-cols-3 gap-3">
+                {/* Media Content */}
+                <div className="col-span-2">
+                  {renderMediaContent(viewer.assignment)}
+                </div>
+
+                {/* Media Information */}
+                <div className="bg-gray-700 rounded p-2">
+                  <h4 className="text-green-400 font-medium text-sm mb-2">Media Description</h4>
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <span className="text-gray-400">Title:</span>
+                      <div className="text-white font-medium">{viewer.assignment.title}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Type:</span>
+                      <div className="text-white">{viewer.assignment.media_type || 'Auto-detected'}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Submitted by:</span>
+                      <div className="text-white">{viewer.assignment.submitted_by}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Created:</span>
+                      <div className="text-white">{new Date(viewer.assignment.created_at).toLocaleDateString()}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Key:</span>
+                      <div className="text-white">Key {viewer.assignment.key_slot}</div>
+                    </div>
+                  </div>
+                  
+                  {/* Description */}
+                  {viewer.assignment.description && (
+                    <div className="mt-3">
+                      <span className="text-gray-400 text-xs">Description:</span>
+                      <div className="text-white text-xs mt-1 max-h-20 overflow-y-auto">
+                        {viewer.assignment.description}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       ))}
     </div>
   );
