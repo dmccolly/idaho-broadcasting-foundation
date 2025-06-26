@@ -4,6 +4,9 @@ import VoxProPlayer from './components/VoxProPlayer.jsx'
 import VoxProManagement from './components/VoxProManagement.jsx'
 import NewsSocialFeed from './components/NewsSocialFeed.jsx'
 import RadioPage from './components/RadioPage.jsx'
+import EventsPage from './components/EventsPage.jsx'
+import HomeEventBanner from './components/HomeEventBanner.jsx'
+import { eventUtils } from './data/eventsData.js'
 import './App.css'
 
 function App() {
@@ -21,11 +24,20 @@ function App() {
     'Admin'
   ]
 
+  const handleEventClick = () => {
+    setActiveTab('Events')
+  }
+
   const renderContent = () => {
     switch(activeTab) {
       case 'HOME':
         return (
           <div className="space-y-8">
+            {/* Event Banner - Shows only when there's a current event */}
+            {eventUtils.shouldShowHomeBanner() && (
+              <HomeEventBanner onEventClick={handleEventClick} />
+            )}
+
             <div className="text-center">
               <h1 className="text-4xl font-bold text-gray-800 mb-4">
                 History of Idaho Broadcasting Foundation
@@ -117,28 +129,7 @@ function App() {
         )
       
       case 'Events':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-gray-800">Foundation Events</h2>
-            <div className="bg-white p-6 rounded-lg shadow-md border">
-              <h3 className="text-xl font-semibold mb-4">Upcoming Events</h3>
-              <p className="text-gray-600 mb-4">
-                Join us for events celebrating Idaho's broadcasting heritage and connecting 
-                industry professionals past and present.
-              </p>
-              <div className="space-y-4">
-                <div className="border-l-4 border-blue-500 pl-4">
-                  <h4 className="font-semibold">Annual Broadcasting Heritage Dinner</h4>
-                  <p className="text-gray-600">Celebrating Idaho broadcasting pioneers</p>
-                </div>
-                <div className="border-l-4 border-green-500 pl-4">
-                  <h4 className="font-semibold">Vintage Equipment Exhibition</h4>
-                  <p className="text-gray-600">Showcasing historical broadcasting equipment</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
+        return <EventsPage />
       
       case 'The Back Corner':
         return (
@@ -467,4 +458,3 @@ function App() {
 }
 
 export default App
-
