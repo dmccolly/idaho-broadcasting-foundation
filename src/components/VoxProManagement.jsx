@@ -593,27 +593,23 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   );
 };
 
-// Main VoxPro Management Component
+// Professional VoxPro Management System - MATCHING ORIGINAL DESIGN
 const VoxProManagement = () => {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [error, setError] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState('');
   const [openWindows, setOpenWindows] = useState([]);
-  
-  // Key binding states
-  const [bindingMode, setBindingMode] = useState(false);
-  const [pendingAssignment, setPendingAssignment] = useState(null);
-  const [boundKeys, setBoundKeys] = useState({});
+  const [selectedKeySlot, setSelectedKeySlot] = useState(null);
+  const [mediaTitle, setMediaTitle] = useState('');
+  const [mediaDescription, setMediaDescription] = useState('');
   
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     loadAssignments();
-    loadKeyBindings();
   }, []);
 
   // Load assignments from Supabase
@@ -634,97 +630,82 @@ const VoxProManagement = () => {
     }
   };
 
-  // Load key bindings from localStorage
-  const loadKeyBindings = () => {
-    try {
-      const saved = localStorage.getItem('voxpro-key-bindings');
-      if (saved) {
-        setBoundKeys(JSON.parse(saved));
-      }
-    } catch (error) {
-      console.error('Error loading key bindings:', error);
-    }
-  };
-
-  // Save key bindings to localStorage
-  const saveKeyBindings = (newBindings) => {
-    try {
-      localStorage.setItem('voxpro-key-bindings', JSON.stringify(newBindings));
-      setBoundKeys(newBindings);
-    } catch (error) {
-      console.error('Error saving key bindings:', error);
-    }
-  };
-
-  // Handle file upload
-  const handleFileUpload = async (event) => {
+  // Handle file upload and assignment
+  const handleFileSelect = async (event) => {
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file || !selectedKeySlot) return;
 
     setIsUploading(true);
     setUploadProgress(0);
-    setUploadStatus('Preparing upload...');
+    setUploadStatus('Uploading...');
 
     try {
-      // Generate unique filename
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
       
-      setUploadProgress(20);
-      setUploadStatus('Uploading to storage...');
+      setUploadProgress(30);
 
-      // Upload to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('media-files')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(fileName, file);
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
-      setUploadProgress(85);
-      setUploadStatus('Saving to database...');
+      setUploadProgress(70);
 
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from('media-files')
         .getPublicUrl(fileName);
 
-      const publicUrl = urlData.publicUrl;
+      // Check if assignment already exists for this key slot
+      const existingAssignment = assignments.find(a => a.key_slot === selectedKeySlot);
+      
+      if (existingAssignment) {
+        // Update existing assignment
+        const { error: updateError } = await supabase
+          .from('assignments')
+          .update({
+            title: mediaTitle || file.name,
+            description: mediaDescription || `Updated ${file.type || 'file'}`,
+            media_url: urlData.publicUrl,
+            media_type: file.type,
+            updated_at: new Date().toISOString()
+          })
+          .eq('key_slot', selectedKeySlot);
 
-      // Save assignment to database
-      const { data: assignmentData, error: dbError } = await supabase
-        .from('assignments')
-        .insert([
-          {
-            title: file.name,
-            description: `Uploaded ${file.type || 'file'} - ${(file.size / 1024 / 1024).toFixed(2)}MB`,
-            media_url: publicUrl,
+        if (updateError) throw updateError;
+      } else {
+        // Create new assignment
+        const { error: insertError } = await supabase
+          .from('assignments')
+          .insert([{
+            key_slot: selectedKeySlot,
+            title: mediaTitle || file.name,
+            description: mediaDescription || `New ${file.type || 'file'}`,
+            media_url: urlData.publicUrl,
+            media_type: file.type,
+            submitted_by: 'VoxPro Manager',
             created_at: new Date().toISOString()
-          }
-        ])
-        .select()
-        .single();
+          }]);
 
-      if (dbError) {
-        throw dbError;
+        if (insertError) throw insertError;
       }
 
       setUploadProgress(100);
-      setUploadStatus('Upload complete!');
-
-      // Refresh assignments list
+      setUploadStatus('Complete!');
+      
+      // Reset form
+      setSelectedKeySlot(null);
+      setMediaTitle('');
+      setMediaDescription('');
+      
       await loadAssignments();
 
-      // Reset upload state
       setTimeout(() => {
         setIsUploading(false);
         setUploadProgress(0);
         setUploadStatus('');
-      }, 1500);
+      }, 1000);
 
     } catch (error) {
       console.error('Upload error:', error);
@@ -734,38 +715,14 @@ const VoxProManagement = () => {
       setUploadStatus('');
     }
 
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  // Delete assignment
-  const deleteAssignment = async (assignmentId) => {
-    if (!confirm('Are you sure you want to delete this assignment?')) return;
-
-    try {
-      const { error } = await supabase
-        .from('assignments')
-        .delete()
-        .eq('id', assignmentId);
-
-      if (error) throw error;
-
-      // Remove from key bindings if bound
-      const newBindings = { ...boundKeys };
-      Object.keys(newBindings).forEach(key => {
-        if (newBindings[key].id === assignmentId) {
-          delete newBindings[key];
-        }
-      });
-      saveKeyBindings(newBindings);
-
-      await loadAssignments();
-    } catch (error) {
-      console.error('Error deleting assignment:', error);
-      setError('Failed to delete assignment');
-    }
+  // Get assignment for key slot
+  const getKeyAssignment = (keySlot) => {
+    return assignments.find(a => a.key_slot === keySlot.toString());
   };
 
   // Open assignment window
@@ -791,345 +748,70 @@ const VoxProManagement = () => {
     ));
   };
 
-  // Key binding functions
-  const startKeyBinding = (assignment) => {
-    setBindingMode(true);
-    setPendingAssignment(assignment);
-    setError('Press any key to bind to this assignment...');
+  // Clear form
+  const clearForm = () => {
+    setSelectedKeySlot(null);
+    setMediaTitle('');
+    setMediaDescription('');
   };
-
-  const handleKeyBinding = (event) => {
-    if (!bindingMode || !pendingAssignment) return;
-
-    event.preventDefault();
-    const key = event.key.toLowerCase();
-    
-    // Don't bind modifier keys alone
-    if (['shift', 'ctrl', 'alt', 'meta', 'control'].includes(key)) return;
-
-    const newBindings = {
-      ...boundKeys,
-      [key]: {
-        id: pendingAssignment.id,
-        title: pendingAssignment.title,
-        media_url: pendingAssignment.media_url
-      }
-    };
-
-    saveKeyBindings(newBindings);
-    setBindingMode(false);
-    setPendingAssignment(null);
-    setError(`Key "${key.toUpperCase()}" bound to "${pendingAssignment.title}"`);
-    
-    setTimeout(() => setError(null), 2000);
-  };
-
-  const handleKeyPress = (event) => {
-    if (bindingMode) {
-      handleKeyBinding(event);
-      return;
-    }
-
-    const key = event.key.toLowerCase();
-    const binding = boundKeys[key];
-    
-    if (binding) {
-      const assignment = assignments.find(a => a.id === binding.id);
-      if (assignment) {
-        openWindow(assignment);
-      }
-    }
-  };
-
-  const removeKeyBinding = (key) => {
-    const newBindings = { ...boundKeys };
-    delete newBindings[key];
-    saveKeyBindings(newBindings);
-  };
-
-  // Keyboard event listener
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyPress);
-    return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [bindingMode, pendingAssignment, boundKeys, assignments]);
 
   return (
-    <div className="min-h-screen bg-black text-green-400 font-mono">
+    <div className="min-h-screen bg-gray-900 text-white p-6">
       {/* Header */}
-      <div className="border-b border-green-500 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-green-300">🎧 VoxPro Management Console</h1>
-            <p className="text-sm text-green-600">Advanced Broadcasting System • Status: ONLINE</p>
-          </div>
-          <div className="text-right text-sm">
-            <div className="text-green-300">Session Active</div>
-            <div className="text-green-600">{new Date().toLocaleString()}</div>
-          </div>
-        </div>
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-green-400 mb-2">VoxPro Management System</h1>
+        <p className="text-gray-400">Professional Control System with Media Management</p>
       </div>
 
-      {/* Controls Panel */}
-      <div className="p-4 border-b border-green-500">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="px-4 py-2 bg-green-900 border border-green-500 text-green-300 rounded hover:bg-green-800 transition-colors disabled:opacity-50"
-          >
-            {isUploading ? '⏳ UPLOADING...' : '📁 UPLOAD MEDIA'}
-          </button>
-          
-          <input
-            ref={fileInputRef}
-            type="file"
-            onChange={handleFileUpload}
-            accept="audio/*,video/*,.pdf"
-            className="hidden"
-          />
-
-          {isUploading && (
-            <div className="flex-1 max-w-md">
-              <div className="text-sm text-green-300 mb-1">{uploadStatus}</div>
-              <div className="w-full bg-green-900 rounded-full h-2">
-                <div
-                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
+      {/* Main Interface */}
+      <div className="flex gap-6 max-w-7xl mx-auto">
+        
+        {/* VoxPro Control Interface */}
+        <div className="flex-1 bg-gray-800 rounded-lg border border-gray-600 p-6">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-bold text-green-400 mb-2">VoxPro Control Interface</h2>
+            
+            <div className="bg-gray-900 rounded-lg border border-gray-700 p-4 mb-6">
+              <div className="text-lg font-bold text-white mb-2">VoxPro</div>
+              <div className="text-sm text-gray-400 mb-4">Professional Control System</div>
+              
+              <div className="bg-blue-600 text-white px-4 py-2 rounded-lg mb-6">
+                VoxPro Media Interface - Ready
               </div>
-            </div>
-          )}
 
-          <div className="ml-auto text-sm">
-            <span className="text-green-300">Total Files: </span>
-            <span className="text-green-400 font-bold">{assignments.length}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Status Messages */}
-      {error && (
-        <div className="p-3 bg-red-900 border-l-4 border-red-500 text-red-100">
-          <div className="flex items-center">
-            <span className="mr-2">⚠️</span>
-            {error}
-          </div>
-        </div>
-      )}
-
-      {/* Key Bindings Panel */}
-      {Object.keys(boundKeys).length > 0 && (
-        <div className="p-4 border-b border-green-500">
-          <h3 className="text-lg font-bold text-green-300 mb-3">🔑 Active Key Bindings</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {Object.entries(boundKeys).map(([key, binding]) => (
-              <div
-                key={key}
-                className="bg-green-900 border border-green-500 rounded p-2 text-sm"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-bold text-green-300">{key.toUpperCase()}</div>
-                    <div className="text-green-400 truncate">{binding.title}</div>
-                  </div>
-                  <button
-                    onClick={() => removeKeyBinding(key)}
-                    className="text-red-400 hover:text-red-300 text-xs"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="flex">
-        {/* Main Content */}
-        <div className="flex-1 p-4">
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-pulse text-2xl mb-2">⏳</div>
-              <div>Loading assignments...</div>
-            </div>
-          ) : assignments.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-4xl mb-4">📁</div>
-              <div className="text-xl text-green-300">No media files found</div>
-              <div className="text-green-600">Upload your first audio, video, or PDF file to get started</div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {assignments.map(assignment => {
-                const mediaType = assignment.media_url?.match(/\.(mp3|wav|ogg|m4a|aac)$/i) ? 'audio' :
-                                assignment.media_url?.match(/\.(mp4|webm|mov|avi)$/i) ? 'video' :
-                                assignment.media_url?.match(/\.(pdf)$/i) ? 'pdf' : 'unknown';
-                
-                const boundKey = Object.keys(boundKeys).find(key => boundKeys[key].id === assignment.id);
-
-                return (
-                  <div
-                    key={assignment.id}
-                    className="bg-green-900 border border-green-500 rounded-lg p-4 hover:bg-green-800 transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs px-2 py-1 bg-green-700 rounded text-green-100">
-                        {mediaType.toUpperCase()}
-                      </span>
-                      {boundKey && (
-                        <span className="text-xs px-2 py-1 bg-blue-700 rounded text-blue-100">
-                          KEY: {boundKey.toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                    
-                    <h3 className="font-bold text-green-300 mb-1 truncate">
-                      {assignment.title}
-                    </h3>
-                    <p className="text-sm text-green-600 mb-3 line-clamp-2">
-                      {assignment.description}
-                    </p>
-                    
-                    <div className="flex gap-2 text-xs">
-                      <button
-                        onClick={() => openWindow(assignment)}
-                        className="flex-1 px-2 py-1 bg-green-700 hover:bg-green-600 rounded transition-colors"
-                      >
-                        📱 OPEN
-                      </button>
-                      <button
-                        onClick={() => startKeyBinding(assignment)}
-                        className="px-2 py-1 bg-blue-700 hover:bg-blue-600 rounded transition-colors"
-                      >
-                        🔑
-                      </button>
-                      <button
-                        onClick={() => deleteAssignment(assignment.id)}
-                        className="px-2 py-1 bg-red-700 hover:bg-red-600 rounded transition-colors"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* System Status Panel */}
-        <div className="w-80 border-l border-green-500 p-4">
-          <h3 className="text-lg font-bold text-green-300 mb-4">📊 System Status</h3>
-          
-          <div className="space-y-3 text-sm">
-            <div className="bg-green-900 border border-green-500 rounded p-3">
-              <div className="text-green-300 font-bold">🖥️ CONSOLE STATUS</div>
-              <div className="text-green-400">Status: OPERATIONAL</div>
-              <div className="text-green-600">Uptime: {Math.floor(Date.now() / 1000 / 60)} minutes</div>
-            </div>
-
-            <div className="bg-green-900 border border-green-500 rounded p-3">
-              <div className="text-green-300 font-bold">🎵 MEDIA ENGINE</div>
-              <div className="text-green-400">HTML5 Audio: ✅ READY</div>
-              <div className="text-green-400">Video Codec: ✅ READY</div>
-              <div className="text-green-400">PDF Viewer: ✅ READY</div>
-              <div className="text-green-400">Visualization: ✅ READY</div>
-            </div>
-
-            <div className="bg-green-900 border border-green-500 rounded p-3">
-              <div className="text-green-300 font-bold">🔗 CONNECTIVITY</div>
-              <div className="text-green-400">Supabase: ✅ CONNECTED</div>
-              <div className="text-green-400">Storage: ✅ ONLINE</div>
-              <div className="text-green-400">Database: ✅ SYNCED</div>
-            </div>
-
-            <div className="bg-green-900 border border-green-500 rounded p-3">
-              <div className="text-green-300 font-bold">🎮 ACTIVE SESSIONS</div>
-              <div className="text-green-400">Open Windows: {openWindows.length}</div>
-              <div className="text-green-400">Key Bindings: {Object.keys(boundKeys).length}</div>
-              <div className="text-green-400">Total Media: {assignments.length}</div>
-            </div>
-
-            {bindingMode && (
-              <div className="bg-yellow-900 border border-yellow-500 rounded p-3 animate-pulse">
-                <div className="text-yellow-300 font-bold">⌨️ KEY BINDING MODE</div>
-                <div className="text-yellow-400">Press any key to bind...</div>
-                <div className="text-yellow-600">Target: {pendingAssignment?.title}</div>
-                <button
-                  onClick={() => {
-                    setBindingMode(false);
-                    setPendingAssignment(null);
-                    setError(null);
-                  }}
-                  className="mt-2 px-2 py-1 bg-red-700 hover:bg-red-600 rounded text-xs"
-                >
-                  CANCEL
-                </button>
-              </div>
-            )}
-
-            {openWindows.length > 0 && (
-              <div className="bg-blue-900 border border-blue-500 rounded p-3">
-                <div className="text-blue-300 font-bold">🪟 ACTIVE WINDOWS</div>
-                {openWindows.map(window => (
-                  <div key={window.id} className="text-blue-400 text-xs mt-1 flex justify-between">
-                    <span className="truncate">{window.assignment.title}</span>
+              {/* START Keys */}
+              <div className="grid grid-cols-5 gap-3 mb-6">
+                {[1, 2, 3, 4, 5].map((key) => {
+                  const assignment = getKeyAssignment(key);
+                  return (
                     <button
-                      onClick={() => closeWindow(window.id)}
-                      className="text-red-400 hover:text-red-300 ml-2"
+                      key={key}
+                      onClick={() => assignment && openWindow(assignment)}
+                      className={`
+                        h-12 rounded-lg font-bold text-white transition-all
+                        ${assignment 
+                          ? 'bg-red-600 hover:bg-red-500' 
+                          : 'bg-gray-600 hover:bg-gray-500'
+                        }
+                      `}
+                      title={assignment ? assignment.title : `Key ${key} - No Assignment`}
                     >
-                      ✕
+                      START {key}
                     </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-            )}
-          </div>
 
-          <div className="mt-6 p-3 bg-gray-900 border border-gray-600 rounded text-xs">
-            <div className="text-gray-400 font-bold mb-2">💡 TIPS</div>
-            <ul className="text-gray-500 space-y-1">
-              <li>• Click 🔑 to bind keys</li>
-              <li>• Use 📱 to open media</li>
-              <li>• Drag windows to move</li>
-              <li>• Audio plays with visualization</li>
-              <li>• PDFs scale with window</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {/* Render Open Windows */}
-      {openWindows.map(window => (
-        <UniversalMediaPlayer
-          key={window.id}
-          assignment={window.assignment}
-          onClose={closeWindow}
-          onMinimize={toggleMinimize}
-          isMinimized={window.isMinimized}
-          windowId={window.id}
-        />
-      ))}
-
-      {/* Loading Overlay */}
-      {isUploading && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-green-900 border border-green-500 rounded-lg p-6 text-center">
-            <div className="animate-spin text-4xl mb-4">⏳</div>
-            <div className="text-green-300 font-bold mb-2">{uploadStatus}</div>
-            <div className="w-64 bg-green-800 rounded-full h-4">
-              <div
-                className="bg-green-400 h-4 rounded-full transition-all duration-300"
-                style={{ width: `${uploadProgress}%` }}
-              />
-            </div>
-            <div className="text-green-400 text-sm mt-2">{uploadProgress}%</div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default VoxProManagement;
+              {/* Control Grid */}
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">A</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">B</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">C</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">DUR</button>
+                
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">D</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">E</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">F</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">CUE</button>
+                
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">G</button
