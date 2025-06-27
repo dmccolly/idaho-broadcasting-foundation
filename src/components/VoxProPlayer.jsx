@@ -432,6 +432,12 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
             <iframe
               src={assignment.media_url}
               className="w-full h-full border-0 rounded"
+              style={{
+                transform: 'scale(1)',
+                transformOrigin: 'top left',
+                width: '100%',
+                height: '100%'
+              }}
               title={assignment.title}
             />
           </div>
