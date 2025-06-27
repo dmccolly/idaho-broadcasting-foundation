@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
-// Enhanced Universal Media Player Component - FIXED AUDIO + PROPER PDF SIZING + GREEN BARS
+// Enhanced Universal Media Player Component - CONTENT GROWS WITH WINDOW
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -304,7 +304,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const renderMediaContent = () => {
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center h-64 bg-gray-800 rounded">
+        <div className="flex items-center justify-center h-full bg-gray-800 rounded">
           <div className="text-green-400">Loading media...</div>
         </div>
       );
@@ -312,7 +312,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
     if (error) {
       return (
-        <div className="flex items-center justify-center h-64 bg-gray-800 rounded text-red-400">
+        <div className="flex items-center justify-center h-full bg-gray-800 rounded text-red-400">
           Error loading media: {error}
         </div>
       );
@@ -324,7 +324,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
           <video
             ref={playerRef}
             controls
-            className="w-full h-64 bg-black rounded"
+            className="w-full h-full bg-black rounded object-contain"
             onLoadedData={handleLoadedData}
             onTimeUpdate={handleTimeUpdate}
             onPlay={handlePlay}
@@ -340,7 +340,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
       case 'audio':
         return (
-          <div className="bg-gray-800 rounded p-4">
+          <div className="bg-gray-800 rounded p-4 h-full flex flex-col">
             {/* Hidden HTML5 Audio Element */}
             <audio
               ref={playerRef}
@@ -356,18 +356,18 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
               Your browser does not support the audio tag.
             </audio>
 
-            <div className="flex items-center justify-center h-32 mb-4">
-              <div className="text-green-400 text-6xl">🎵</div>
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <div className="text-green-400 text-6xl mb-4">🎵</div>
+              
+              {/* Green Visualization Bars - Grows with window */}
+              <div 
+                ref={visualizationRef}
+                className="w-full flex-1 max-h-32 mb-4"
+              />
             </div>
 
-            {/* Green Visualization Bars */}
-            <div 
-              ref={visualizationRef}
-              className="w-full mb-4"
-            />
-
-            {/* Audio Controls */}
-            <div className="bg-gray-900 rounded p-3">
+            {/* Audio Controls - Fixed at bottom */}
+            <div className="bg-gray-900 rounded p-3 mt-auto">
               <div className="flex items-center gap-4 mb-3">
                 <button
                   onClick={togglePlayPause}
@@ -416,11 +416,11 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
       case 'image':
         return (
-          <div className="bg-gray-800 rounded p-2">
+          <div className="bg-gray-800 rounded p-2 h-full flex items-center justify-center">
             <img
               src={assignment.media_url}
               alt={assignment.title}
-              className="w-full h-64 object-contain rounded"
+              className="max-w-full max-h-full object-contain rounded"
               onError={() => setError('Failed to load image')}
             />
           </div>
@@ -432,10 +432,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
             <iframe
               src={assignment.media_url}
               className="w-full h-full border-0 rounded"
-              style={{ 
-                minHeight: 'calc(100% - 8px)',
-                minWidth: 'calc(100% - 8px)'
-              }}
               title={assignment.title}
             />
           </div>
@@ -443,7 +439,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
       default:
         return (
-          <div className="bg-gray-800 rounded p-6 h-64 flex flex-col items-center justify-center">
+          <div className="bg-gray-800 rounded p-6 h-full flex flex-col items-center justify-center">
             <div className="text-gray-400 text-6xl mb-4">📎</div>
             <div className="text-white text-center mb-4">
               <div className="font-semibold">{assignment.title}</div>
@@ -530,19 +526,23 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         </div>
       </div>
 
-      {/* Content Area */}
+      {/* Content Area - GROWS WITH WINDOW */}
       <div className="flex h-full overflow-hidden" style={{ height: windowSize.height - 40 }}>
-        {/* Media Player Section */}
-        <div className="flex-1 p-4 overflow-auto">
-          <div className="mb-2">
+        {/* Media Player Section - GROWS */}
+        <div className="flex-1 p-4 overflow-hidden flex flex-col">
+          <div className="mb-2 flex-shrink-0">
             <h3 className="text-white font-semibold text-lg">{assignment?.title || 'No Title'}</h3>
             <p className="text-gray-400 text-sm">Key: {assignment?.key_slot} | Type: {mediaType || 'Unknown'}</p>
           </div>
-          {renderMediaContent()}
+          
+          {/* Media Content - TAKES REMAINING SPACE */}
+          <div className="flex-1 overflow-hidden">
+            {renderMediaContent()}
+          </div>
         </div>
 
         {/* Description Panel */}
-        <div className="w-80 bg-gray-800 border-l border-gray-600 p-4 overflow-auto">
+        <div className="w-80 bg-gray-800 border-l border-gray-600 p-4 overflow-auto flex-shrink-0">
           <h4 className="text-green-400 font-semibold mb-3">Media Description</h4>
           <div className="text-gray-300 text-sm leading-relaxed">
             {assignment?.description || 'No description available for this media file.'}
@@ -578,13 +578,12 @@ const VoxProPlayer = () => {
   const [assignments, setAssignments] = useState([]);
   const [activeWindows, setActiveWindows] = useState([]);
   const [windowCounter, setWindowCounter] = useState(0);
-  const [currentPlayingKey, setCurrentPlayingKey] = useState(null); // Only one key can play at a time
+  const [currentPlayingKey, setCurrentPlayingKey] = useState(null);
 
-  // Initialize Supabase connection - NO POPUP CODE, SILENT CONNECTION
+  // Initialize Supabase connection
   useEffect(() => {
     const initializeConnection = async () => {
       try {
-        // Silent connection - no user prompts or popups
         const { data, error } = await supabase
           .from('assignments')
           .select('*')
@@ -606,12 +605,6 @@ const VoxProPlayer = () => {
         setStatusMessage('Connection error occurred');
       }
     };
-
-    // Prevent any popup dialogs
-    window.addEventListener('beforeunload', (e) => {
-      e.preventDefault();
-      return undefined;
-    });
 
     initializeConnection();
   }, []);
@@ -668,14 +661,13 @@ const VoxProPlayer = () => {
       isMinimized: false
     };
 
-    setActiveWindows([newWindow]); // Only one window at a time
+    setActiveWindows([newWindow]);
     setWindowCounter(prev => prev + 1);
   };
 
   const closeWindow = (windowId) => {
     const window = activeWindows.find(w => w.id === windowId);
     if (window) {
-      // Stop playback for this key
       if (currentPlayingKey === window.assignment.key_slot) {
         setCurrentPlayingKey(null);
       }
@@ -767,13 +759,11 @@ const VoxProPlayer = () => {
 
           {/* Compact Control Buttons */}
           <div className="grid grid-cols-4 gap-2 mb-4">
-            {/* Row 1 */}
             <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">A</button>
             <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">B</button>
             <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">C</button>
             <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">D</button>
             
-            {/* Row 2 */}
             <button className="w-12 h-10 bg-gradient-to-b from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">DUP</button>
             <button className="w-12 h-10 bg-gradient-to-b from-yellow-600 to-yellow-800 hover:from-yellow-500 hover:to-yellow-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">CUE</button>
             <button className="w-12 h-10 bg-gradient-to-b from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">REC</button>
