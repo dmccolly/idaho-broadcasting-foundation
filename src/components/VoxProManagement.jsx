@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import WaveSurfer from 'wavesurfer.js';
 
-// Enhanced Universal Media Player Component with resize/drag capabilities - FIXED PDF & AUDIO
+// Enhanced Universal Media Player Component - FIXED AUDIO + PROPER PDF SIZING
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
@@ -10,17 +11,24 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [error, setError] = useState(null);
+  const [visualizationType, setVisualizationType] = useState('none');
   
   // Media refs
   const audioRef = useRef(null);
   const videoRef = useRef(null);
+  const waveformRef = useRef(null);
+  const wavesurferRef = useRef(null);
+  const animationRef = useRef(null);
   
   // Window drag/resize state
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [windowPos, setWindowPos] = useState({ x: 100, y: 100 });
-  const [windowSize, setWindowSize] = useState({ width: 800, height: 600 });
+  const [windowSize, setWindowSize] = useState({ 
+    width: assignment?.media_url?.match(/\.(pdf)$/i) ? 900 : 800, 
+    height: assignment?.media_url?.match(/\.(pdf)$/i) ? 700 : 600 
+  });
   const windowRef = useRef(null);
 
   const mediaType = assignment?.media_url ? 
@@ -33,6 +41,20 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     if (assignment?.media_url) {
       loadMedia();
     }
+    
+    return () => {
+      // Cleanup
+      if (wavesurferRef.current) {
+        try {
+          wavesurferRef.current.destroy();
+        } catch (e) {
+          console.warn('Wavesurfer cleanup error:', e);
+        }
+      }
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
   }, [assignment]);
 
   const loadMedia = async () => {
@@ -44,21 +66,132 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         console.log('🔊 Loading audio:', assignment.title);
         audioRef.current.src = assignment.media_url;
         audioRef.current.load();
+        initializeVisualization();
       } else if (mediaType === 'video' && videoRef.current) {
         console.log('🎥 Loading video:', assignment.title);
         videoRef.current.src = assignment.media_url;
         videoRef.current.load();
       } else if (mediaType === 'pdf') {
         console.log('📄 Loading PDF:', assignment.title);
-        // PDF handled by iframe - no special loading needed
+        setIsLoading(false);
       }
       
-      setIsLoading(false);
     } catch (error) {
       console.error('Media load error:', error);
       setError(`Failed to load ${mediaType}: ${error.message}`);
       setIsLoading(false);
     }
+  };
+
+  // Initialize audio visualization
+  const initializeVisualization = async () => {
+    if (!waveformRef.current || mediaType !== 'audio' || !assignment?.media_url) return;
+
+    try {
+      console.log('🎨 Initializing audio visualization:', assignment.title);
+      
+      // Clean up existing instance
+      if (wavesurferRef.current) {
+        try {
+          wavesurferRef.current.destroy();
+        } catch (e) {
+          console.warn('Error destroying previous Wavesurfer:', e);
+        }
+        wavesurferRef.current = null;
+      }
+
+      // Clear container
+      waveformRef.current.innerHTML = '';
+
+      // Try Wavesurfer first
+      const ws = WaveSurfer.create({
+        container: waveformRef.current,
+        waveColor: '#4ade80',
+        progressColor: '#059669',
+        cursorColor: '#ffffff',
+        height: 80,
+        normalize: true,
+        backend: 'MediaElement',
+        interact: false,
+        barWidth: 2,
+        barGap: 1,
+        barRadius: 3,
+        responsive: true,
+        hideScrollbar: true,
+        fillParent: true
+      });
+
+      wavesurferRef.current = ws;
+
+      // Load and immediately mute
+      await ws.load(assignment.media_url);
+      ws.setMuted(true);
+      ws.setVolume(0);
+
+      setVisualizationType('wavesurfer');
+      console.log('✅ Wavesurfer visualization loaded');
+
+    } catch (error) {
+      console.warn('⚠️ Wavesurfer failed, using fallback visualization:', error);
+      createFallbackVisualization();
+    }
+  };
+
+  // Create animated fallback visualization
+  const createFallbackVisualization = () => {
+    if (!waveformRef.current) return;
+
+    waveformRef.current.innerHTML = '';
+    
+    // Create container for animated bars
+    const container = document.createElement('div');
+    container.className = 'flex items-end justify-center h-20 gap-1 bg-gray-900 rounded p-2';
+    
+    // Create 60 animated bars
+    for (let i = 0; i < 60; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'bg-green-500 rounded-t transition-all duration-150';
+      bar.style.width = '2px';
+      bar.style.height = '4px';
+      bar.style.opacity = '0.7';
+      container.appendChild(bar);
+    }
+    
+    waveformRef.current.appendChild(container);
+    setVisualizationType('animated');
+    
+    console.log('✅ Animated fallback visualization created');
+    
+    // Start animation when playing
+    if (isPlaying) {
+      startFallbackAnimation();
+    }
+  };
+
+  // Animate fallback bars
+  const startFallbackAnimation = () => {
+    if (!waveformRef.current || visualizationType !== 'animated') return;
+    
+    const bars = waveformRef.current.querySelectorAll('div > div');
+    
+    const animate = () => {
+      if (!isPlaying) return;
+      
+      bars.forEach((bar, index) => {
+        const height = Math.random() * 60 + 10;
+        const opacity = Math.random() * 0.8 + 0.3;
+        bar.style.height = `${height}px`;
+        bar.style.opacity = opacity;
+        
+        // Wave effect
+        const wave = Math.sin((Date.now() * 0.01) + (index * 0.2)) * 20 + 30;
+        bar.style.height = `${Math.max(4, wave)}px`;
+      });
+      
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    
+    animate();
   };
 
   // Audio/Video event handlers
@@ -75,23 +208,41 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     const mediaElement = mediaType === 'audio' ? audioRef.current : videoRef.current;
     if (mediaElement) {
       setCurrentTime(mediaElement.currentTime);
+      
+      // Sync Wavesurfer progress
+      if (wavesurferRef.current && visualizationType === 'wavesurfer') {
+        const progress = mediaElement.currentTime / mediaElement.duration;
+        wavesurferRef.current.seekTo(progress);
+      }
     }
   };
 
   const handlePlay = () => {
     setIsPlaying(true);
-    console.log(`▶️ ${mediaType} playing:`, assignment.title);
+    console.log(`🔊 HTML5 Audio playing - you should hear sound:`, assignment.title);
+    
+    if (visualizationType === 'animated') {
+      startFallbackAnimation();
+    }
   };
 
   const handlePause = () => {
     setIsPlaying(false);
     console.log(`⏸️ ${mediaType} paused:`, assignment.title);
+    
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
   };
 
   const handleEnded = () => {
     setIsPlaying(false);
     setCurrentTime(0);
     console.log(`⏹️ ${mediaType} ended:`, assignment.title);
+    
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
   };
 
   const handleError = (e) => {
@@ -268,6 +419,11 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
               {mediaType.toUpperCase()}
             </span>
           )}
+          {visualizationType !== 'none' && (
+            <span className="text-xs bg-green-700 px-2 py-1 rounded">
+              {visualizationType === 'wavesurfer' ? '📊 WAVE' : '🎨 ANIM'}
+            </span>
+          )}
         </div>
         
         <div className="flex items-center gap-2">
@@ -303,16 +459,15 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
           </div>
         )}
 
-        {/* PDF Viewer */}
+        {/* PDF Viewer - FIXED SIZING */}
         {mediaType === 'pdf' && !isLoading && (
-          <div className="h-full w-full">
+          <div className="h-full w-full p-2">
             <iframe
               src={assignment.media_url}
-              className="w-full h-full border-0"
+              className="w-full h-full border-0 rounded"
               style={{ 
-                minHeight: '100%',
-                transform: 'scale(1.0)',
-                transformOrigin: 'top left'
+                minHeight: 'calc(100% - 8px)',
+                minWidth: 'calc(100% - 8px)'
               }}
               title={assignment.title}
             />
@@ -333,11 +488,23 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
               preload="metadata"
             />
             
-            <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
-              <div className="text-center">
+            <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-4">
+              <div className="text-center w-full">
                 <div className="text-6xl mb-4">🎵</div>
                 <div className="text-xl font-medium mb-2">{assignment?.title}</div>
-                <div className="text-gray-400">Audio File</div>
+                <div className="text-gray-400 mb-4">Audio File</div>
+                
+                {/* Waveform Visualization */}
+                <div 
+                  ref={waveformRef}
+                  className="w-full h-20 mb-4 bg-gray-900 rounded border border-gray-700"
+                />
+                
+                <div className="text-xs text-gray-500">
+                  {visualizationType === 'wavesurfer' && '📊 Wavesurfer Visualization'}
+                  {visualizationType === 'animated' && '🎨 Enhanced Audio Visualization (animated)'}
+                  {visualizationType === 'none' && '⚪ No Visualization'}
+                </div>
               </div>
             </div>
             
@@ -861,6 +1028,7 @@ const VoxProManagement = () => {
               <div className="text-green-400">HTML5 Audio: ✅ READY</div>
               <div className="text-green-400">Video Codec: ✅ READY</div>
               <div className="text-green-400">PDF Viewer: ✅ READY</div>
+              <div className="text-green-400">Visualization: ✅ READY</div>
             </div>
 
             <div className="bg-green-900 border border-green-500 rounded p-3">
@@ -919,8 +1087,8 @@ const VoxProManagement = () => {
               <li>• Click 🔑 to bind keys</li>
               <li>• Use 📱 to open media</li>
               <li>• Drag windows to move</li>
-              <li>• Audio plays without echo</li>
-              <li>• PDFs open full-size</li>
+              <li>• Audio plays with visualization</li>
+              <li>• PDFs open properly sized</li>
             </ul>
           </div>
         </div>
