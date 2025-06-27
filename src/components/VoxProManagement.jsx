@@ -458,15 +458,17 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
           </div>
         )}
 
-        {/* PDF Viewer - FIXED SIZING */}
+        {/* PDF Viewer - FIXED SCALING */}
         {mediaType === 'pdf' && !isLoading && (
           <div className="h-full w-full p-2">
             <iframe
               src={assignment.media_url}
               className="w-full h-full border-0 rounded"
-              style={{ 
-                minHeight: 'calc(100% - 8px)',
-                minWidth: 'calc(100% - 8px)'
+              style={{
+                transform: 'scale(1)',
+                transformOrigin: 'top left',
+                width: '100%',
+                height: '100%'
               }}
               title={assignment.title}
             />
@@ -493,15 +495,25 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
                 <div className="text-xl font-medium mb-2">{assignment?.title}</div>
                 <div className="text-gray-400 mb-4">Audio File</div>
                 
-                {/* Waveform Visualization */}
-                <div 
-                  ref={waveformRef}
-                  className="w-full h-20 mb-4 bg-gray-900 rounded border border-gray-700"
-                />
+                {/* Waveform Visualization Container */}
+                <div className="relative w-full h-20 mb-4 bg-gray-900 rounded border border-gray-700 overflow-hidden">
+                  <div 
+                    ref={waveformRef}
+                    className="absolute inset-0 w-full h-full"
+                  />
+                  
+                  {/* Progress Overlay */}
+                  {duration > 0 && (
+                    <div 
+                      className="absolute top-0 left-0 h-full bg-green-600 bg-opacity-30 transition-all duration-100"
+                      style={{ width: `${(currentTime / duration) * 100}%` }}
+                    />
+                  )}
+                </div>
                 
                 <div className="text-xs text-gray-500">
                   {visualizationType === 'wavesurfer' && '📊 Wavesurfer Visualization'}
-                  {visualizationType === 'animated' && '🎨 Enhanced Audio Visualization (animated)'}
+                  {visualizationType === 'animated' && '🎨 Enhanced Audio Visualization'}
                   {visualizationType === 'none' && '⚪ No Visualization'}
                 </div>
               </div>
