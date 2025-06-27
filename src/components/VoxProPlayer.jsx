@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
-// Enhanced Universal Media Player Component with resize/drag capabilities - FIXED AUDIO
+// Enhanced Universal Media Player Component - FIXED AUDIO + PROPER PDF SIZING + GREEN BARS
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mediaType, setMediaType] = useState(null);
-  const [windowSize, setWindowSize] = useState({ width: 800, height: 600 });
+  const [windowSize, setWindowSize] = useState({ 
+    width: assignment?.media_url?.match(/\.(pdf)$/i) ? 900 : 800, 
+    height: assignment?.media_url?.match(/\.(pdf)$/i) ? 700 : 600 
+  });
   const [windowPosition, setWindowPosition] = useState({ x: window.innerWidth - 820, y: window.innerHeight - 620 });
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -23,11 +26,19 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   
   const playerRef = useRef(null);
   const windowRef = useRef(null);
+  const visualizationRef = useRef(null);
+  const animationRef = useRef(null);
 
   useEffect(() => {
     if (assignment?.media_url) {
       detectMediaType(assignment.media_url);
     }
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
   }, [assignment]);
 
   const detectMediaType = (url) => {
@@ -37,6 +48,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       setMediaType('video');
     } else if (['mp3', 'wav', 'ogg', 'aac', 'm4a'].includes(extension)) {
       setMediaType('audio');
+      createAudioVisualization();
     } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
       setMediaType('image');
     } else if (['pdf', 'doc', 'docx', 'txt'].includes(extension)) {
@@ -45,6 +57,57 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       setMediaType('unknown');
     }
     setIsLoading(false);
+  };
+
+  // Create green audio visualization bars
+  const createAudioVisualization = () => {
+    setTimeout(() => {
+      if (!visualizationRef.current) return;
+
+      visualizationRef.current.innerHTML = '';
+      
+      // Create container for animated bars
+      const container = document.createElement('div');
+      container.className = 'flex items-end justify-center h-16 gap-1 bg-gray-900 rounded p-2';
+      
+      // Create 60 green animated bars
+      for (let i = 0; i < 60; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'bg-green-500 rounded-t transition-all duration-150';
+        bar.style.width = '2px';
+        bar.style.height = '4px';
+        bar.style.opacity = '0.7';
+        container.appendChild(bar);
+      }
+      
+      visualizationRef.current.appendChild(container);
+      console.log('✅ Green visualization bars created');
+    }, 100);
+  };
+
+  // Animate visualization when playing
+  const startVisualization = () => {
+    if (!visualizationRef.current) return;
+    
+    const bars = visualizationRef.current.querySelectorAll('div > div');
+    
+    const animate = () => {
+      if (!isPlaying) return;
+      
+      bars.forEach((bar, index) => {
+        // Create wave animation
+        const wave = Math.sin((Date.now() * 0.01) + (index * 0.2)) * 25 + 15;
+        const randomHeight = Math.random() * 20 + 10;
+        const finalHeight = Math.max(4, wave + randomHeight);
+        
+        bar.style.height = `${finalHeight}px`;
+        bar.style.opacity = Math.random() * 0.5 + 0.5;
+      });
+      
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    
+    animate();
   };
 
   // Audio/Video event handlers
@@ -66,18 +129,30 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
   const handlePlay = () => {
     setIsPlaying(true);
-    console.log(`▶️ ${mediaType} playing:`, assignment.title);
+    console.log(`🔊 ${mediaType} playing - you should hear sound:`, assignment.title);
+    
+    if (mediaType === 'audio') {
+      startVisualization();
+    }
   };
 
   const handlePause = () => {
     setIsPlaying(false);
     console.log(`⏸️ ${mediaType} paused:`, assignment.title);
+    
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
   };
 
   const handleEnded = () => {
     setIsPlaying(false);
     setCurrentTime(0);
     console.log(`⏹️ ${mediaType} ended:`, assignment.title);
+    
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
   };
 
   const handleError = (e) => {
@@ -266,7 +341,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       case 'audio':
         return (
           <div className="bg-gray-800 rounded p-4">
-            {/* Hidden HTML5 Audio Element - Handles ALL Sound */}
+            {/* Hidden HTML5 Audio Element */}
             <audio
               ref={playerRef}
               onLoadedData={handleLoadedData}
@@ -281,10 +356,15 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
               Your browser does not support the audio tag.
             </audio>
 
-            {/* Visual Audio Player Interface */}
             <div className="flex items-center justify-center h-32 mb-4">
               <div className="text-green-400 text-6xl">🎵</div>
             </div>
+
+            {/* Green Visualization Bars */}
+            <div 
+              ref={visualizationRef}
+              className="w-full mb-4"
+            />
 
             {/* Audio Controls */}
             <div className="bg-gray-900 rounded p-3">
@@ -348,18 +428,16 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
       case 'document':
         return (
-          <div className="bg-gray-800 rounded p-6 h-64 flex flex-col items-center justify-center">
-            <div className="text-yellow-400 text-6xl mb-4">📄</div>
-            <div className="text-white text-center mb-4">
-              <div className="font-semibold">{assignment.title}</div>
-              <div className="text-sm text-gray-400">Document File</div>
-            </div>
-            <button
-              onClick={() => window.open(assignment.media_url, '_blank')}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors"
-            >
-              Open Document
-            </button>
+          <div className="h-full w-full p-2">
+            <iframe
+              src={assignment.media_url}
+              className="w-full h-full border-0 rounded"
+              style={{ 
+                minHeight: 'calc(100% - 8px)',
+                minWidth: 'calc(100% - 8px)'
+              }}
+              title={assignment.title}
+            />
           </div>
         );
 
