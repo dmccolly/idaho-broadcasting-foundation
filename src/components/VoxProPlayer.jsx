@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
-// Enhanced Universal Media Player Component with resize/drag capabilities
+// Enhanced Universal Media Player Component with resize/drag capabilities - FIXED AUDIO
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,12 +14,15 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const [isMaximized, setIsMaximized] = useState(false);
   const [previousSize, setPreviousSize] = useState(null);
   
+  // Audio state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  
   const playerRef = useRef(null);
-  const canvasRef = useRef(null);
   const windowRef = useRef(null);
-  const audioContextRef = useRef(null);
-  const analyzerRef = useRef(null);
-  const animationRef = useRef(null);
 
   useEffect(() => {
     if (assignment?.media_url) {
@@ -44,62 +47,99 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     setIsLoading(false);
   };
 
-  // Audio visualization setup
-  const setupAudioVisualization = (audioElement) => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-      analyzerRef.current = audioContextRef.current.createAnalyser();
-      analyzerRef.current.fftSize = 256;
+  // Audio/Video event handlers
+  const handleLoadedData = () => {
+    const mediaElement = playerRef.current;
+    if (mediaElement) {
+      setDuration(mediaElement.duration);
+      setIsLoading(false);
+      console.log(`✅ ${mediaType} loaded:`, assignment.title, `Duration: ${mediaElement.duration}s`);
     }
-
-    const source = audioContextRef.current.createMediaElementSource(audioElement);
-    source.connect(analyzerRef.current);
-    analyzerRef.current.connect(audioContextRef.current.destination);
-
-    startVisualization();
   };
 
-  const startVisualization = () => {
-    if (!canvasRef.current || !analyzerRef.current) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const bufferLength = analyzerRef.current.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    const draw = () => {
-      analyzerRef.current.getByteFrequencyData(dataArray);
-
-      ctx.fillStyle = 'rgb(20, 20, 30)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const barWidth = (canvas.width / bufferLength) * 2.5;
-      let barHeight;
-      let x = 0;
-
-      for (let i = 0; i < bufferLength; i++) {
-        barHeight = (dataArray[i] / 255) * canvas.height * 0.8;
-
-        const r = barHeight + 25 * (i / bufferLength);
-        const g = 250 * (i / bufferLength);
-        const b = 50;
-
-        ctx.fillStyle = `rgb(${r},${g},${b})`;
-        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-
-        x += barWidth + 1;
-      }
-
-      animationRef.current = requestAnimationFrame(draw);
-    };
-
-    draw();
+  const handleTimeUpdate = () => {
+    const mediaElement = playerRef.current;
+    if (mediaElement) {
+      setCurrentTime(mediaElement.currentTime);
+    }
   };
 
-  const stopVisualization = () => {
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
+  const handlePlay = () => {
+    setIsPlaying(true);
+    console.log(`▶️ ${mediaType} playing:`, assignment.title);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+    console.log(`⏸️ ${mediaType} paused:`, assignment.title);
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+    console.log(`⏹️ ${mediaType} ended:`, assignment.title);
+  };
+
+  const handleError = (e) => {
+    console.error(`${mediaType} error:`, e.target.error);
+    setError(`${mediaType} playback error: ${e.target.error?.message || 'Unknown error'}`);
+    setIsLoading(false);
+    setIsPlaying(false);
+  };
+
+  // Media controls
+  const togglePlayPause = () => {
+    const mediaElement = playerRef.current;
+    if (!mediaElement) return;
+
+    if (isPlaying) {
+      mediaElement.pause();
+    } else {
+      mediaElement.play().catch(error => {
+        console.error('Play failed:', error);
+        setError(`Play failed: ${error.message}`);
+      });
     }
+  };
+
+  const handleSeek = (e) => {
+    const mediaElement = playerRef.current;
+    if (!mediaElement) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = x / rect.width;
+    const newTime = percentage * duration;
+    
+    mediaElement.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+
+  const handleVolumeChange = (e) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+    
+    const mediaElement = playerRef.current;
+    if (mediaElement) {
+      mediaElement.volume = newVolume;
+    }
+  };
+
+  const toggleMute = () => {
+    const mediaElement = playerRef.current;
+    if (!mediaElement) return;
+
+    const newMuted = !isMuted;
+    setIsMuted(newMuted);
+    mediaElement.muted = newMuted;
+  };
+
+  // Format time helper
+  const formatTime = (seconds) => {
+    if (isNaN(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   // Window dragging
@@ -210,7 +250,13 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
             ref={playerRef}
             controls
             className="w-full h-64 bg-black rounded"
-            onError={() => setError('Failed to load video')}
+            onLoadedData={handleLoadedData}
+            onTimeUpdate={handleTimeUpdate}
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onEnded={handleEnded}
+            onError={handleError}
+            preload="metadata"
           >
             <source src={assignment.media_url} />
             Your browser does not support the video tag.
@@ -220,27 +266,71 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       case 'audio':
         return (
           <div className="bg-gray-800 rounded p-4">
-            <div className="flex items-center justify-center h-32 mb-4">
-              <div className="text-green-400 text-6xl">🎵</div>
-            </div>
+            {/* Hidden HTML5 Audio Element - Handles ALL Sound */}
             <audio
               ref={playerRef}
-              controls
-              className="w-full mb-2"
-              onPlay={(e) => setupAudioVisualization(e.target)}
-              onPause={stopVisualization}
-              onEnded={stopVisualization}
-              onError={() => setError('Failed to load audio')}
+              onLoadedData={handleLoadedData}
+              onTimeUpdate={handleTimeUpdate}
+              onPlay={handlePlay}
+              onPause={handlePause}
+              onEnded={handleEnded}
+              onError={handleError}
+              preload="metadata"
             >
               <source src={assignment.media_url} />
               Your browser does not support the audio tag.
             </audio>
-            <canvas 
-              ref={canvasRef}
-              width="300" 
-              height="80" 
-              className="w-full h-16 bg-gray-900 rounded border"
-            />
+
+            {/* Visual Audio Player Interface */}
+            <div className="flex items-center justify-center h-32 mb-4">
+              <div className="text-green-400 text-6xl">🎵</div>
+            </div>
+
+            {/* Audio Controls */}
+            <div className="bg-gray-900 rounded p-3">
+              <div className="flex items-center gap-4 mb-3">
+                <button
+                  onClick={togglePlayPause}
+                  className="text-2xl hover:text-green-400 transition-colors"
+                  disabled={!duration}
+                >
+                  {isPlaying ? '⏸️' : '▶️'}
+                </button>
+                
+                <div className="text-sm text-gray-400">
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </div>
+                
+                <div className="flex items-center gap-2 ml-auto">
+                  <button
+                    onClick={toggleMute}
+                    className="text-lg hover:text-yellow-400 transition-colors"
+                  >
+                    {isMuted ? '🔇' : '🔊'}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={isMuted ? 0 : volume}
+                    onChange={handleVolumeChange}
+                    className="w-20"
+                  />
+                </div>
+              </div>
+              
+              {/* Progress Bar */}
+              <div
+                className="w-full h-2 bg-gray-700 rounded-full cursor-pointer overflow-hidden"
+                onClick={handleSeek}
+              >
+                <div
+                  className="h-full bg-green-500 transition-all duration-100"
+                  style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+                />
+              </div>
+            </div>
           </div>
         );
 
@@ -668,4 +758,3 @@ const VoxProPlayer = () => {
 };
 
 export default VoxProPlayer;
-
