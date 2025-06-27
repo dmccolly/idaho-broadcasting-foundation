@@ -178,14 +178,13 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       if (!isPlaying) return;
       
       bars.forEach((bar, index) => {
-        const height = Math.random() * 60 + 10;
-        const opacity = Math.random() * 0.8 + 0.3;
-        bar.style.height = `${height}px`;
-        bar.style.opacity = opacity;
+        // Wave effect with random heights
+        const wave = Math.sin((Date.now() * 0.01) + (index * 0.2)) * 25 + 15;
+        const randomHeight = Math.random() * 20 + 10;
+        const finalHeight = Math.max(4, wave + randomHeight);
         
-        // Wave effect
-        const wave = Math.sin((Date.now() * 0.01) + (index * 0.2)) * 20 + 30;
-        bar.style.height = `${Math.max(4, wave)}px`;
+        bar.style.height = `${finalHeight}px`;
+        bar.style.opacity = Math.random() * 0.5 + 0.5;
       });
       
       animationRef.current = requestAnimationFrame(animate);
