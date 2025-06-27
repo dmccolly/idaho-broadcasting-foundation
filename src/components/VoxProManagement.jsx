@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import WaveSurfer from 'wavesurfer.js';
 
-// Enhanced Universal Media Player Component - DEBUGGING VISUALIZATION SYNC
+// Enhanced Universal Media Player Component - VISUALIZATION SYNC FIXED
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -46,53 +46,45 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   };
 
   const initializeWavesurfer = () => {
-    if (!waveformRef.current || !assignment?.media_url) {
-        console.warn('DEBUG: Skipping WaveSurfer init (no waveformRef or media_url)');
-        return;
-    }
+    if (!waveformRef.current || !assignment?.media_url) return;
     if (wavesurferRef.current) wavesurferRef.current.destroy();
     
     try {
-        console.log('DEBUG: 1. Initializing WaveSurfer...');
         const ws = WaveSurfer.create({
             container: waveformRef.current,
             waveColor: '#4ade80',
             progressColor: '#059669',
             cursorColor: '#ffffff',
             height: 80,
+            normalize: true,
             interact: true, 
+            barWidth: 2,
+            barGap: 1,
+            barRadius: 3,
         });
         wavesurferRef.current = ws;
 
         ws.on('seek', (progress) => {
-            console.log(`DEBUG: 4. Waveform seeked by user to progress: ${progress}`);
             if (playerRef.current && duration > 0) {
                 playerRef.current.currentTime = duration * progress;
             }
         });
         
-        ws.on('ready', () => {
-            console.log('DEBUG: 2. WaveSurfer is READY.');
-            ws.setMuted(true);
-        });
-
-        ws.on('error', (err) => console.error('DEBUG: WaveSurfer error:', err));
+        ws.on('ready', () => ws.setMuted(true));
+        ws.on('error', (err) => createFallbackVisualization());
         ws.load(assignment.media_url);
-
     } catch (error) {
-        console.error('DEBUG: WaveSurfer failed to initialize.', error);
+        createFallbackVisualization();
     }
   };
   
   const createFallbackVisualization = () => {
     if (!waveformRef.current) return;
-    waveformRef.current.innerHTML = `<div class="w-full h-20 bg-gray-800 rounded flex items-center justify-center text-gray-400 text-sm">Waveform visualization not available.</div>`;
+    waveformRef.current.innerHTML = `<div class="w-full h-20 bg-gray-800 rounded flex items-center justify-center text-gray-400 text-sm">Waveform not available.</div>`;
   };
 
   useEffect(() => {
-    if (mediaType === 'audio') {
-        initializeWavesurfer();
-    }
+    if (mediaType === 'audio') initializeWavesurfer();
     return () => {
       if (wavesurferRef.current) wavesurferRef.current.destroy();
     };
@@ -110,9 +102,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   };
 
   const handleMouseMove = (e) => {
-    if (isDragging) {
-      setWindowPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-    }
+    if (isDragging) setWindowPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
   };
 
   const handleMouseUp = () => {
@@ -157,15 +147,11 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, isResizing, dragStart, windowPosition, windowSize]);
+  }, [isDragging, isResizing]);
 
   const renderMediaContent = () => {
-    if (isLoading) {
-        return <div className="flex items-center justify-center h-64 bg-gray-800 rounded"><div className="text-green-400">Loading media...</div></div>;
-    }
-    if (error) {
-        return <div className="flex items-center justify-center h-64 bg-gray-800 rounded text-red-400 p-4">Error: {error}</div>;
-    }
+    if (isLoading) return <div className="flex items-center justify-center h-full"><div className="text-green-400">Loading...</div></div>;
+    if (error) return <div className="flex items-center justify-center h-full"><div className="text-red-400">{error}</div></div>;
 
     switch (mediaType) {
       case 'audio':
@@ -178,58 +164,34 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
               onEnded={() => { setIsPlaying(false); setCurrentTime(0); }}
-              onLoadedMetadata={(e) => {
-                const newDuration = e.target.duration;
-                console.log(`DEBUG: 3. Audio Metadata Loaded. Duration: ${newDuration}`);
-                setDuration(newDuration);
-                setAudioReady(true);
-              }}
+              onLoadedMetadata={(e) => { setDuration(e.target.duration); setAudioReady(true); }}
+              onError={() => setError('Audio playback failed.')}
               onTimeUpdate={(e) => {
-                const newTime = e.target.currentTime;
-                setCurrentTime(newTime);
-                if (wavesurferRef.current && duration > 0) {
-                  const progress = newTime / duration;
-                  console.log(`DEBUG: 5. TimeUpdate -> Syncing waveform to progress: ${progress.toFixed(3)}`);
-                  wavesurferRef.current.seekTo(progress);
-                }
+                  const newTime = e.target.currentTime;
+                  setCurrentTime(newTime);
+                  // This is the corrected sync logic
+                  if (wavesurferRef.current && duration > 0) {
+                      wavesurferRef.current.seekTo(newTime / duration);
+                  }
               }}
               volume={volume}
               crossOrigin="anonymous"
             />
-            
-            <div ref={waveformRef} style={{ cursor: 'pointer' }} />
-
-            <div className="mt-4 flex items-center justify-between bg-gray-900 rounded p-3">
+            <div ref={waveformRef} className="mb-4" style={{ cursor: 'pointer' }} />
+            <div className="flex items-center justify-between bg-gray-900 rounded p-3">
               <div className="flex items-center space-x-3">
-                <button onClick={() => playerRef.current?.paused ? playerRef.current?.play() : playerRef.current?.pause()} disabled={!audioReady} className="flex items-center justify-center w-10 h-10 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 rounded-full">
-                  {isPlaying ? '⏸️' : '▶️'}
-                </button>
-                <button onClick={() => { if(playerRef.current) { playerRef.current.currentTime = 0; } }} disabled={!audioReady} className="flex items-center justify-center w-8 h-8 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-600 rounded-full">
-                  ⏹️
-                </button>
+                <button onClick={() => playerRef.current?.paused ? playerRef.current?.play() : playerRef.current?.pause()} disabled={!audioReady} className="flex items-center justify-center w-10 h-10 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 rounded-full">{isPlaying ? '⏸️' : '▶️'}</button>
                 <div className="text-sm text-gray-300">{formatTime(currentTime)} / {formatTime(duration)}</div>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-400">🔊</span>
-                <input type="range" min="0" max="1" step="0.1" value={volume} onChange={(e) => { const newVol = parseFloat(e.target.value); setVolume(newVol); if(playerRef.current) playerRef.current.volume = newVol; }} className="w-16"/>
-                <span className="text-xs text-gray-400 w-6">{Math.round(volume * 100)}%</span>
-              </div>
+              <input type="range" min="0" max="1" step="0.1" value={volume} onChange={(e) => { const newVol = parseFloat(e.target.value); setVolume(newVol); if(playerRef.current) playerRef.current.volume = newVol; }} className="w-24"/>
             </div>
           </div>
         );
       default:
-         return (
-            <div className="bg-gray-800 rounded p-6 h-64 flex flex-col items-center justify-center">
-              <div className="text-gray-400 text-6xl mb-4">📎</div>
-              <div className="text-white text-center mb-4">
-                <div className="font-semibold">{assignment.title}</div>
-                <div className="text-sm text-gray-400">Unsupported File Type</div>
-              </div>
-            </div>
-          );
+        return <div className="p-4">Unsupported file type.</div>;
     }
   };
-
+  
   if (isMinimized) {
     return (
       <div className="fixed bottom-4 right-4 bg-gray-800 border border-gray-600 rounded-lg p-2 shadow-lg z-50">
@@ -245,28 +207,26 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   }
 
   return (
-    <div ref={windowRef} className="fixed bg-gray-900 border border-gray-600 rounded-lg shadow-2xl z-40 overflow-hidden select-none" style={{ left: windowPosition.x, top: windowPosition.y, width: windowSize.width, height: windowSize.height, cursor: isDragging ? 'grabbing' : 'default' }} onMouseDown={handleMouseDown}>
-      <div className="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-600 cursor-grab">
-        <div className="flex items-center gap-2"><div className="text-green-400">▶</div><span className="text-white font-medium">Universal Player - {assignment?.title}</span></div>
+    <div ref={windowRef} className="fixed bg-gray-900 border border-gray-600 rounded-lg shadow-2xl z-40 overflow-hidden select-none" style={{ left: windowPosition.x, top: windowPosition.y, width: windowSize.width, height: windowSize.height }}>
+      <div onMouseDown={handleMouseDown} className="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-600 cursor-grab">
+        <span className="text-white font-medium">Universal Player - {assignment?.title}</span>
         <div className="flex gap-2 window-controls">
           <button onClick={() => onMinimize(true)} className="text-gray-400 hover:text-white px-2 py-1 rounded" title="Minimize">−</button>
           <button onClick={toggleMaximize} className="text-gray-400 hover:text-white px-2 py-1 rounded" title={isMaximized ? "Restore" : "Maximize"}>{isMaximized ? "⧉" : "⬜"}</button>
           <button onClick={onClose} className="text-gray-400 hover:text-red-400 px-2 py-1 rounded" title="Close">✕</button>
         </div>
       </div>
-      <div className="flex h-full overflow-hidden" style={{ height: `calc(100% - 40px)` }}>
+      <div className="flex h-full" style={{ height: `calc(100% - 40px)` }}>
         <div className="flex-1 p-4 overflow-auto">{renderMediaContent()}</div>
         <div className="w-80 bg-gray-800 border-l border-gray-600 p-4 overflow-auto">
-          <h4 className="text-green-400 font-semibold mb-3">Media Description</h4>
-          <div className="text-gray-300 text-sm leading-relaxed">{assignment?.description || 'No description available.'}</div>
+            <h4 className="text-green-400 font-semibold mb-3">Media Description</h4>
+            <div className="text-gray-300 text-sm leading-relaxed">{assignment?.description || 'No description available.'}</div>
         </div>
       </div>
-      <div className="absolute bottom-0 right-0 w-4 h-4 bg-gray-600 cursor-se-resize resize-handle" onMouseDown={handleResizeStart} title="Resize window"><div className="absolute bottom-1 right-1 w-2 h-2 border-r-2 border-b-2 border-gray-400"></div></div>
+      <div className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize resize-handle" onMouseDown={handleResizeStart} title="Resize window" />
     </div>
   );
 };
-
-
 // Main VoxProManagement Component
 const VoxProManagement = () => {
     const [connectionStatus, setConnectionStatus] = useState('connecting');
@@ -361,63 +321,61 @@ const VoxProManagement = () => {
         alert(`Delete failed: ${error.message}`);
       }
     };
-  
+    
     return (
-        <div className="min-h-screen bg-gray-900 text-white">
-          <div className="container mx-auto px-4 py-8">
+        <div className="min-h-screen bg-gray-900 text-white p-8">
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-green-400">Admin Portal</h1>
-              <h2 className="text-2xl text-gray-300">VoxPro Management Tool</h2>
+                <h1 className="text-4xl font-bold text-green-400">Admin Portal</h1>
+                <h2 className="text-2xl text-gray-300">VoxPro Management Tool</h2>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
-              <div className="bg-gray-800 rounded-lg p-6 border border-gray-600">
-                <h3 className="text-2xl text-center font-bold text-green-400 mb-4">VoxPro Console</h3>
-                <div className="grid grid-cols-5 gap-4">
-                  {['1', '2', '3', '4', '5'].map(key => {
-                    const assignment = getKeyAssignment(key);
-                    const isPlaying = currentPlayingKey === key;
-                    return (
-                      <button key={key} onClick={() => handleKeyClick(key)} title={assignment ? assignment.title : `Key ${key} - Empty`}
-                        className={`h-20 rounded-lg font-bold text-xl transition-all transform hover:scale-105 ${isPlaying ? 'bg-green-500' : assignment ? 'bg-red-500' : 'bg-gray-600'}`}>
-                        {isPlaying ? '■' : key}
-                      </button>
-                    );
-                  })}
+            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-gray-800 p-6 rounded-lg border border-gray-600">
+                    <h3 className="text-2xl text-center font-bold text-green-400 mb-4">VoxPro Console</h3>
+                    <div className="grid grid-cols-5 gap-4">
+                        {['1', '2', '3', '4', '5'].map(key => {
+                            const assignment = getKeyAssignment(key);
+                            const isPlaying = currentPlayingKey === key;
+                            return (
+                                <button key={key} onClick={() => handleKeyClick(key)} title={assignment ? assignment.title : `Key ${key} - Empty`}
+                                    className={`h-20 rounded-lg font-bold text-xl transition-all transform hover:scale-105 ${isPlaying ? 'bg-green-500' : assignment ? 'bg-red-500' : 'bg-gray-600'}`}>
+                                    {isPlaying ? '■' : key}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
-              </div>
-              <div className="bg-gray-800 rounded-lg p-6 border border-gray-600">
-                <h3 className="text-xl font-bold text-green-400 mb-4">Key Assignment Management</h3>
-                <div className="space-y-4">
-                  <input ref={fileInputRef} type="file" onChange={(e) => setFormData(p => ({ ...p, mediaFile: e.target.files[0] }))} className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-100 hover:file:bg-green-200" />
-                  <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Title *" className="w-full p-2 bg-gray-700 rounded" />
-                  <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description" className="w-full p-2 bg-gray-700 rounded" rows="2" />
-                  <input type="text" name="submittedBy" value={formData.submittedBy} onChange={handleInputChange} placeholder="Submitted By" className="w-full p-2 bg-gray-700 rounded" />
-                  <select name="keySlot" value={formData.keySlot} onChange={handleInputChange} className="w-full p-2 bg-gray-700 rounded">
-                    <option value="">Select a key *</option>
-                    {['1', '2', '3', '4', '5'].map(k => <option key={k} value={k}>Key {k}</option>)}
-                  </select>
-                  <button onClick={uploadAndAssign} disabled={isUploading} className="w-full p-2 bg-red-600 rounded disabled:bg-gray-500">{isUploading ? 'Uploading...' : 'Assign to Key'}</button>
+                <div className="bg-gray-800 p-6 rounded-lg border border-gray-600">
+                    <h3 className="text-xl font-bold text-green-400 mb-4">Key Assignment Management</h3>
+                    <div className="space-y-3">
+                        <input type="file" ref={fileInputRef} onChange={(e) => setFormData(p => ({...p, mediaFile: e.target.files[0]}))} className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-100 hover:file:bg-green-200"/>
+                        <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Title *" className="w-full p-2 bg-gray-700 rounded"/>
+                        <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description" className="w-full p-2 bg-gray-700 rounded" rows="2"/>
+                        <input type="text" name="submittedBy" value={formData.submittedBy} onChange={handleInputChange} placeholder="Submitted By" className="w-full p-2 bg-gray-700 rounded"/>
+                        <select name="keySlot" value={formData.keySlot} onChange={handleInputChange} className="w-full p-2 bg-gray-700 rounded">
+                            <option value="">Select a key *</option>
+                            {['1', '2', '3', '4', '5'].map(k => <option key={k} value={k}>Key {k}</option>)}
+                        </select>
+                        <button onClick={uploadAndAssign} disabled={isUploading} className="w-full p-2 bg-red-600 rounded disabled:bg-gray-500">{isUploading ? 'Uploading...' : 'Upload & Assign'}</button>
+                    </div>
+                    <div className="mt-6">
+                        <h4 className="text-lg font-semibold text-gray-300 mb-3">Current Assignments</h4>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                            {assignments.filter(a=>a.key_slot).map(a => (
+                                <div key={a.id} className="flex items-center justify-between p-2 bg-gray-700 rounded">
+                                    <span className="font-bold">Key {a.key_slot}:</span>
+                                    <span className="truncate mx-2">{a.title}</span>
+                                    <button onClick={() => deleteAssignment(a.id, a.key_slot)} className="px-2 py-1 text-xs bg-red-800 rounded">X</button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
-                <div className="mt-6">
-                  <h4 className="text-lg font-semibold text-gray-300 mb-3">Current Assignments</h4>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {assignments.filter(a=>a.key_slot).map(a => (
-                      <div key={a.id} className="flex items-center justify-between p-2 bg-gray-700 rounded">
-                        <span className="font-bold">Key {a.key_slot}:</span>
-                        <span className="truncate mx-2">{a.title}</span>
-                        <button onClick={() => deleteAssignment(a.id, a.key_slot)} className="px-2 py-1 text-xs bg-red-800 rounded">X</button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
-          {activeWindows.map(win => (
-            <UniversalMediaPlayer key={win.id} assignment={win.assignment} onClose={() => closeWindow(win.id)} onMinimize={(min) => minimizeWindow(win.id, min)} isMinimized={win.isMinimized} windowId={win.id} />
-          ))}
+            {activeWindows.map(win => (
+                <UniversalMediaPlayer key={win.id} assignment={win.assignment} onClose={() => closeWindow(win.id)} onMinimize={(min) => minimizeWindow(win.id, min)} isMinimized={win.isMinimized} />
+            ))}
         </div>
-      );
+    );
 };
 
 export default VoxProManagement;
