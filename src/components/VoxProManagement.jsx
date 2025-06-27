@@ -804,14 +804,210 @@ const VoxProManagement = () => {
 
               {/* Control Grid */}
               <div className="grid grid-cols-4 gap-2 mb-4">
-                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">A</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">F</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">CUE</button>
+                
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">G</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">H</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">I</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">REC</button>
+              </div>
+
+              {/* Clock Display */}
+              <div className="flex justify-center mb-4">
+                <div className="w-24 h-24 border-4 border-green-500 rounded-full flex items-center justify-center">
+                  <div className="text-green-400 font-mono text-lg">
+                    {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Media Management Interface */}
+        <div className="flex-1 bg-gray-800 rounded-lg border border-gray-600 p-6">
+          <h2 className="text-xl font-bold text-green-400 mb-6">Media Management Interface</h2>
+          
+          {/* Current Key Assignments */}
+          <div className="bg-gray-900 rounded-lg border border-gray-700 p-4 mb-6">
+            <h3 className="text-lg font-bold text-green-400 mb-4">Current Key Assignments</h3>
+            
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {[1, 2, 3, 4, 5].map((key) => {
+                const assignment = getKeyAssignment(key);
+                return (
+                  <div key={key} className="flex items-center justify-between p-2 bg-gray-800 rounded">
+                    <div className="flex items-center gap-3">
+                      <span className="text-green-400 font-bold">KEY {key}:</span>
+                      <span className="text-white text-sm">
+                        {assignment ? assignment.title : 'No Assignment'}
+                      </span>
+                    </div>
+                    {assignment && (
+                      <button
+                        onClick={() => openWindow(assignment)}
+                        className="text-blue-400 hover:text-blue-300 text-sm"
+                      >
+                        Open
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Media Upload Form */}
+          <div className="bg-gray-900 rounded-lg border border-gray-700 p-4 mb-4">
+            <div className="mb-4">
+              <label className="block text-green-400 text-sm mb-2">Media Title (100 characters max)</label>
+              <input
+                type="text"
+                maxLength="100"
+                value={mediaTitle}
+                onChange={(e) => setMediaTitle(e.target.value)}
+                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white"
+                placeholder="Enter media title..."
+              />
+              <div className="text-right text-xs text-gray-500 mt-1">
+                {mediaTitle.length}/100
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-green-400 text-sm mb-2">Description (300 characters max)</label>
+              <textarea
+                maxLength="300"
+                value={mediaDescription}
+                onChange={(e) => setMediaDescription(e.target.value)}
+                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white h-20 resize-none"
+                placeholder="Enter description..."
+              />
+              <div className="text-right text-xs text-gray-500 mt-1">
+                {mediaDescription.length}/300
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-green-400 text-sm mb-2">Select Media File</label>
+              <div 
+                className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-gray-500 transition-colors"
+                onClick={() => selectedKeySlot && fileInputRef.current?.click()}
+              >
+                <div className="text-yellow-400 text-lg mb-2">📁</div>
+                <div className="text-gray-400">
+                  {selectedKeySlot ? 'Click to select file or drag & drop here' : 'Select a key first'}
+                </div>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileSelect}
+                accept="audio/*,video/*,.pdf"
+                className="hidden"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-green-400 text-sm mb-2">Select Key to Replace</label>
+              <div className="grid grid-cols-5 gap-2">
+                {[1, 2, 3, 4, 5].map((key) => {
+                  const assignment = getKeyAssignment(key);
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setSelectedKeySlot(key.toString())}
+                      className={`
+                        h-12 rounded font-bold transition-all
+                        ${selectedKeySlot === key.toString()
+                          ? 'bg-green-600 text-white'
+                          : assignment
+                          ? 'bg-red-600 text-white hover:bg-red-500'
+                          : 'bg-gray-600 text-white hover:bg-gray-500'
+                        }
+                      `}
+                    >
+                      KEY {key}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => selectedKeySlot && fileInputRef.current?.click()}
+                disabled={!selectedKeySlot || isUploading}
+                className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 text-white py-2 rounded font-bold transition-colors"
+              >
+                {isUploading ? 'Uploading...' : 'Upload & Assign Media'}
+              </button>
+              <button
+                onClick={clearForm}
+                className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded font-bold transition-colors"
+              >
+                Clear Form
+              </button>
+            </div>
+
+            {isUploading && (
+              <div className="mt-4">
+                <div className="text-sm text-green-400 mb-2">{uploadStatus}</div>
+                <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Status Messages */}
+      {error && (
+        <div className="max-w-7xl mx-auto mt-4 p-3 bg-red-900 border border-red-500 rounded text-red-100">
+          <div className="flex items-center">
+            <span className="mr-2">⚠️</span>
+            {error}
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Upload Section */}
+      <div className="max-w-7xl mx-auto mt-6">
+        <div className="bg-gray-800 rounded-lg border border-gray-600 p-4">
+          <div className="text-center">
+            <div className="text-green-400 font-bold mb-2">Upload Media to Key</div>
+            <div className="text-gray-400 text-sm">
+              Select a key above, enter title/description, then upload your media file
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Render Open Windows */}
+      {openWindows.map(window => (
+        <UniversalMediaPlayer
+          key={window.id}
+          assignment={window.assignment}
+          onClose={closeWindow}
+          onMinimize={toggleMinimize}
+          isMinimized={window.isMinimized}
+          windowId={window.id}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default VoxProManagement;bold">A</button>
                 <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">B</button>
                 <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">C</button>
                 <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">DUR</button>
                 
                 <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">D</button>
                 <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">E</button>
-                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">F</button>
-                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">CUE</button>
-                
-                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">G</button
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-
