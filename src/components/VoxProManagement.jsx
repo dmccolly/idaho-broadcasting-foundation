@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import WaveSurfer from 'wavesurfer.js';
 
-// Enhanced Universal Media Player Component - FIXED AUDIO + PROPER PDF SIZING
+// Enhanced Universal Media Player Component - WORKING AUDIO + SCALING PDF
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
@@ -25,10 +25,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [windowPos, setWindowPos] = useState({ x: 100, y: 100 });
-  const [windowSize, setWindowSize] = useState({ 
-    width: assignment?.media_url?.match(/\.(pdf)$/i) ? 900 : 800, 
-    height: assignment?.media_url?.match(/\.(pdf)$/i) ? 700 : 600 
-  });
+  const [windowSize, setWindowSize] = useState({ width: 800, height: 600 });
   const windowRef = useRef(null);
 
   const mediaType = assignment?.media_url ? 
@@ -460,15 +457,13 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
         {/* PDF Viewer - FIXED SCALING */}
         {mediaType === 'pdf' && !isLoading && (
-          <div className="h-full w-full p-2">
+          <div className="h-full w-full">
             <iframe
               src={assignment.media_url}
-              className="w-full h-full border-0 rounded"
+              className="w-full h-full border-0"
               style={{
-                transform: 'scale(1)',
-                transformOrigin: 'top left',
-                width: '100%',
-                height: '100%'
+                zoom: Math.min(windowSize.width / 600, windowSize.height / 800),
+                transformOrigin: 'top left'
               }}
               title={assignment.title}
             />
@@ -1099,7 +1094,7 @@ const VoxProManagement = () => {
               <li>• Use 📱 to open media</li>
               <li>• Drag windows to move</li>
               <li>• Audio plays with visualization</li>
-              <li>• PDFs open properly sized</li>
+              <li>• PDFs scale with window</li>
             </ul>
           </div>
         </div>
