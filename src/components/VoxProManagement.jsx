@@ -215,7 +215,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Window management functions (unchanged)
+  // Window management functions
   const handleMouseDown = (e) => {
     if (e.target.closest('.window-controls') || e.target.closest('.resize-handle')) return;
     
@@ -564,3 +564,294 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     </div>
   );
 };
+
+const VoxProManagement = () => {
+  // State management
+  const [connectionStatus, setConnectionStatus] = useState('connecting');
+  const [statusMessage, setStatusMessage] = useState('Connecting to Supabase...');
+  const [assignments, setAssignments] = useState([]);
+  const [activeWindows, setActiveWindows] = useState([]);
+  const [windowCounter, setWindowCounter] = useState(0);
+  const [currentPlayingKey, setCurrentPlayingKey] = useState(null); // Only one key can play at a time
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    submittedBy: '',
+    keySlot: '',
+    mediaFile: null
+  });
+  
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState('');
+
+  // File input ref
+  const fileInputRef = useRef(null);
+
+  // Initialize Supabase connection - NO POPUP CODE, SILENT CONNECTION
+  useEffect(() => {
+    const initializeConnection = async () => {
+      try {
+        // Silent connection - no user prompts or popups
+        const { data, error } = await supabase
+          .from('assignments')
+          .select('*')
+          .limit(1);
+
+        if (error) {
+          console.error('Supabase connection error:', error);
+          setConnectionStatus('disconnected');
+          setStatusMessage('Failed to connect to Supabase');
+          return;
+        }
+
+        setConnectionStatus('connected');
+        setStatusMessage('Connected to Supabase');
+        loadAssignments();
+
+      } catch (error) {
+        console.error('Connection initialization error:', error);
+        setConnectionStatus('disconnected');
+        setStatusMessage('Connection initialization failed');
+      }
+    };
+
+    // Prevent any popup dialogs
+    window.addEventListener('beforeunload', (e) => {
+      e.preventDefault();
+      return undefined;
+    });
+
+    initializeConnection();
+  }, []);
+
+  // Load assignments from Supabase
+  const loadAssignments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('assignments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading assignments:', error);
+        return;
+      }
+
+      setAssignments(data || []);
+    } catch (error) {
+      console.error('Error loading assignments:', error);
+    }
+  };
+
+  // Get assignment for a specific key
+  const getKeyAssignment = (keySlot) => {
+    return assignments.find(assignment => assignment.key_slot === keySlot);
+  };
+
+  // Handle key click - open media viewer
+  const handleKeyClick = (keySlot) => {
+    const assignment = getKeyAssignment(keySlot);
+    
+    if (!assignment) {
+      console.log(`No assignment for key ${keySlot}`);
+      return;
+    }
+
+    // If this key is currently playing, stop it
+    if (currentPlayingKey === keySlot) {
+      setCurrentPlayingKey(null);
+      setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== keySlot));
+      return;
+    }
+
+    // Stop any currently playing key and close its window
+    if (currentPlayingKey) {
+      setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== currentPlayingKey));
+    }
+
+    // Start playing this key
+    setCurrentPlayingKey(keySlot);
+
+    // Create new window
+    const newWindow = {
+      id: windowCounter,
+      assignment,
+      isMinimized: false
+    };
+
+    setActiveWindows([newWindow]); // Only one window at a time
+    setWindowCounter(prev => prev + 1);
+  };
+
+  const closeWindow = (windowId) => {
+    const window = activeWindows.find(w => w.id === windowId);
+    if (window) {
+      // Stop playback for this key
+      if (currentPlayingKey === window.assignment.key_slot) {
+        setCurrentPlayingKey(null);
+      }
+    }
+    
+    setActiveWindows(prev => prev.filter(w => w.id !== windowId));
+  };
+
+  const minimizeWindow = (windowId, minimize) => {
+    setActiveWindows(prev => 
+      prev.map(w => 
+        w.id === windowId 
+          ? { ...w, isMinimized: minimize }
+          : w
+      )
+    );
+  };
+
+  // Trigger file input
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Handle file selection
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({ ...prev, mediaFile: file }));
+    }
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Upload and assign media with accurate progress tracking
+  const uploadAndAssign = async () => {
+    if (!formData.mediaFile || !formData.title || !formData.keySlot) {
+      alert('Please fill in all required fields and select a file');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadStatus('Preparing upload...');
+
+    try {
+      // Simulate progress for preparation
+      setUploadProgress(5);
+      
+      // Upload file to Supabase Storage with accurate progress tracking
+      setUploadStatus('Uploading file...');
+      const fileExt = formData.mediaFile.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('media-files')
+        .upload(fileName, formData.mediaFile, {
+          onUploadProgress: (progress) => {
+            // More accurate progress calculation
+            const percentage = Math.round((progress.loaded / progress.total) * 80) + 5; // 5-85%
+            setUploadProgress(percentage);
+            setUploadStatus(`Uploading... ${Math.round((progress.loaded / progress.total) * 100)}%`);
+          }
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      setUploadProgress(85);
+      setUploadStatus('Saving to database...');
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('media-files')
+        .getPublicUrl(fileName);
+
+      // Save assignment to database
+      const { data: assignmentData, error: assignmentError } = await supabase
+        .from('assignments')
+        .insert([
+          {
+            title: formData.title,
+            description: formData.description,
+            submitted_by: formData.submittedBy,
+            media_url: urlData.publicUrl,
+            media_type: formData.mediaFile.type,
+            key_slot: formData.keySlot,
+            created_at: new Date().toISOString()
+          }
+        ]);
+
+      if (assignmentError) {
+        throw assignmentError;
+      }
+
+      setUploadProgress(100);
+      setUploadStatus('Upload complete!');
+
+      // Clear form
+      clearForm();
+      
+      // Reload assignments
+      loadAssignments();
+
+      setTimeout(() => {
+        setUploadStatus('');
+        setUploadProgress(0);
+      }, 2000);
+
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadStatus(`Upload failed: ${error.message}`);
+      setTimeout(() => {
+        setUploadStatus('');
+        setUploadProgress(0);
+      }, 3000);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Clear form
+  const clearForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      submittedBy: '',
+      keySlot: '',
+      mediaFile: null
+    });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Delete assignment
+  const deleteAssignment = async (assignmentId, keySlot) => {
+    try {
+      const { error } = await supabase
+        .from('assignments')
+        .delete()
+        .eq('id', assignmentId);
+
+      if (error) {
+        throw error;
+      }
+
+      // Stop playback if this key is playing
+      if (currentPlayingKey === keySlot) {
+        setCurrentPlayingKey(null);
+        setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== keySlot));
+      }
+
+      loadAssignments();
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert(`Failed to delete assignment: ${error.message}`);
+    }
+  };
