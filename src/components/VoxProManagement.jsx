@@ -3,58 +3,345 @@ import WaveSurfer from 'wavesurfer.js';
 import { supabase } from '../lib/supabase';
 
 const VoxProManagement = () => {
-  const playerRef   = useRef(null);
+  const playerRef = useRef(null);
   const waveformRef = useRef(null);
-
+  const wavesurferRef = useRef(null);
+  
+  // State management
   const [assignments, setAssignments] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [volume, setVolume] = useState(0.7);
+  const [error, setError] = useState(null);
 
-  // Load assignments (kept from original code)
+  // Load assignments
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase.from('assignments').select('*');
-      if (!error) setAssignments(data);
+      try {
+        const { data, error } = await supabase.from('assignments').select('*');
+        if (error) throw error;
+        setAssignments(data || []);
+      } catch (error) {
+        console.error('Failed to load assignments:', error);
+        setError('Failed to load assignments');
+      }
     };
     load();
   }, []);
 
-  // WaveSurfer for the selected assignment
+  // Initialize WaveSurfer when assignment is selected
   useEffect(() => {
-    if (!selected?.media_url) return;
+    if (!selected?.media_url || !waveformRef.current) {
+      // Reset states when no selection
+      setIsPlaying(false);
+      setDuration(0);
+      setCurrentTime(0);
+      setError(null);
+      return;
+    }
 
-    const ws = WaveSurfer.create({
-      container: waveformRef.current,
-      waveColor: '#4ade80',
-      progressColor: '#059669',
-      height: 80,
-    });
+    setIsLoading(true);
+    setError(null);
 
-    ws.load(selected.media_url);
-    return () => ws.destroy();
-  }, [selected?.media_url]);
+    try {
+      // Destroy existing instance
+      if (wavesurferRef.current) {
+        wavesurferRef.current.destroy();
+      }
+
+      // Create new WaveSurfer instance
+      const ws = WaveSurfer.create({
+        container: waveformRef.current,
+        waveColor: '#4ade80',
+        progressColor: '#059669',
+        height: 80,
+        normalize: true,
+        backend: 'WebAudio', // Essential for audio output
+        mediaControls: false,
+        interact: true,
+        cursorColor: '#ffffff',
+        cursorWidth: 1,
+        barWidth: 2,
+        barRadius: 3,
+        responsive: true,
+        hideScrollbar: true
+      });
+
+      // Store reference
+      wavesurferRef.current = ws;
+
+      // Event listeners
+      ws.on('ready', () => {
+        setIsLoading(false);
+        setDuration(ws.getDuration());
+        ws.setVolume(volume);
+        console.log('Management player ready:', selected.title);
+      });
+
+      ws.on('play', () => {
+        setIsPlaying(true);
+      });
+
+      ws.on('pause', () => {
+        setIsPlaying(false);
+      });
+
+      ws.on('finish', () => {
+        setIsPlaying(false);
+        setCurrentTime(0);
+      });
+
+      ws.on('audioprocess', () => {
+        setCurrentTime(ws.getCurrentTime());
+      });
+
+      ws.on('seek', () => {
+        setCurrentTime(ws.getCurrentTime());
+      });
+
+      ws.on('error', (error) => {
+        console.error('WaveSurfer error:', error);
+        setError('Failed to load audio: ' + error.message);
+        setIsLoading(false);
+      });
+
+      // Load the audio
+      ws.load(selected.media_url);
+
+    } catch (error) {
+      console.error('Failed to initialize WaveSurfer:', error);
+      setError('Failed to initialize audio player');
+      setIsLoading(false);
+    }
+
+    // Cleanup function
+    return () => {
+      if (wavesurferRef.current) {
+        wavesurferRef.current.destroy();
+        wavesurferRef.current = null;
+      }
+      setIsPlaying(false);
+    };
+  }, [selected?.media_url, volume]);
+
+  // Handle assignment selection
+  const handleSelectAssignment = (assignment) => {
+    // Stop current playback if switching assignments
+    if (wavesurferRef.current && isPlaying) {
+      wavesurferRef.current.pause();
+    }
+    setSelected(assignment);
+  };
+
+  // Play/pause functionality
+  const togglePlayPause = async () => {
+    if (!wavesurferRef.current) return;
+
+    try {
+      // Handle browser autoplay policy
+      if (wavesurferRef.current.backend && wavesurferRef.current.backend.ac) {
+        const audioContext = wavesurferRef.current.backend.ac;
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+          console.log('Audio context resumed in management tool');
+        }
+      }
+
+      if (isPlaying) {
+        wavesurferRef.current.pause();
+      } else {
+        wavesurferRef.current.play();
+      }
+    } catch (error) {
+      console.error('Playback error:', error);
+      setError('Playback failed: ' + error.message);
+    }
+  };
+
+  const handleStop = () => {
+    if (!wavesurferRef.current) return;
+    wavesurferRef.current.stop();
+    setCurrentTime(0);
+  };
+
+  const handleVolumeChange = (newVolume) => {
+    setVolume(newVolume);
+    if (wavesurferRef.current) {
+      wavesurferRef.current.setVolume(newVolume);
+    }
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
-    <div className="p-4">
-      {/* List of assignments, click to setSelected */}
-      <ul className="mb-4">
-        {assignments.map((a) => (
-          <li
-            key={a.id}
-            onClick={() => setSelected(a)}
-            className="cursor-pointer hover:text-green-400"
-          >
-            {a.title}
-          </li>
-        ))}
-      </ul>
-
-      {/* Waveform player */}
-      {selected && (
-        <div
-          ref={waveformRef}
-          className="w-full h-16 bg-gray-900 rounded"
-        />
+    <div className="p-4 bg-gray-800 rounded-lg">
+      <h2 className="text-xl font-bold text-white mb-4">VoxPro Management</h2>
+      
+      {/* Error display */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-900 border border-red-700 rounded text-red-200 text-sm">
+          {error}
+        </div>
       )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Assignment List */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-200 mb-3">Assignments</h3>
+          <div className="bg-gray-900 rounded-lg p-4 max-h-96 overflow-y-auto">
+            {assignments.length === 0 ? (
+              <p className="text-gray-400">No assignments found</p>
+            ) : (
+              <ul className="space-y-2">
+                {assignments.map((assignment) => (
+                  <li
+                    key={assignment.id}
+                    onClick={() => handleSelectAssignment(assignment)}
+                    className={`p-3 rounded cursor-pointer transition-colors ${
+                      selected?.id === assignment.id
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                    }`}
+                  >
+                    <div className="font-medium">{assignment.title}</div>
+                    <div className="text-sm opacity-75">
+                      {assignment.description || 'No description'}
+                    </div>
+                    {assignment.media_url && (
+                      <div className="text-xs mt-1 opacity-60">
+                        📁 {assignment.media_url.split('/').pop()}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* Audio Player */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-200 mb-3">
+            {selected ? `Playing: ${selected.title}` : 'Select an assignment'}
+          </h3>
+          
+          {selected ? (
+            <div className="bg-gray-900 rounded-lg p-4">
+              {/* Loading indicator */}
+              {isLoading && (
+                <div className="mb-4 p-3 bg-blue-900 border border-blue-700 rounded text-blue-200 text-sm">
+                  Loading audio...
+                </div>
+              )}
+
+              {/* Waveform container */}
+              <div
+                ref={waveformRef}
+                className="w-full h-16 bg-gray-800 rounded mb-4"
+              />
+
+              {/* Controls */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  {/* Play/Pause button */}
+                  <button
+                    onClick={togglePlayPause}
+                    disabled={isLoading || !wavesurferRef.current}
+                    className="flex items-center justify-center w-12 h-12 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-full transition-colors"
+                  >
+                    {isPlaying ? (
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
+
+                  {/* Stop button */}
+                  <button
+                    onClick={handleStop}
+                    disabled={isLoading || !wavesurferRef.current}
+                    className="flex items-center justify-center w-10 h-10 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-full transition-colors"
+                  >
+                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+
+                  {/* Time display */}
+                  <div className="text-sm text-gray-300">
+                    {formatTime(currentTime)} / {formatTime(duration)}
+                  </div>
+                </div>
+
+                {/* Volume control */}
+                <div className="flex items-center space-x-2">
+                  <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.778l-4.146-3.319H2a1 1 0 01-1-1V7.5a1 1 0 011-1h2.237l4.146-3.318a1 1 0 011.617.778zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" />
+                  </svg>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={volume}
+                    onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                    className="w-20 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <span className="text-xs text-gray-400 w-8">
+                    {Math.round(volume * 100)}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Assignment details */}
+              <div className="mt-4 p-3 bg-gray-800 rounded text-sm">
+                <h4 className="font-medium text-gray-200 mb-2">Assignment Details</h4>
+                <div className="text-gray-400 space-y-1">
+                  <div><strong>ID:</strong> {selected.id}</div>
+                  <div><strong>Title:</strong> {selected.title}</div>
+                  {selected.description && (
+                    <div><strong>Description:</strong> {selected.description}</div>
+                  )}
+                  <div><strong>Media URL:</strong> {selected.media_url}</div>
+                  {selected.created_at && (
+                    <div><strong>Created:</strong> {new Date(selected.created_at).toLocaleString()}</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Debug info (development only) */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="mt-4 p-2 bg-gray-800 rounded text-xs text-gray-400">
+                  <div><strong>Debug Info:</strong></div>
+                  <div>Playing: {isPlaying ? 'Yes' : 'No'}</div>
+                  <div>Duration: {formatTime(duration)}</div>
+                  <div>Current Time: {formatTime(currentTime)}</div>
+                  <div>Volume: {Math.round(volume * 100)}%</div>
+                  <div>Audio Context: {wavesurferRef.current?.backend?.ac?.state || 'Unknown'}</div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-gray-900 rounded-lg p-8 text-center text-gray-400">
+              <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clipRule="evenodd" />
+              </svg>
+              <p>Select an assignment from the list to begin playback</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
