@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import WaveSurfer from 'wavesurfer.js';
 
-// Enhanced Universal Media Player Component - FINAL
+// Enhanced Universal Media Player Component - WORKING AUDIO + ENHANCED FALLBACK VISUALIZATION
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,18 +14,20 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isMaximized, setIsMaximized] = useState(false);
   const [previousSize, setPreviousSize] = useState(null);
-
+  
   // Audio states
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [audioReady, setAudioReady] = useState(false);
-
+  const [visualizationType, setVisualizationType] = useState('loading'); // 'wavesurfer', 'fallback', 'loading'
+  
   const playerRef = useRef(null); // HTML5 audio element for SOUND ONLY
   const waveformRef = useRef(null);
   const wavesurferRef = useRef(null); // Wavesurfer for VISUALIZATION ONLY
   const windowRef = useRef(null);
+  const animationFrameRef = useRef(null);
 
   useEffect(() => {
     if (assignment?.media_url) {
@@ -35,7 +37,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
   const detectMediaType = (url) => {
     const extension = url.split('.').pop().toLowerCase();
-
+    
     if (['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(extension)) {
       setMediaType('video');
     } else if (['mp3', 'wav', 'ogg', 'aac', 'm4a'].includes(extension)) {
@@ -50,14 +52,163 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     setIsLoading(false);
   };
 
+  // Enhanced animated fallback visualization
+  const createEnhancedFallbackVisualization = () => {
+    if (!waveformRef.current) return;
+    
+    console.log('🎨 Creating enhanced animated visualization...');
+    setVisualizationType('fallback');
+    
+    const container = waveformRef.current;
+    container.innerHTML = '';
+    
+    // Create visualization container
+    const visualizer = document.createElement('div');
+    visualizer.style.cssText = `
+      width: 100%;
+      height: 80px;
+      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #374151;
+    `;
+    
+    // Create bars container
+    const barsContainer = document.createElement('div');
+    barsContainer.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      height: 60px;
+      position: relative;
+      z-index: 2;
+    `;
+    
+    // Create progress overlay
+    const progressOverlay = document.createElement('div');
+    progressOverlay.id = 'progress-overlay';
+    progressOverlay.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.5) 100%);
+      transition: width 0.1s ease;
+      z-index: 1;
+      border-radius: 8px;
+    `;
+    
+    // Generate bars with varied heights
+    const barCount = 60;
+    const bars = [];
+    
+    for (let i = 0; i < barCount; i++) {
+      const bar = document.createElement('div');
+      const baseHeight = 15 + (Math.sin(i * 0.2) * 10) + (Math.random() * 20);
+      
+      bar.style.cssText = `
+        width: 3px;
+        height: ${baseHeight}px;
+        background: linear-gradient(to top, #059669, #10b981, #4ade80);
+        border-radius: 2px;
+        transition: all 0.15s ease;
+        opacity: 0.7;
+        transform-origin: bottom;
+      `;
+      
+      bar.dataset.baseHeight = baseHeight;
+      bar.dataset.index = i;
+      bars.push(bar);
+      barsContainer.appendChild(bar);
+    }
+    
+    visualizer.appendChild(progressOverlay);
+    visualizer.appendChild(barsContainer);
+    container.appendChild(visualizer);
+    
+    // Animation function
+    let animationTime = 0;
+    const animate = () => {
+      if (visualizationType !== 'fallback') return;
+      
+      animationTime += 0.05;
+      
+      bars.forEach((bar, index) => {
+        const baseHeight = parseFloat(bar.dataset.baseHeight);
+        let heightMultiplier = 1;
+        let opacity = 0.7;
+        
+        if (isPlaying) {
+          // Create wave-like animation when playing
+          const wave1 = Math.sin(animationTime * 2 + index * 0.3) * 0.5;
+          const wave2 = Math.sin(animationTime * 1.5 + index * 0.2) * 0.3;
+          const wave3 = Math.sin(animationTime * 3 + index * 0.1) * 0.2;
+          
+          heightMultiplier = 1 + wave1 + wave2 + wave3;
+          opacity = 0.8 + (wave1 * 0.2);
+          
+          // Add some bars that pulse more dramatically
+          if (index % 7 === Math.floor(animationTime * 2) % 7) {
+            heightMultiplier *= 1.5;
+            opacity = 1;
+          }
+        }
+        
+        const newHeight = Math.max(8, baseHeight * heightMultiplier);
+        bar.style.height = `${newHeight}px`;
+        bar.style.opacity = opacity;
+        
+        // Color changes based on height
+        if (heightMultiplier > 1.3) {
+          bar.style.background = 'linear-gradient(to top, #059669, #10b981, #34d399, #6ee7b7)';
+        } else {
+          bar.style.background = 'linear-gradient(to top, #059669, #10b981, #4ade80)';
+        }
+      });
+      
+      // Update progress overlay
+      if (duration > 0) {
+        const progressPercent = (currentTime / duration) * 100;
+        progressOverlay.style.width = `${progressPercent}%`;
+      }
+      
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+    
+    // Start animation
+    animate();
+    
+    console.log('✅ Enhanced animated visualization ready');
+  };
+
+  // Try Wavesurfer first, fall back to enhanced animation
   const initializeWavesurfer = async () => {
     if (!waveformRef.current || mediaType !== 'audio' || !assignment?.media_url) return;
 
-    if (wavesurferRef.current) {
-        wavesurferRef.current.destroy();
-    }
-
     try {
+      console.log('🎵 Attempting Wavesurfer visualization for:', assignment.title);
+      setVisualizationType('loading');
+      
+      // Clean up existing instance
+      if (wavesurferRef.current) {
+        try {
+          wavesurferRef.current.destroy();
+        } catch (e) {
+          console.warn('Error destroying previous Wavesurfer:', e);
+        }
+        wavesurferRef.current = null;
+      }
+
+      // Clear container
+      waveformRef.current.innerHTML = '';
+
+      // Try MediaElement backend first (better CORS handling)
       const ws = WaveSurfer.create({
         container: waveformRef.current,
         waveColor: '#4ade80',
@@ -65,7 +216,8 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         cursorColor: '#ffffff',
         height: 80,
         normalize: true,
-        interact: true, // Allow seeking
+        backend: 'MediaElement',
+        interact: false,
         barWidth: 2,
         barGap: 1,
         barRadius: 3,
@@ -73,38 +225,74 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         hideScrollbar: true,
         fillParent: true
       });
+
       wavesurferRef.current = ws;
 
-      ws.on('seek', (progress) => {
-        if (playerRef.current) {
-          playerRef.current.currentTime = playerRef.current.duration * progress;
-        }
+      // Set up event handlers
+      ws.on('ready', () => {
+        console.log('✅ Wavesurfer visualization loaded successfully');
+        setVisualizationType('wavesurfer');
+        // Immediately mute for visualization only
+        ws.setMuted(true);
+        ws.setVolume(0);
       });
 
-      ws.on('ready', () => ws.setMuted(true));
-      ws.on('error', () => createFallbackVisualization());
-      ws.load(assignment.media_url);
+      ws.on('error', (error) => {
+        console.warn('⚠️ Wavesurfer failed, switching to enhanced fallback:', error);
+        createEnhancedFallbackVisualization();
+      });
+
+      // Try to load with timeout
+      const loadPromise = ws.load(assignment.media_url);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Wavesurfer load timeout')), 5000)
+      );
+
+      await Promise.race([loadPromise, timeoutPromise]);
 
     } catch (error) {
-      createFallbackVisualization();
+      console.warn('⚠️ Wavesurfer initialization failed, using enhanced fallback:', error);
+      createEnhancedFallbackVisualization();
     }
   };
 
-  const createFallbackVisualization = () => {
-    if (!waveformRef.current) return;
-    waveformRef.current.innerHTML = `<div class="w-full h-full flex items-center justify-center bg-gray-900 text-gray-400">Waveform unavailable.</div>`;
-  };
-
+  // Initialize audio when media type is detected
   useEffect(() => {
     if (mediaType === 'audio') {
-      initializeWavesurfer();
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        initializeWavesurfer();
+      }, 100);
     }
+    
     return () => {
+      // Cleanup animation
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      
       if (wavesurferRef.current) {
-        wavesurferRef.current.destroy();
+        try {
+          wavesurferRef.current.destroy();
+        } catch (e) {
+          console.warn('Cleanup error:', e);
+        }
+        wavesurferRef.current = null;
       }
     };
   }, [mediaType, assignment?.media_url]);
+
+  // Update Wavesurfer progress when using HTML5 audio
+  useEffect(() => {
+    if (wavesurferRef.current && visualizationType === 'wavesurfer' && duration > 0) {
+      const progress = currentTime / duration;
+      try {
+        wavesurferRef.current.seekTo(progress);
+      } catch (err) {
+        // Silently handle sync errors
+      }
+    }
+  }, [currentTime, duration, visualizationType]);
 
   const formatTime = (seconds) => {
     if (!seconds || isNaN(seconds)) return '0:00';
@@ -113,14 +301,24 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Window management functions
   const handleMouseDown = (e) => {
     if (e.target.closest('.window-controls') || e.target.closest('.resize-handle')) return;
+    
     setIsDragging(true);
-    setDragStart({ x: e.clientX - windowPosition.x, y: e.clientY - windowPosition.y });
+    setDragStart({
+      x: e.clientX - windowPosition.x,
+      y: e.clientY - windowPosition.y
+    });
   };
 
   const handleMouseMove = (e) => {
-    if (isDragging) setWindowPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+    if (isDragging) {
+      setWindowPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
   };
 
   const handleMouseUp = () => {
@@ -131,14 +329,23 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const handleResizeStart = (e) => {
     e.stopPropagation();
     setIsResizing(true);
-    setDragStart({ x: e.clientX, y: e.clientY, width: windowSize.width, height: windowSize.height });
+    setDragStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: windowSize.width,
+      height: windowSize.height
+    });
   };
 
   const handleResizeMove = (e) => {
     if (isResizing) {
       const deltaX = e.clientX - dragStart.x;
       const deltaY = e.clientY - dragStart.y;
-      setWindowSize({ width: Math.max(400, dragStart.width + deltaX), height: Math.max(300, dragStart.height + deltaY) });
+      
+      setWindowSize({
+        width: Math.max(400, dragStart.width + deltaX),
+        height: Math.max(300, dragStart.height + deltaY)
+      });
     }
   };
 
@@ -148,28 +355,51 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       setWindowPosition(previousSize.position);
       setIsMaximized(false);
     } else {
-      setPreviousSize({ size: windowSize, position: windowPosition });
-      setWindowSize({ width: window.innerWidth - 40, height: window.innerHeight - 40 });
+      setPreviousSize({
+        size: windowSize,
+        position: windowPosition
+      });
+      setWindowSize({
+        width: window.innerWidth - 40,
+        height: window.innerHeight - 40
+      });
       setWindowPosition({ x: 20, y: 20 });
       setIsMaximized(true);
     }
   };
 
   useEffect(() => {
-    const moveHandler = isDragging ? handleMouseMove : handleResizeMove;
     if (isDragging || isResizing) {
-      document.addEventListener('mousemove', moveHandler);
+      document.addEventListener('mousemove', isDragging ? handleMouseMove : handleResizeMove);
       document.addEventListener('mouseup', handleMouseUp);
+      
       return () => {
-        document.removeEventListener('mousemove', moveHandler);
+        document.removeEventListener('mousemove', isDragging ? handleMouseMove : handleResizeMove);
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, isResizing]);
+  }, [isDragging, isResizing, dragStart, windowPosition, windowSize]);
 
   const renderMediaContent = () => {
-    if (isLoading) return <div className="flex items-center justify-center h-64 bg-gray-800 rounded"><div className="text-green-400">Loading media...</div></div>;
-    if (error) return <div className="flex items-center justify-center h-64 bg-gray-800 rounded text-red-400 text-center p-4">Error: {error}</div>;
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center h-64 bg-gray-800 rounded">
+          <div className="text-green-400">Loading media...</div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="flex items-center justify-center h-64 bg-gray-800 rounded text-red-400 text-center p-4">
+          <div>
+            <div className="text-4xl mb-2">❌</div>
+            <div>Error loading media:</div>
+            <div className="text-sm mt-2">{error}</div>
+          </div>
+        </div>
+      );
+    }
 
     switch (mediaType) {
       case 'video':
@@ -188,42 +418,114 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       case 'audio':
         return (
           <div className="bg-gray-800 rounded p-4">
+            <div className="flex items-center justify-center h-20 mb-4">
+              <div className="text-green-400 text-4xl">🎵</div>
+              <div className="ml-4 text-center">
+                <div className="text-white font-medium">{assignment.title}</div>
+                <div className="text-gray-400 text-sm">Audio File</div>
+              </div>
+            </div>
+            
+            {/* HTML5 Audio Element - PLAYBACK ONLY (hidden) */}
             <audio
               ref={playerRef}
-              src={assignment.media_url}
+              className="hidden"
               preload="metadata"
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              onEnded={() => { setIsPlaying(false); setCurrentTime(0); }}
-              onLoadedMetadata={(e) => { setDuration(e.target.duration); setAudioReady(true); }}
-              onError={() => setError('Audio playback failed')}
               onTimeUpdate={(e) => {
-                  const newTime = e.target.currentTime;
-                  setCurrentTime(newTime);
-                  // *** THIS IS THE CORRECTED SYNC LOGIC ***
-                  if (wavesurferRef.current && playerRef.current.duration) {
-                      wavesurferRef.current.seekTo(newTime / playerRef.current.duration);
-                  }
+                setCurrentTime(e.target.currentTime);
+              }}
+              onPlay={() => {
+                console.log('🔊 HTML5 Audio playing - you should hear sound');
+                setIsPlaying(true);
+              }}
+              onPause={() => {
+                console.log('⏸️ HTML5 Audio paused');
+                setIsPlaying(false);
+              }}
+              onEnded={() => {
+                console.log('⏹️ HTML5 Audio ended');
+                setIsPlaying(false);
+                setCurrentTime(0);
+              }}
+              onLoadedMetadata={(e) => {
+                console.log('📊 HTML5 Audio metadata loaded, duration:', e.target.duration);
+                setDuration(e.target.duration);
+                setAudioReady(true);
+              }}
+              onError={(e) => {
+                console.error('❌ HTML5 Audio error:', e);
+                setError('Audio playback failed');
               }}
               volume={volume}
               crossOrigin="anonymous"
-            />
+            >
+              <source src={assignment.media_url} type="audio/mpeg" />
+              <source src={assignment.media_url} type="audio/wav" />
+              <source src={assignment.media_url} type="audio/ogg" />
+              Your browser does not support the audio element.
+            </audio>
+            
+            {/* Visualization Container */}
             <div className="mb-4">
-              <div ref={waveformRef} className="w-full h-20 bg-gray-900 rounded border border-gray-600" style={{ minHeight: '80px', cursor: 'pointer' }} />
+              <div
+                ref={waveformRef}
+                className="w-full h-20 bg-gray-900 rounded border border-gray-600"
+                style={{ minHeight: '80px' }}
+              />
+              <div className="text-xs text-center mt-2 text-gray-400">
+                {visualizationType === 'loading' && '⏳ Loading visualization...'}
+                {visualizationType === 'wavesurfer' && '📊 Wavesurfer Visualization'}
+                {visualizationType === 'fallback' && '🎨 Enhanced Audio Visualization'}
+              </div>
             </div>
+
+            {/* Audio Controls - Control HTML5 Audio ONLY */}
             <div className="flex items-center justify-between bg-gray-900 rounded p-3">
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => { playerRef.current?.paused ? playerRef.current?.play() : playerRef.current?.pause(); }}
+                  onClick={() => {
+                    if (!playerRef.current) {
+                      console.warn('⚠️ Audio element not ready');
+                      return;
+                    }
+                    
+                    try {
+                      if (isPlaying) {
+                        playerRef.current.pause();
+                      } else {
+                        console.log('🎵 Starting HTML5 audio playback...');
+                        playerRef.current.play();
+                      }
+                    } catch (error) {
+                      console.error('❌ Playback error:', error);
+                      setError('Playback failed: ' + error.message);
+                    }
+                  }}
                   disabled={!audioReady}
                   className="flex items-center justify-center w-10 h-10 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-full transition-colors"
                 >
                   {isPlaying ? '⏸️' : '▶️'}
                 </button>
+
+                <button
+                  onClick={() => {
+                    if (playerRef.current) {
+                      playerRef.current.pause();
+                      playerRef.current.currentTime = 0;
+                    }
+                    setCurrentTime(0);
+                  }}
+                  disabled={!audioReady}
+                  className="flex items-center justify-center w-8 h-8 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-full transition-colors"
+                >
+                  ⏹️
+                </button>
+
                 <div className="text-sm text-gray-300">
                   {formatTime(currentTime)} / {formatTime(duration)}
                 </div>
               </div>
+
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-400">🔊</span>
                 <input
@@ -245,6 +547,15 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
                   {Math.round(volume * 100)}%
                 </span>
               </div>
+            </div>
+
+            {/* Debug Status */}
+            <div className="mt-3 text-xs text-gray-400 space-y-1">
+              <div>🔊 Audio: HTML5 Element {isPlaying ? '(Playing)' : '(Ready)'}</div>
+              <div>📊 Visualization: {visualizationType === 'wavesurfer' ? 'Wavesurfer (Muted)' : 'Enhanced Animated'}</div>
+              <div>⏱️ Duration: {formatTime(duration)}</div>
+              <div>🎚️ Volume: {Math.round(volume * 100)}%</div>
+              <div>✅ Status: {audioReady ? 'Ready' : 'Loading...'}</div>
             </div>
           </div>
         );
@@ -324,7 +635,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   }
 
   return (
-    <div
+    <div 
       ref={windowRef}
       className="fixed bg-gray-900 border border-gray-600 rounded-lg shadow-2xl z-40 overflow-hidden select-none"
       style={{
@@ -368,7 +679,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       </div>
 
       {/* Content Area */}
-      <div className="flex h-full overflow-hidden" style={{ height: `calc(100% - 40px)` }}>
+      <div className="flex h-full overflow-hidden" style={{ height: windowSize.height - 40 }}>
         {/* Media Player Section */}
         <div className="flex-1 p-4 overflow-auto">
           <div className="mb-2">
@@ -395,6 +706,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
                 <>
                   <div><strong>Audio Ready:</strong> {audioReady ? '✅ Yes' : '❌ No'}</div>
                   <div><strong>Duration:</strong> {formatTime(duration)}</div>
+                  <div><strong>Visualization:</strong> {visualizationType}</div>
                 </>
               )}
             </div>
@@ -403,7 +715,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       </div>
 
       {/* Resize Handle */}
-      <div
+      <div 
         className="absolute bottom-0 right-0 w-4 h-4 bg-gray-600 cursor-se-resize resize-handle"
         onMouseDown={handleResizeStart}
         title="Resize window"
@@ -413,6 +725,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     </div>
   );
 };
+
 const VoxProManagement = () => {
   // State management
   const [connectionStatus, setConnectionStatus] = useState('connecting');
@@ -421,7 +734,7 @@ const VoxProManagement = () => {
   const [activeWindows, setActiveWindows] = useState([]);
   const [windowCounter, setWindowCounter] = useState(0);
   const [currentPlayingKey, setCurrentPlayingKey] = useState(null); // Only one key can play at a time
-
+  
   // Form state
   const [formData, setFormData] = useState({
     title: '',
@@ -430,7 +743,7 @@ const VoxProManagement = () => {
     keySlot: '',
     mediaFile: null
   });
-
+  
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState('');
@@ -496,7 +809,7 @@ const VoxProManagement = () => {
   // Handle key click - open media viewer
   const handleKeyClick = (keySlot) => {
     const assignment = getKeyAssignment(keySlot);
-
+    
     if (!assignment) {
       console.log(`No assignment for key ${keySlot}`);
       return;
@@ -536,14 +849,14 @@ const VoxProManagement = () => {
         setCurrentPlayingKey(null);
       }
     }
-
+    
     setActiveWindows(prev => prev.filter(w => w.id !== windowId));
   };
 
   const minimizeWindow = (windowId, minimize) => {
-    setActiveWindows(prev =>
-      prev.map(w =>
-        w.id === windowId
+    setActiveWindows(prev => 
+      prev.map(w => 
+        w.id === windowId 
           ? { ...w, isMinimized: minimize }
           : w
       )
@@ -585,12 +898,12 @@ const VoxProManagement = () => {
     try {
       // Simulate progress for preparation
       setUploadProgress(5);
-
+      
       // Upload file to Supabase Storage with accurate progress tracking
       setUploadStatus('Uploading file...');
       const fileExt = formData.mediaFile.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('media-files')
         .upload(fileName, formData.mediaFile, {
@@ -638,7 +951,7 @@ const VoxProManagement = () => {
 
       // Clear form
       clearForm();
-
+      
       // Reload assignments
       loadAssignments();
 
@@ -710,7 +1023,7 @@ const VoxProManagement = () => {
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
-
+          
           {/* Column 1: VoxPro Management Console */}
           <div className="bg-gray-800 rounded-lg p-6 shadow-2xl border border-gray-600">
             {/* Header */}
@@ -722,8 +1035,8 @@ const VoxProManagement = () => {
             {/* Connection Status */}
             <div className="text-center mb-6">
               <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
-                connectionStatus === 'connected'
-                  ? 'bg-green-600 text-white'
+                connectionStatus === 'connected' 
+                  ? 'bg-green-600 text-white' 
                   : 'bg-red-600 text-white'
               }`}>
                 <div className={`w-2 h-2 rounded-full mr-2 ${
@@ -739,7 +1052,7 @@ const VoxProManagement = () => {
                 {[1, 2, 3, 4, 5].map((key) => {
                   const assignment = getKeyAssignment(key.toString());
                   const isPlaying = currentPlayingKey === key.toString();
-
+                  
                   return (
                     <button
                       key={key}
@@ -756,9 +1069,9 @@ const VoxProManagement = () => {
                         w-16 h-16 rounded-lg font-bold text-white text-lg
                         transition-all duration-200 transform hover:scale-105
                         ${isPlaying
-                          ? 'bg-gradient-to-b from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 shadow-lg'
-                          : assignment
-                          ? 'bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 shadow-lg'
+                          ? 'bg-gradient-to-b from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 shadow-lg' 
+                          : assignment 
+                          ? 'bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 shadow-lg' 
                           : 'bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700'
                         }
                         border-2 border-gray-500 shadow-md
@@ -779,7 +1092,7 @@ const VoxProManagement = () => {
               <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">B</button>
               <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">C</button>
               <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">D</button>
-
+              
               {/* Row 2 */}
               <button className="w-12 h-10 bg-gradient-to-b from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">DUP</button>
               <button className="w-12 h-10 bg-gradient-to-b from-yellow-600 to-yellow-800 hover:from-yellow-500 hover:to-yellow-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">CUE</button>
@@ -804,15 +1117,15 @@ const VoxProManagement = () => {
           {/* Column 2: Key Assignment Management */}
           <div className="bg-gray-800 rounded-lg p-6 shadow-2xl border border-gray-600">
             <h3 className="text-xl font-bold text-green-400 mb-4">Key Assignment Management</h3>
-
+            
             {/* Upload Form */}
             <div className="mb-6">
               <h4 className="text-lg font-semibold text-gray-300 mb-3">Upload & Assign Media</h4>
-
+              
               {/* File Upload */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-300 mb-2">Media File</label>
-                <div
+                <div 
                   onClick={triggerFileInput}
                   className="border-2 border-dashed border-gray-500 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 transition-colors bg-gray-700"
                 >
@@ -910,7 +1223,7 @@ const VoxProManagement = () => {
                     <span>{uploadProgress}%</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div
+                    <div 
                       className="bg-green-600 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
                     ></div>
@@ -944,10 +1257,10 @@ const VoxProManagement = () => {
                 {[1, 2, 3, 4, 5].map((keyNum) => {
                   const assignment = getKeyAssignment(keyNum.toString());
                   return (
-                    <div key={keyNum}
+                    <div key={keyNum} 
                       className={`p-3 rounded-lg border ${
-                        currentPlayingKey === keyNum.toString()
-                          ? 'border-green-500 bg-green-900/20'
+                        currentPlayingKey === keyNum.toString() 
+                          ? 'border-green-500 bg-green-900/20' 
                           : 'border-gray-600 bg-gray-700'
                       }`}
                     >
