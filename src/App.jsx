@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 // --- All Components and Mock Data are now in this single file to resolve import errors ---
 
-// Mock Supabase Client
+// Mock Supabase Client to prevent import errors in this environment
 const supabase = {
   from: () => ({
     select: () => ({
