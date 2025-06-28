@@ -1,4 +1,8 @@
-import { useState } from 'react';
+{/* Add this at the top of your return statement */}
+<div className="bg-red-500 text-white p-8 text-center text-4xl font-bold mb-8">
+  🚨 TAILWIND TEST - If this is red with white text, Tailwind works!
+</div>
+    import { useState } from 'react';
 import VoxProPlayer from './components/VoxProPlayer';
 import VoxProManagement from './components/VoxProManagement';
 
