@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 // --- Helper Functions, Mock Data, and All Components are now in this file ---
 
-// Mock Supabase Client to prevent import errors
+// Mock Supabase Client to prevent import errors in this environment
 const supabase = {
   from: () => ({
     select: () => ({
@@ -20,7 +20,7 @@ const supabase = {
 // --- Player Component Definitions ---
 
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
-    // This is a placeholder for the full UniversalMediaPlayer component.
+    // This is a placeholder for the pop-up media player.
     if (isMinimized) {
         return (
             <div className="fixed bottom-4 right-4 bg-gray-800 border border-gray-600 rounded-lg p-2 shadow-lg z-50 animate-pulse">
@@ -72,17 +72,14 @@ const VoxProPlayer = () => {
     const handleKeyClick = async (keySlot) => {
         const assignment = getKeyAssignment(keySlot);
         if (!assignment) return;
-
         if (currentPlayingKey === keySlot) {
             setCurrentPlayingKey(null);
             setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== keySlot));
             return;
         }
-
         if (currentPlayingKey) {
             setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== currentPlayingKey));
         }
-
         setCurrentPlayingKey(keySlot);
         const newWindow = { id: windowCounter, assignment, isMinimized: false };
         setActiveWindows([newWindow]);
@@ -103,55 +100,57 @@ const VoxProPlayer = () => {
 
     return (
         <>
-            <div className="bg-gray-900 text-white rounded-lg border-2 border-gray-700 p-4 h-full flex flex-col space-y-6 shadow-2xl">
-                {/* Control Panel Section */}
-                <div>
+            {/* The root container for the entire dark-themed GUI */}
+            <div className="bg-gray-900 text-white rounded-lg border-2 border-gray-700 p-4 shadow-2xl flex flex-col space-y-4">
+
+                {/* Top Section: Player Controls */}
+                <div className="bg-gray-800 rounded-lg p-4 shadow-xl border border-gray-600">
                     <div className="text-center mb-4">
                         <h3 className="text-xl font-bold text-green-400">VoxPro Media Player</h3>
                         <p className="text-gray-400 text-xs">Broadcasting Control System</p>
                     </div>
-                    <div className="bg-gray-800 rounded-lg p-4 shadow-xl border border-gray-600">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <div className="grid grid-cols-3 gap-2">
-                                    {[1, 2, 3].map((key) => {
-                                        const assignment = getKeyAssignment(key.toString());
-                                        const isPlaying = currentPlayingKey === key.toString();
-                                        return <button key={key} onClick={() => handleKeyClick(key.toString())} className={`h-16 rounded-lg font-bold text-white text-lg transition-all transform hover:scale-105 ${isPlaying ? 'bg-gradient-to-b from-green-500 to-green-700' : assignment ? 'bg-gradient-to-b from-red-500 to-red-700' : 'bg-gradient-to-b from-gray-600 to-gray-800'} border-2 border-gray-500 shadow-md`} title={assignment ? assignment.title : `Key ${key} - No Assignment`}>{isPlaying ? 'STOP' : key}</button>;
-                                    })}
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {[4, 5].map((key) => {
-                                        const assignment = getKeyAssignment(key.toString());
-                                        const isPlaying = currentPlayingKey === key.toString();
-                                        return <button key={key} onClick={() => handleKeyClick(key.toString())} className={`h-16 rounded-lg font-bold text-white text-lg transition-all transform hover:scale-105 ${isPlaying ? 'bg-gradient-to-b from-green-500 to-green-700' : assignment ? 'bg-gradient-to-b from-red-500 to-red-700' : 'bg-gradient-to-b from-gray-600 to-gray-800'} border-2 border-gray-500 shadow-md`} title={assignment ? assignment.title : `Key ${key} - No Assignment`}>{isPlaying ? 'STOP' : key}</button>;
-                                    })}
-                                </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Column 1: START Keys */}
+                        <div className="space-y-2">
+                            <div className="grid grid-cols-3 gap-2">
+                                {[1, 2, 3].map((key) => {
+                                    const assignment = getKeyAssignment(key.toString());
+                                    const isPlaying = currentPlayingKey === key.toString();
+                                    return <button key={key} onClick={() => handleKeyClick(key.toString())} className={`h-16 rounded-lg font-bold text-white text-lg transition-all transform hover:scale-105 ${isPlaying ? 'bg-gradient-to-b from-green-500 to-green-700' : assignment ? 'bg-gradient-to-b from-red-500 to-red-700' : 'bg-gradient-to-b from-gray-600 to-gray-800'} border-2 border-gray-500 shadow-md`} title={assignment ? assignment.title : `Key ${key} - No Assignment`}>{isPlaying ? 'STOP' : key}</button>;
+                                })}
                             </div>
                             <div className="grid grid-cols-2 gap-2">
-                                <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 rounded border-2 border-gray-500 font-bold text-white text-sm">A</button>
-                                <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 rounded border-2 border-gray-500 font-bold text-white text-sm">B</button>
-                                <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 rounded border-2 border-gray-500 font-bold text-white text-sm">C</button>
-                                <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 rounded border-2 border-gray-500 font-bold text-white text-sm">D</button>
-                                <button className="h-10 bg-gradient-to-b from-blue-600 to-blue-800 rounded border-2 border-gray-500 font-bold text-white text-xs">DUP</button>
-                                <button className="h-10 bg-gradient-to-b from-yellow-600 to-yellow-800 rounded border-2 border-gray-500 font-bold text-white text-xs">CUE</button>
-                                <button className="h-10 bg-gradient-to-b from-red-600 to-red-800 rounded border-2 border-gray-500 font-bold text-white text-xs">REC</button>
-                                <div className="h-10 bg-gradient-to-b from-gray-700 to-gray-900 rounded border-2 border-gray-500 flex items-center justify-center"><div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center"><div className="w-1.5 h-1.5 bg-white rounded-full"></div></div></div>
+                                {[4, 5].map((key) => {
+                                    const assignment = getKeyAssignment(key.toString());
+                                    const isPlaying = currentPlayingKey === key.toString();
+                                    return <button key={key} onClick={() => handleKeyClick(key.toString())} className={`h-16 rounded-lg font-bold text-white text-lg transition-all transform hover:scale-105 ${isPlaying ? 'bg-gradient-to-b from-green-500 to-green-700' : assignment ? 'bg-gradient-to-b from-red-500 to-red-700' : 'bg-gradient-to-b from-gray-600 to-gray-800'} border-2 border-gray-500 shadow-md`} title={assignment ? assignment.title : `Key ${key} - No Assignment`}>{isPlaying ? 'STOP' : key}</button>;
+                                })}
                             </div>
                         </div>
-                         <div className="mt-4 text-center">
-                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${connectionStatus === 'connected' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
-                                <div className={`w-1.5 h-1.5 rounded-full mr-2 ${connectionStatus === 'connected' ? 'bg-green-300' : 'bg-red-300'} animate-pulse`}></div>{statusMessage}
-                            </div>
+                        {/* Column 2: Control Buttons */}
+                        <div className="grid grid-cols-2 gap-2">
+                            <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 rounded border-2 border-gray-500 font-bold text-white text-sm">A</button>
+                            <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 rounded border-2 border-gray-500 font-bold text-white text-sm">B</button>
+                            <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 rounded border-2 border-gray-500 font-bold text-white text-sm">C</button>
+                            <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 rounded border-2 border-gray-500 font-bold text-white text-sm">D</button>
+                            <button className="h-10 bg-gradient-to-b from-blue-600 to-blue-800 rounded border-2 border-gray-500 font-bold text-white text-xs">DUP</button>
+                            <button className="h-10 bg-gradient-to-b from-yellow-600 to-yellow-800 rounded border-2 border-gray-500 font-bold text-white text-xs">CUE</button>
+                            <button className="h-10 bg-gradient-to-b from-red-600 to-red-800 rounded border-2 border-gray-500 font-bold text-white text-xs">REC</button>
+                            <div className="h-10 bg-gradient-to-b from-gray-700 to-gray-900 rounded border-2 border-gray-500 flex items-center justify-center"><div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center"><div className="w-1.5 h-1.5 bg-white rounded-full"></div></div></div>
+                        </div>
+                    </div>
+                     <div className="mt-4 text-center">
+                        <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${connectionStatus === 'connected' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+                            <div className={`w-1.5 h-1.5 rounded-full mr-2 ${connectionStatus === 'connected' ? 'bg-green-300' : 'bg-red-300'} animate-pulse`}></div>{statusMessage}
                         </div>
                     </div>
                 </div>
 
-                {/* Key Assignments Section */}
-                <div className="flex-1 flex flex-col min-h-0">
-                     <h3 className="text-green-400 font-semibold text-lg mb-3 flex-shrink-0 text-center">Current Key Assignments</h3>
-                     <div className="bg-gray-800 rounded-lg p-4 overflow-y-auto flex-1 border border-gray-600">
-                         <div className="grid grid-cols-1 gap-3">
+                {/* Bottom Section: Key Assignments List */}
+                <div className="bg-gray-800 rounded-lg p-4 flex-1 flex flex-col min-h-0 border border-gray-600">
+                    <h3 className="text-green-400 font-semibold text-lg mb-3 flex-shrink-0 text-center">Current Key Assignments</h3>
+                    <div className="overflow-y-auto flex-1 pr-2">
+                         <div className="space-y-3">
                             {[...assignments]
                                 .sort((a, b) => parseInt(a.key_slot) - parseInt(b.key_slot))
                                 .map((assignment) => (
@@ -173,6 +172,7 @@ const VoxProPlayer = () => {
                      </div>
                 </div>
             </div>
+            {/* Pop-up Window Area */}
             {activeWindows.map((window) => (
                 <UniversalMediaPlayer
                     key={window.id}
@@ -187,6 +187,7 @@ const VoxProPlayer = () => {
     );
 };
 
+
 // --- Placeholder Page Components ---
 const RadioPage = () => <div className="p-4 bg-white rounded shadow">Radio Page Content</div>;
 const NewsSocialFeed = () => <div className="p-4 bg-white rounded shadow">News & Social Feed Content</div>;
@@ -200,11 +201,7 @@ const Button = ({ children, onClick, className, size = 'md' }) => (
 // --- Main App Component ---
 function App() {
   const [activeTab, setActiveTab] = useState('The Back Corner');
-
-  const navigationTabs = [
-    'HOME', 'Radio', 'Television', 'Events', 'The Back Corner', 
-    'Gallery', 'About/Contact', 'News/Social', 'Admin'
-  ];
+  const navigationTabs = [ 'HOME', 'Radio', 'Television', 'Events', 'The Back Corner', 'Gallery', 'About/Contact', 'News/Social', 'Admin' ];
 
   const renderContent = () => {
     switch (activeTab) {
@@ -221,15 +218,9 @@ function App() {
               <div className="lg:col-span-2 bg-white p-8 rounded-lg shadow-md border">
                 <h3 className="text-2xl font-bold text-gray-800 mb-4">About the Media Player</h3>
                 <div className="text-gray-700 leading-relaxed space-y-4">
-                  <p>
-                    This is a placeholder for the text content you will provide later. This area can contain detailed descriptions, history, or any other information you'd like to feature alongside the media player.
-                  </p>
-                  <p>
-                    The layout is set up so that this text content will occupy the left two-thirds of the page, while the interactive player and its key assignments are neatly organized in the column to the right.
-                  </p>
-                  <p>
-                    You can use this space to explain the history of the VoxPro system, tell stories about the content assigned to the keys, or provide instructions on how to use the player.
-                  </p>
+                  <p>This is a placeholder for the text content you will provide later. This area can contain detailed descriptions, history, or any other information you'd like to feature alongside the media player.</p>
+                  <p>The layout is set up so that this text content will occupy the left two-thirds of the page, while the interactive player and its key assignments are neatly organized in the column to the right.</p>
+                  <p>You can use this space to explain the history of the VoxPro system, tell stories about the content assigned to the keys, or provide instructions on how to use the player.</p>
                 </div>
               </div>
               <div className="lg:col-span-1">
@@ -238,8 +229,7 @@ function App() {
             </div>
           </div>
         );
-      
-      // --- Other Cases ---
+      // Other cases...
       case 'HOME': return <div>Home Page Content</div>;
       case 'Radio': return <RadioPage />;
       case 'Television': return <div>Television Page Content</div>;
