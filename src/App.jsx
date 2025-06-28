@@ -28,13 +28,8 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(1);
-    const [isMuted, setIsMuted] = useState(false);
     
     const playerRef = useRef(null);
-    const windowRef = useRef(null);
-    const visualizationRef = useRef(null);
-    const animationRef = useRef(null);
 
     useEffect(() => {
         if (assignment?.media_url) {
@@ -46,25 +41,22 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
                 setMediaType('video');
             } else if (url.match(/\.(mp3|wav|aac|m4a)(\?.*)?$/i)) {
                 setMediaType('audio');
-            } else if (url.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i)) {
-                setMediaType('image');
-            } else {
-                setMediaType('unknown');
             }
             setIsLoading(false);
         }
     }, [assignment]);
 
-    // Audio/Video event handlers
     const handleLoadedData = () => { if (playerRef.current) setDuration(playerRef.current.duration); };
     const handleTimeUpdate = () => { if (playerRef.current) setCurrentTime(playerRef.current.currentTime); };
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
     const handleEnded = () => { setIsPlaying(false); setCurrentTime(0); };
-    const togglePlayPause = () => {
-        if (playerRef.current) {
-            playerRef.current.paused ? playerRef.current.play() : playerRef.current.pause();
-        }
+    
+    const formatTime = (seconds) => {
+        if (isNaN(seconds)) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
     const renderMediaContent = () => {
@@ -75,7 +67,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
             case 'vimeo':
                 return (
                     <iframe
-                        src={mediaUrl}
+                        src={`${mediaUrl}?autoplay=1`}
                         className="w-full h-full"
                         frameBorder="0"
                         allow="autoplay; fullscreen; picture-in-picture"
@@ -84,19 +76,19 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
                 );
             case 'video':
                  return (
-                    <video ref={playerRef} src={mediaUrl} controls autoPlay className="w-full h-full" onPlay={handlePlay} onPause={handlePause} onEnded={handleEnded} onLoadedData={handleLoadedData} onTimeUpdate={handleTimeUpdate} />
+                    <video ref={playerRef} src={mediaUrl} controls autoPlay className="w-full h-full bg-black" onPlay={handlePlay} onPause={handlePause} onEnded={handleEnded} onLoadedData={handleLoadedData} onTimeUpdate={handleTimeUpdate} />
                 );
             case 'audio':
                 return (
                     <div className="p-4 bg-gray-800 rounded-lg h-full flex flex-col justify-center items-center">
                          <div className="text-green-400 text-6xl mb-4">🎵</div>
                          <audio ref={playerRef} src={mediaUrl} autoPlay controls className="w-full" onPlay={handlePlay} onPause={handlePause} onEnded={handleEnded} onLoadedData={handleLoadedData} onTimeUpdate={handleTimeUpdate}/>
-                         <div className="text-white mt-2">{assignment.title}</div>
+                         <div className="text-white mt-4 font-semibold">{assignment.title}</div>
                          <div className="w-full text-center mt-2 text-sm text-gray-400">{formatTime(currentTime)} / {formatTime(duration)}</div>
                     </div>
                 );
             default:
-                return <div className="p-4">Unsupported media type.</div>;
+                return <div className="p-4 text-white">Unsupported media type.</div>;
         }
     };
 
@@ -115,7 +107,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     }
 
     return (
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[640px] h-[480px] bg-gray-900 border-gray-700 border-2 rounded-lg shadow-2xl z-50 flex flex-col">
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[640px] h-[60vh] max-h-[480px] bg-gray-900 border-gray-700 border-2 rounded-lg shadow-2xl z-50 flex flex-col">
             <div className="bg-gray-800 px-4 py-2 flex items-center justify-between rounded-t-lg cursor-grab">
                 <span className="text-white font-bold">{assignment.title}</span>
                 <div className="flex gap-2">
@@ -123,7 +115,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
                     <button onClick={() => onClose(windowId)} className="text-red-500 hover:text-red-400 font-bold">X</button>
                 </div>
             </div>
-            <div className="flex-grow bg-black p-1">
+            <div className="flex-grow bg-black">
                 {renderMediaContent()}
             </div>
         </div>
@@ -323,12 +315,77 @@ function App() {
             </div>
           </div>
         );
-      case 'HOME': return <div>Home Page Content</div>;
+        case 'HOME':
+            return (
+              <div className="space-y-8">
+                <div className="text-center">
+                  <h1 className="text-4xl font-bold text-gray-800 mb-4">
+                    History of Idaho Broadcasting Foundation
+                  </h1>
+                  <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Preserving and celebrating the rich heritage of radio and television broadcasting in Idaho. 
+                    Our foundation is dedicated to documenting the stories, people, and technology that shaped 
+                    Idaho's broadcasting landscape.
+                  </p>
+                </div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="bg-white p-6 rounded-lg shadow-md border"><h3 className="text-xl font-semibold mb-3 text-gray-800">Radio Heritage</h3><p className="text-gray-600">Explore the evolution of radio broadcasting in Idaho, from the early AM stations to modern digital broadcasting.</p></div>
+                  <div className="bg-white p-6 rounded-lg shadow-md border"><h3 className="text-xl font-semibold mb-3 text-gray-800">Television History</h3><p className="text-gray-600">Discover the development of television in Idaho, including pioneering stations and technological milestones.</p></div>
+                  <div className="bg-white p-6 rounded-lg shadow-md border"><h3 className="text-xl font-semibold mb-3 text-gray-800">Broadcasting Pioneers</h3><p className="text-gray-600">Learn about the visionaries and professionals who built Idaho's broadcasting industry from the ground up.</p></div>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-md border">
+                  <h3 className="text-xl font-semibold mb-4 text-gray-800">Featured Systems</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-semibold mb-2 text-blue-800">VoxPro Player</h4>
+                      <p className="text-blue-600 text-sm mb-3">Compact media player for broadcasting</p>
+                      <Button onClick={() => setActiveTab('The Back Corner')} className="bg-blue-600 hover:bg-blue-700" size="sm">Access Player</Button>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h4 className="font-semibold mb-2 text-green-800">News & Social Hub</h4>
+                      <p className="text-green-600 text-sm mb-3">Stay connected with the broadcasting community</p>
+                      <Button onClick={() => setActiveTab('News/Social')} className="bg-green-600 hover:bg-green-700" size="sm">View Feed</Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+        case 'Gallery':
+            return (
+              <div className="space-y-8">
+                <div className="text-center bg-gradient-to-r from-blue-50 to-gray-50 p-8 rounded-lg">
+                  <h2 className="text-4xl font-bold text-gray-800 mb-4">Video Gallery</h2>
+                  <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+                    In our ongoing effort to visually preserve Idaho's fascinating radio and television past, 
+                    the History of Idaho Broadcasting Foundation has conducted more than 75 video interviews 
+                    with media legends and personalities throughout the state who have generously shared 
+                    anecdotal insights into their careers.
+                  </p>
+                </div>
+              </div>
+            );
+        case 'About/Contact':
+            return (
+              <div className="space-y-6">
+                <h2 className="text-3xl font-bold text-gray-800">About the Foundation</h2>
+                <div className="bg-white p-6 rounded-lg shadow-md border">
+                  <h3 className="text-xl font-semibold mb-4">Our Mission</h3>
+                  <p className="text-gray-600 mb-4">
+                    The History of Idaho Broadcasting Foundation is dedicated to preserving, 
+                    documenting, and sharing the rich heritage of radio and television broadcasting in Idaho.
+                  </p>
+                  <h3 className="text-xl font-semibold mb-4 mt-6">Contact Information</h3>
+                  <div className="space-y-2 text-gray-600">
+                    <p><strong>Address:</strong> Idaho Broadcasting Foundation</p>
+                    <p><strong>Email:</strong> info@idahobroadcasting.org</p>
+                    <p><strong>Phone:</strong> (208) 555-0123</p>
+                  </div>
+                </div>
+              </div>
+            );
       case 'Radio': return <RadioPage />;
       case 'Television': return <div>Television Page Content</div>;
       case 'Events': return <div>Events Page Content</div>;
-      case 'Gallery': return <div>Gallery Page Content</div>;
-      case 'About/Contact': return <div>About/Contact Page Content</div>;
       case 'News/Social': return <NewsSocialFeed />;
       case 'Admin': return <VoxProManagement />;
       default: return <div>Page not found</div>;
