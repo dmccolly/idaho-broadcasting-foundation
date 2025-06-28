@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import WaveSurfer from 'wavesurfer.js';
 
-// Enhanced Universal Media Player Component - WORKING AUDIO + SCALING PDF
+// Enhanced Universal Media Player Component
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
@@ -33,14 +33,12 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
      assignment.media_url.match(/\.(mp4|webm|mov|avi)$/i) ? 'video' : 
      assignment.media_url.match(/\.(pdf)$/i) ? 'pdf' : 'unknown') : 'unknown';
 
-  // Initialize media on load
   useEffect(() => {
     if (assignment?.media_url) {
       loadMedia();
     }
     
     return () => {
-      // Cleanup
       if (wavesurferRef.current) {
         try {
           wavesurferRef.current.destroy();
@@ -60,34 +58,26 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       setError(null);
       
       if (mediaType === 'audio' && audioRef.current) {
-        console.log('🔊 Loading audio:', assignment.title);
         audioRef.current.src = assignment.media_url;
         audioRef.current.load();
         initializeVisualization();
       } else if (mediaType === 'video' && videoRef.current) {
-        console.log('🎥 Loading video:', assignment.title);
         videoRef.current.src = assignment.media_url;
         videoRef.current.load();
       } else if (mediaType === 'pdf') {
-        console.log('📄 Loading PDF:', assignment.title);
         setIsLoading(false);
       }
       
     } catch (error) {
-      console.error('Media load error:', error);
       setError(`Failed to load ${mediaType}: ${error.message}`);
       setIsLoading(false);
     }
   };
 
-  // Initialize audio visualization
   const initializeVisualization = async () => {
     if (!waveformRef.current || mediaType !== 'audio' || !assignment?.media_url) return;
 
     try {
-      console.log('🎨 Initializing audio visualization:', assignment.title);
-      
-      // Clean up existing instance
       if (wavesurferRef.current) {
         try {
           wavesurferRef.current.destroy();
@@ -97,10 +87,8 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         wavesurferRef.current = null;
       }
 
-      // Clear container
       waveformRef.current.innerHTML = '';
 
-      // Try Wavesurfer first
       const ws = WaveSurfer.create({
         container: waveformRef.current,
         waveColor: '#4ade80',
@@ -119,32 +107,24 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       });
 
       wavesurferRef.current = ws;
-
-      // Load and immediately mute
       await ws.load(assignment.media_url);
       ws.setMuted(true);
       ws.setVolume(0);
-
       setVisualizationType('wavesurfer');
-      console.log('✅ Wavesurfer visualization loaded');
 
     } catch (error) {
-      console.warn('⚠️ Wavesurfer failed, using fallback visualization:', error);
       createFallbackVisualization();
     }
   };
 
-  // Create animated fallback visualization
   const createFallbackVisualization = () => {
     if (!waveformRef.current) return;
 
     waveformRef.current.innerHTML = '';
     
-    // Create container for animated bars
     const container = document.createElement('div');
     container.className = 'flex items-end justify-center h-20 gap-1 bg-gray-900 rounded p-2';
     
-    // Create 60 animated bars
     for (let i = 0; i < 60; i++) {
       const bar = document.createElement('div');
       bar.className = 'bg-green-500 rounded-t transition-all duration-150';
@@ -157,15 +137,11 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     waveformRef.current.appendChild(container);
     setVisualizationType('animated');
     
-    console.log('✅ Animated fallback visualization created');
-    
-    // Start animation when playing
     if (isPlaying) {
       startFallbackAnimation();
     }
   };
 
-  // Animate fallback bars
   const startFallbackAnimation = () => {
     if (!waveformRef.current || visualizationType !== 'animated') return;
     
@@ -175,7 +151,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       if (!isPlaying) return;
       
       bars.forEach((bar, index) => {
-        // Wave effect with random heights
         const wave = Math.sin((Date.now() * 0.01) + (index * 0.2)) * 25 + 15;
         const randomHeight = Math.random() * 20 + 10;
         const finalHeight = Math.max(4, wave + randomHeight);
@@ -190,13 +165,11 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     animate();
   };
 
-  // Audio/Video event handlers
   const handleLoadedData = () => {
     const mediaElement = mediaType === 'audio' ? audioRef.current : videoRef.current;
     if (mediaElement) {
       setDuration(mediaElement.duration);
       setIsLoading(false);
-      console.log(`✅ ${mediaType} loaded:`, assignment.title, `Duration: ${mediaElement.duration}s`);
     }
   };
 
@@ -205,7 +178,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     if (mediaElement) {
       setCurrentTime(mediaElement.currentTime);
       
-      // Sync Wavesurfer progress
       if (wavesurferRef.current && visualizationType === 'wavesurfer') {
         const progress = mediaElement.currentTime / mediaElement.duration;
         wavesurferRef.current.seekTo(progress);
@@ -215,7 +187,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
   const handlePlay = () => {
     setIsPlaying(true);
-    console.log(`🔊 HTML5 Audio playing - you should hear sound:`, assignment.title);
     
     if (visualizationType === 'animated') {
       startFallbackAnimation();
@@ -224,7 +195,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
   const handlePause = () => {
     setIsPlaying(false);
-    console.log(`⏸️ ${mediaType} paused:`, assignment.title);
     
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
@@ -234,7 +204,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const handleEnded = () => {
     setIsPlaying(false);
     setCurrentTime(0);
-    console.log(`⏹️ ${mediaType} ended:`, assignment.title);
     
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
@@ -242,13 +211,11 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   };
 
   const handleError = (e) => {
-    console.error(`${mediaType} error:`, e.target.error);
     setError(`${mediaType} playback error: ${e.target.error?.message || 'Unknown error'}`);
     setIsLoading(false);
     setIsPlaying(false);
   };
 
-  // Media controls
   const togglePlayPause = () => {
     const mediaElement = mediaType === 'audio' ? audioRef.current : videoRef.current;
     if (!mediaElement) return;
@@ -257,7 +224,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       mediaElement.pause();
     } else {
       mediaElement.play().catch(error => {
-        console.error('Play failed:', error);
         setError(`Play failed: ${error.message}`);
       });
     }
@@ -295,7 +261,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     mediaElement.muted = newMuted;
   };
 
-  // Window drag handlers
   const handleMouseDown = (e) => {
     if (e.target.closest('.resize-handle')) return;
     
@@ -320,7 +285,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     setIsResizing(false);
   };
 
-  // Window resize handlers
   const handleResizeStart = (e) => {
     e.stopPropagation();
     setIsResizing(true);
@@ -359,7 +323,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     }
   }, [isDragging, isResizing, dragStart, windowPos]);
 
-  // Format time helper
   const formatTime = (seconds) => {
     if (isNaN(seconds)) return '0:00';
     const mins = Math.floor(seconds / 60);
@@ -401,7 +364,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         cursor: isDragging ? 'grabbing' : 'grab'
       }}
     >
-      {/* Window Header */}
       <div
         className="bg-gray-800 text-white p-3 flex justify-between items-center cursor-grab active:cursor-grabbing select-none"
         onMouseDown={handleMouseDown}
@@ -438,7 +400,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="flex-1 bg-gray-800 text-white overflow-hidden" style={{ height: 'calc(100% - 48px)' }}>
         {error && (
           <div className="p-4 bg-red-900 text-red-100 text-sm">
@@ -455,7 +416,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
           </div>
         )}
 
-        {/* PDF Viewer - FIXED SCALING */}
         {mediaType === 'pdf' && !isLoading && (
           <div className="h-full w-full">
             <iframe
@@ -470,7 +430,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
           </div>
         )}
 
-        {/* Audio Player */}
         {mediaType === 'audio' && !isLoading && (
           <div className="h-full flex flex-col">
             <audio
@@ -490,14 +449,12 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
                 <div className="text-xl font-medium mb-2">{assignment?.title}</div>
                 <div className="text-gray-400 mb-4">Audio File</div>
                 
-                {/* Waveform Visualization Container */}
                 <div className="relative w-full h-20 mb-4 bg-gray-900 rounded border border-gray-700 overflow-hidden">
                   <div 
                     ref={waveformRef}
                     className="absolute inset-0 w-full h-full"
                   />
                   
-                  {/* Progress Overlay */}
                   {duration > 0 && (
                     <div 
                       className="absolute top-0 left-0 h-full bg-green-600 bg-opacity-30 transition-all duration-100"
@@ -514,7 +471,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
               </div>
             </div>
             
-            {/* Audio Controls */}
             <div className="p-4 bg-gray-900 border-t border-gray-700">
               <div className="flex items-center gap-4 mb-3">
                 <button
@@ -548,7 +504,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
                 </div>
               </div>
               
-              {/* Progress Bar */}
               <div
                 className="w-full h-2 bg-gray-700 rounded-full cursor-pointer overflow-hidden"
                 onClick={handleSeek}
@@ -562,7 +517,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
           </div>
         )}
 
-        {/* Video Player */}
         {mediaType === 'video' && !isLoading && (
           <div className="h-full flex flex-col">
             <video
@@ -581,7 +535,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         )}
       </div>
 
-      {/* Resize Handle */}
       <div
         className="absolute bottom-0 right-0 w-4 h-4 cursor-nw-resize resize-handle"
         onMouseDown={handleResizeStart}
@@ -593,7 +546,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   );
 };
 
-// Professional VoxPro Management System - MATCHING ORIGINAL DESIGN
 const VoxProManagement = () => {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -612,7 +564,6 @@ const VoxProManagement = () => {
     loadAssignments();
   }, []);
 
-  // Load assignments from Supabase
   const loadAssignments = async () => {
     try {
       const { data, error } = await supabase
@@ -630,7 +581,6 @@ const VoxProManagement = () => {
     }
   };
 
-  // Handle file upload and assignment
   const handleFileSelect = async (event) => {
     const file = event.target.files[0];
     if (!file || !selectedKeySlot) return;
@@ -657,11 +607,9 @@ const VoxProManagement = () => {
         .from('media-files')
         .getPublicUrl(fileName);
 
-      // Check if assignment already exists for this key slot
       const existingAssignment = assignments.find(a => a.key_slot === selectedKeySlot);
       
       if (existingAssignment) {
-        // Update existing assignment
         const { error: updateError } = await supabase
           .from('assignments')
           .update({
@@ -675,7 +623,6 @@ const VoxProManagement = () => {
 
         if (updateError) throw updateError;
       } else {
-        // Create new assignment
         const { error: insertError } = await supabase
           .from('assignments')
           .insert([{
@@ -694,7 +641,6 @@ const VoxProManagement = () => {
       setUploadProgress(100);
       setUploadStatus('Complete!');
       
-      // Reset form
       setSelectedKeySlot(null);
       setMediaTitle('');
       setMediaDescription('');
@@ -720,12 +666,10 @@ const VoxProManagement = () => {
     }
   };
 
-  // Get assignment for key slot
   const getKeyAssignment = (keySlot) => {
     return assignments.find(a => a.key_slot === keySlot.toString());
   };
 
-  // Open assignment window
   const openWindow = (assignment) => {
     const windowId = `window-${assignment.id}-${Date.now()}`;
     const newWindow = {
@@ -736,19 +680,16 @@ const VoxProManagement = () => {
     setOpenWindows(prev => [...prev, newWindow]);
   };
 
-  // Close window
   const closeWindow = (windowId) => {
     setOpenWindows(prev => prev.filter(w => w.id !== windowId));
   };
 
-  // Minimize/restore window
   const toggleMinimize = (windowId) => {
     setOpenWindows(prev => prev.map(w => 
       w.id === windowId ? { ...w, isMinimized: !w.isMinimized } : w
     ));
   };
 
-  // Clear form
   const clearForm = () => {
     setSelectedKeySlot(null);
     setMediaTitle('');
@@ -757,16 +698,13 @@ const VoxProManagement = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
-      {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-green-400 mb-2">VoxPro Management System</h1>
         <p className="text-gray-400">Professional Control System with Media Management</p>
       </div>
 
-      {/* Main Interface */}
       <div className="flex gap-6 max-w-7xl mx-auto">
         
-        {/* VoxPro Control Interface */}
         <div className="flex-1 bg-gray-800 rounded-lg border border-gray-600 p-6">
           <div className="text-center mb-6">
             <h2 className="text-xl font-bold text-green-400 mb-2">VoxPro Control Interface</h2>
@@ -779,7 +717,6 @@ const VoxProManagement = () => {
                 VoxPro Media Interface - Ready
               </div>
 
-              {/* START Keys */}
               <div className="grid grid-cols-5 gap-3 mb-6">
                 {[1, 2, 3, 4, 5].map((key) => {
                   const assignment = getKeyAssignment(key);
@@ -802,8 +739,14 @@ const VoxProManagement = () => {
                 })}
               </div>
 
-              {/* Control Grid */}
               <div className="grid grid-cols-4 gap-2 mb-4">
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">A</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">B</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">C</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">DUR</button>
+                
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">D</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">E</button>
                 <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">F</button>
                 <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">CUE</button>
                 
@@ -813,7 +756,6 @@ const VoxProManagement = () => {
                 <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">REC</button>
               </div>
 
-              {/* Clock Display */}
               <div className="flex justify-center mb-4">
                 <div className="w-24 h-24 border-4 border-green-500 rounded-full flex items-center justify-center">
                   <div className="text-green-400 font-mono text-lg">
@@ -825,11 +767,9 @@ const VoxProManagement = () => {
           </div>
         </div>
 
-        {/* Media Management Interface */}
         <div className="flex-1 bg-gray-800 rounded-lg border border-gray-600 p-6">
           <h2 className="text-xl font-bold text-green-400 mb-6">Media Management Interface</h2>
           
-          {/* Current Key Assignments */}
           <div className="bg-gray-900 rounded-lg border border-gray-700 p-4 mb-6">
             <h3 className="text-lg font-bold text-green-400 mb-4">Current Key Assignments</h3>
             
@@ -858,7 +798,6 @@ const VoxProManagement = () => {
             </div>
           </div>
 
-          {/* Media Upload Form */}
           <div className="bg-gray-900 rounded-lg border border-gray-700 p-4 mb-4">
             <div className="mb-4">
               <label className="block text-green-400 text-sm mb-2">Media Title (100 characters max)</label>
@@ -966,7 +905,6 @@ const VoxProManagement = () => {
         </div>
       </div>
 
-      {/* Status Messages */}
       {error && (
         <div className="max-w-7xl mx-auto mt-4 p-3 bg-red-900 border border-red-500 rounded text-red-100">
           <div className="flex items-center">
@@ -976,7 +914,6 @@ const VoxProManagement = () => {
         </div>
       )}
 
-      {/* Bottom Upload Section */}
       <div className="max-w-7xl mx-auto mt-6">
         <div className="bg-gray-800 rounded-lg border border-gray-600 p-4">
           <div className="text-center">
@@ -988,7 +925,6 @@ const VoxProManagement = () => {
         </div>
       </div>
 
-      {/* Render Open Windows */}
       {openWindows.map(window => (
         <UniversalMediaPlayer
           key={window.id}
@@ -1003,11 +939,4 @@ const VoxProManagement = () => {
   );
 };
 
-export default VoxProManagement;bold">A</button>
-                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">B</button>
-                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">C</button>
-                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">DUR</button>
-                
-                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">D</button>
-                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">E</button>
-                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-
+export default VoxProManagement;
