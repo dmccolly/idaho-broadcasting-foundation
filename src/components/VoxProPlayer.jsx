@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// --- Helper Functions & Mock/Placeholder Data ---
-
-// Since we cannot import from external files, we'll create a mock Supabase client.
-// In your actual project, this would be imported from your lib/supabase.js file.
+// In your actual project, this would be: import { supabase } from '../lib/supabase';
+// For this example, we use a mock object.
 const supabase = {
   from: () => ({
     select: () => ({
@@ -18,11 +16,8 @@ const supabase = {
   })
 };
 
-// The UniversalMediaPlayer component is required for the pop-up windows.
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
-    // This is a placeholder for the full UniversalMediaPlayer component.
-    // In a real application, the full code would be here. For this context,
-    // we will only render the minimized state to demonstrate functionality.
+    // This is a placeholder for the pop-up media player.
     if (isMinimized) {
         return (
             <div className="fixed bottom-4 right-4 bg-gray-800 border border-gray-600 rounded-lg p-2 shadow-lg z-50 animate-pulse">
@@ -36,12 +31,8 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
             </div>
         );
     }
-
-    // The full, draggable, resizable media player window would be rendered here when not minimized.
-    // To keep this example focused, we are returning null.
     return null; 
 };
-
 
 const VoxProPlayer = () => {
     const [connectionStatus, setConnectionStatus] = useState('connecting');
@@ -54,7 +45,6 @@ const VoxProPlayer = () => {
     useEffect(() => {
         const initializeConnection = async () => {
             try {
-                // Use the mock supabase client
                 const { error } = await supabase.from('assignments').select('*').limit(1);
                 if (error) throw error;
                 setConnectionStatus('connected');
@@ -69,7 +59,6 @@ const VoxProPlayer = () => {
     }, []);
 
     const loadAssignments = async () => {
-        // Use the mock supabase client
         const { data, error } = await supabase.from('assignments').select('*').order('created_at', { ascending: false });
         if (error) console.error('Error loading assignments:', error);
         else setAssignments(data || []);
@@ -79,31 +68,28 @@ const VoxProPlayer = () => {
 
     const handleKeyClick = async (keySlot) => {
         const assignment = getKeyAssignment(keySlot);
-        if (!assignment) return; // Do nothing if key is not assigned
+        if (!assignment) return;
 
         if (currentPlayingKey === keySlot) {
-            // If the clicked key is already playing, stop it and close its window
             setCurrentPlayingKey(null);
             setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== keySlot));
             return;
         }
 
-        // If another key is playing, stop it and close its window first
         if (currentPlayingKey) {
             setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== currentPlayingKey));
         }
 
-        // Start playing the new key and open its window
         setCurrentPlayingKey(keySlot);
         const newWindow = { id: windowCounter, assignment, isMinimized: false };
-        setActiveWindows([newWindow]); // Only one pop-up window at a time
+        setActiveWindows([newWindow]);
         setWindowCounter(prev => prev + 1);
     };
 
     const closeWindow = (windowId) => {
         const windowToClose = activeWindows.find(w => w.id === windowId);
         if (windowToClose && currentPlayingKey === windowToClose.assignment.key_slot) {
-            setCurrentPlayingKey(null); // Stop playback if the closed window was the active one
+            setCurrentPlayingKey(null);
         }
         setActiveWindows(prev => prev.filter(w => w.id !== windowId));
     };
@@ -114,7 +100,6 @@ const VoxProPlayer = () => {
 
     return (
         <>
-            {/* Main component wrapper with dark theme */}
             <div className="bg-gray-900 text-white rounded-lg border border-gray-700 p-4 h-full flex flex-col space-y-4 shadow-2xl">
                 
                 {/* Control Panel */}
@@ -124,7 +109,6 @@ const VoxProPlayer = () => {
                         <p className="text-gray-400 text-xs">Broadcasting Control System</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        {/* Column 1: START Keys */}
                         <div className="space-y-2">
                             <div className="grid grid-cols-3 gap-2">
                                 {[1, 2, 3].map((key) => {
@@ -141,7 +125,6 @@ const VoxProPlayer = () => {
                                 })}
                             </div>
                         </div>
-                        {/* Column 2: Control Buttons */}
                         <div className="grid grid-cols-2 gap-2">
                             <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 rounded border-2 border-gray-500 font-bold text-white text-sm">A</button>
                             <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 rounded border-2 border-gray-500 font-bold text-white text-sm">B</button>
@@ -201,6 +184,5 @@ const VoxProPlayer = () => {
         </>
     );
 };
-
 
 export default VoxProPlayer;
