@@ -8,10 +8,10 @@ const supabase = {
     select: () => ({
       limit: () => Promise.resolve({ data: [], error: null }),
       order: () => Promise.resolve({ data: [
-          {id: 1, key_slot: '1', title: 'Morning Drive Intro', description: 'Upbeat music for show start.', submitted_by: 'Admin', created_at: '2025-06-28T10:00:00Z', media_url: '#', media_type: 'audio/mp3'},
-          {id: 2, key_slot: '2', title: 'Weather Jingle', description: 'Official station weather jingle.', submitted_by: 'Admin', created_at: '2025-06-28T10:05:00Z', media_url: '#', media_type: 'audio/mp3'},
-          {id: 3, key_slot: '3', title: 'Station ID - Rock', description: 'High-energy station identification.', submitted_by: 'Admin', created_at: '2025-06-28T10:10:00Z', media_url: '#', media_type: 'audio/mp3'},
-          {id: 4, key_slot: '4', title: 'Promo: Summer Concert', description: 'Promotional spot for the summer concert series.', submitted_by: 'Admin', created_at: '2025-06-28T10:15:00Z', media_url: '#', media_type: 'audio/mp3'},
+          {id: 1, key_slot: '1', title: 'Morning Drive Intro', description: 'Upbeat music for show start.', submitted_by: 'Admin', created_at: '2025-06-28T10:00:00Z', media_url: 'https://storage.googleapis.com/streamofdan-com/Morning_Drive_Intro.mp3', media_type: 'audio/mp3'},
+          {id: 2, key_slot: '2', title: 'Weather Jingle', description: 'Official station weather jingle.', submitted_by: 'Admin', created_at: '2025-06-28T10:05:00Z', media_url: 'https://storage.googleapis.com/streamofdan-com/Weather_Jingle.mp3', media_type: 'audio/mp3'},
+          {id: 3, key_slot: '3', title: 'Station ID - Rock', description: 'High-energy station identification.', submitted_by: 'Admin', created_at: '2025-06-28T10:10:00Z', media_url: 'https://storage.googleapis.com/streamofdan-com/Station_ID_Rock.mp3', media_type: 'audio/mp3'},
+          {id: 4, key_slot: '4', title: 'Marty Holtman Santa Express', description: 'Promo for the holiday classic.', submitted_by: 'Admin', created_at: '2025-06-28T10:15:00Z', media_url: 'https://player.vimeo.com/video/1040039534', media_type: 'video/vimeo'},
       ], error: null }),
     })
   })
@@ -20,6 +20,86 @@ const supabase = {
 // --- Player Component Definitions ---
 
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [mediaType, setMediaType] = useState(null);
+    const [mediaUrl, setMediaUrl] = useState('');
+    
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [volume, setVolume] = useState(1);
+    const [isMuted, setIsMuted] = useState(false);
+    
+    const playerRef = useRef(null);
+    const windowRef = useRef(null);
+    const visualizationRef = useRef(null);
+    const animationRef = useRef(null);
+
+    useEffect(() => {
+        if (assignment?.media_url) {
+            const url = assignment.media_url;
+            setMediaUrl(url);
+            if (assignment.media_type.startsWith('video/vimeo')) {
+                setMediaType('vimeo');
+            } else if (url.match(/\.(mp4|webm|ogg|mov|avi)(\?.*)?$/i)) {
+                setMediaType('video');
+            } else if (url.match(/\.(mp3|wav|aac|m4a)(\?.*)?$/i)) {
+                setMediaType('audio');
+            } else if (url.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i)) {
+                setMediaType('image');
+            } else {
+                setMediaType('unknown');
+            }
+            setIsLoading(false);
+        }
+    }, [assignment]);
+
+    // Audio/Video event handlers
+    const handleLoadedData = () => { if (playerRef.current) setDuration(playerRef.current.duration); };
+    const handleTimeUpdate = () => { if (playerRef.current) setCurrentTime(playerRef.current.currentTime); };
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleEnded = () => { setIsPlaying(false); setCurrentTime(0); };
+    const togglePlayPause = () => {
+        if (playerRef.current) {
+            playerRef.current.paused ? playerRef.current.play() : playerRef.current.pause();
+        }
+    };
+
+    const renderMediaContent = () => {
+        if (isLoading) return <div className="flex items-center justify-center h-full text-white">Loading...</div>;
+        if (error) return <div className="flex items-center justify-center h-full text-red-400">{error}</div>;
+
+        switch (mediaType) {
+            case 'vimeo':
+                return (
+                    <iframe
+                        src={mediaUrl}
+                        className="w-full h-full"
+                        frameBorder="0"
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        title={assignment.title}
+                    ></iframe>
+                );
+            case 'video':
+                 return (
+                    <video ref={playerRef} src={mediaUrl} controls autoPlay className="w-full h-full" onPlay={handlePlay} onPause={handlePause} onEnded={handleEnded} onLoadedData={handleLoadedData} onTimeUpdate={handleTimeUpdate} />
+                );
+            case 'audio':
+                return (
+                    <div className="p-4 bg-gray-800 rounded-lg h-full flex flex-col justify-center items-center">
+                         <div className="text-green-400 text-6xl mb-4">🎵</div>
+                         <audio ref={playerRef} src={mediaUrl} autoPlay controls className="w-full" onPlay={handlePlay} onPause={handlePause} onEnded={handleEnded} onLoadedData={handleLoadedData} onTimeUpdate={handleTimeUpdate}/>
+                         <div className="text-white mt-2">{assignment.title}</div>
+                         <div className="w-full text-center mt-2 text-sm text-gray-400">{formatTime(currentTime)} / {formatTime(duration)}</div>
+                    </div>
+                );
+            default:
+                return <div className="p-4">Unsupported media type.</div>;
+        }
+    };
+
     if (isMinimized) {
         return (
             <div className="fixed bottom-4 right-4 bg-gray-800 border border-gray-600 rounded-lg p-2 shadow-lg z-50 animate-pulse">
@@ -33,8 +113,23 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
             </div>
         );
     }
-    return null; 
+
+    return (
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[640px] h-[480px] bg-gray-900 border-gray-700 border-2 rounded-lg shadow-2xl z-50 flex flex-col">
+            <div className="bg-gray-800 px-4 py-2 flex items-center justify-between rounded-t-lg cursor-grab">
+                <span className="text-white font-bold">{assignment.title}</span>
+                <div className="flex gap-2">
+                    <button onClick={() => onMinimize(windowId, true)} className="text-gray-400 hover:text-white">_</button>
+                    <button onClick={() => onClose(windowId)} className="text-red-500 hover:text-red-400 font-bold">X</button>
+                </div>
+            </div>
+            <div className="flex-grow bg-black p-1">
+                {renderMediaContent()}
+            </div>
+        </div>
+    );
 };
+
 
 const VoxProPlayer = () => {
     const [connectionStatus, setConnectionStatus] = useState('connecting');
@@ -73,11 +168,8 @@ const VoxProPlayer = () => {
         if (!assignment) return;
         if (currentPlayingKey === keySlot) {
             setCurrentPlayingKey(null);
-            setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== keySlot));
+            setActiveWindows([]);
             return;
-        }
-        if (currentPlayingKey) {
-            setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== currentPlayingKey));
         }
         setCurrentPlayingKey(keySlot);
         const newWindow = { id: windowCounter, assignment, isMinimized: false };
@@ -86,11 +178,12 @@ const VoxProPlayer = () => {
     };
 
     const closeWindow = (windowId) => {
-        const windowToClose = activeWindows.find(w => w.id === windowId);
-        if (windowToClose && currentPlayingKey === windowToClose.assignment.key_slot) {
-            setCurrentPlayingKey(null);
-        }
-        setActiveWindows(prev => prev.filter(w => w.id !== windowId));
+        setActiveWindows(prev => prev.filter(w => {
+            if (w.id === windowId && currentPlayingKey === w.assignment.key_slot) {
+                setCurrentPlayingKey(null);
+            }
+            return w.id !== windowId;
+        }));
     };
 
     const minimizeWindow = (windowId, minimize) => {
@@ -100,7 +193,6 @@ const VoxProPlayer = () => {
     return (
         <>
             <div className="bg-gray-900 text-white rounded-lg border-2 border-gray-700 p-4 shadow-2xl flex flex-col space-y-4 h-full">
-                {/* Control Panel Section */}
                 <div className="bg-gray-800 rounded-lg p-4 shadow-xl border border-gray-600">
                     <div className="text-center mb-4">
                         <h3 className="text-xl font-bold text-green-400">VoxPro Media Player</h3>
@@ -112,14 +204,14 @@ const VoxProPlayer = () => {
                                 {[1, 2, 3].map((key) => {
                                     const assignment = getKeyAssignment(key.toString());
                                     const isPlaying = currentPlayingKey === key.toString();
-                                    return <button key={key} onClick={() => handleKeyClick(key.toString())} className={`h-16 rounded-lg font-bold text-white text-lg transition-all transform hover:scale-105 ${isPlaying ? 'bg-gradient-to-b from-green-500 to-green-700' : assignment ? 'bg-gradient-to-b from-red-500 to-red-700' : 'bg-gradient-to-b from-gray-600 to-gray-800'} border-2 border-gray-500 shadow-md`} title={assignment ? assignment.title : `Key ${key} - No Assignment`}>{isPlaying ? 'STOP' : key}</button>;
+                                    return <button key={key} onClick={() => handleKeyClick(key.toString())} className={`flex items-center justify-center h-16 rounded-lg font-bold text-white text-lg transition-all transform hover:scale-105 ${isPlaying ? 'bg-gradient-to-b from-green-500 to-green-700' : assignment ? 'bg-gradient-to-b from-red-500 to-red-700' : 'bg-gradient-to-b from-gray-600 to-gray-800'} border-2 border-gray-500 shadow-md`} title={assignment ? assignment.title : `Key ${key} - No Assignment`}>{isPlaying ? '⏹️' : key}</button>;
                                 })}
                             </div>
                             <div className="grid grid-cols-2 gap-2">
                                 {[4, 5].map((key) => {
                                     const assignment = getKeyAssignment(key.toString());
                                     const isPlaying = currentPlayingKey === key.toString();
-                                    return <button key={key} onClick={() => handleKeyClick(key.toString())} className={`h-16 rounded-lg font-bold text-white text-lg transition-all transform hover:scale-105 ${isPlaying ? 'bg-gradient-to-b from-green-500 to-green-700' : assignment ? 'bg-gradient-to-b from-red-500 to-red-700' : 'bg-gradient-to-b from-gray-600 to-gray-800'} border-2 border-gray-500 shadow-md`} title={assignment ? assignment.title : `Key ${key} - No Assignment`}>{isPlaying ? 'STOP' : key}</button>;
+                                    return <button key={key} onClick={() => handleKeyClick(key.toString())} className={`flex items-center justify-center h-16 rounded-lg font-bold text-white text-lg transition-all transform hover:scale-105 ${isPlaying ? 'bg-gradient-to-b from-green-500 to-green-700' : assignment ? 'bg-gradient-to-b from-red-500 to-red-700' : 'bg-gradient-to-b from-gray-600 to-gray-800'} border-2 border-gray-500 shadow-md`} title={assignment ? assignment.title : `Key ${key} - No Assignment`}>{isPlaying ? '⏹️' : key}</button>;
                                 })}
                             </div>
                         </div>
@@ -140,8 +232,6 @@ const VoxProPlayer = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Key Assignments Section */}
                 <div className="bg-gray-800 rounded-lg p-4 flex-1 flex flex-col min-h-0 border border-gray-600">
                     <h3 className="text-green-400 font-semibold text-lg mb-3 flex-shrink-0 text-center">Current Key Assignments</h3>
                     <div className="overflow-y-auto flex-1 pr-2">
@@ -197,7 +287,6 @@ function App() {
   const [activeTab, setActiveTab] = useState('The Back Corner');
   const navigationTabs = [ 'HOME', 'Radio', 'Television', 'Events', 'The Back Corner', 'Gallery', 'About/Contact', 'News/Social', 'Admin' ];
 
-  // This hook ensures Tailwind CSS is loaded from the CDN.
   useEffect(() => {
     const scriptId = 'tailwind-cdn-script';
     if (!document.getElementById(scriptId)) {
@@ -234,7 +323,6 @@ function App() {
             </div>
           </div>
         );
-      // Other cases...
       case 'HOME': return <div>Home Page Content</div>;
       case 'Radio': return <RadioPage />;
       case 'Television': return <div>Television Page Content</div>;
