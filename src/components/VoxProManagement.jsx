@@ -76,30 +76,48 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         }
       }, 10000); // 10 second timeout
       
-      if (mediaType === 'audio' && audioRef.current) {
-        audioRef.current.src = assignment.media_url;
-        audioRef.current.load();
-        initializeVisualization();
-        
-        // Additional fallback - if no events fire within 3 seconds, assume ready
-        setTimeout(() => {
-          if (isLoading && audioRef.current && audioRef.current.readyState >= 1) {
-            console.log('Audio fallback: setting ready state');
-            handleLoadedData();
+      if (mediaType === 'audio') {
+        // Wait for audio ref to be available
+        const waitForAudioRef = () => {
+          if (audioRef.current) {
+            audioRef.current.src = assignment.media_url;
+            audioRef.current.load();
+            initializeVisualization();
+            
+            // Additional fallback - if no events fire within 3 seconds, assume ready
+            setTimeout(() => {
+              if (isLoading && audioRef.current && audioRef.current.readyState >= 1) {
+                console.log('Audio fallback: setting ready state');
+                handleLoadedData();
+              }
+            }, 3000);
+          } else {
+            // Retry after a short delay
+            setTimeout(waitForAudioRef, 100);
           }
-        }, 3000);
+        };
+        waitForAudioRef();
         
-      } else if (mediaType === 'video' && videoRef.current) {
-        videoRef.current.src = assignment.media_url;
-        videoRef.current.load();
-        
-        // Additional fallback - if no events fire within 3 seconds, assume ready
-        setTimeout(() => {
-          if (isLoading && videoRef.current && videoRef.current.readyState >= 1) {
-            console.log('Video fallback: setting ready state');
-            handleLoadedData();
+      } else if (mediaType === 'video') {
+        // Wait for video ref to be available
+        const waitForVideoRef = () => {
+          if (videoRef.current) {
+            videoRef.current.src = assignment.media_url;
+            videoRef.current.load();
+            
+            // Additional fallback - if no events fire within 3 seconds, assume ready
+            setTimeout(() => {
+              if (isLoading && videoRef.current && videoRef.current.readyState >= 1) {
+                console.log('Video fallback: setting ready state');
+                handleLoadedData();
+              }
+            }, 3000);
+          } else {
+            // Retry after a short delay
+            setTimeout(waitForVideoRef, 100);
           }
-        }, 3000);
+        };
+        waitForVideoRef();
         
       } else if (mediaType === 'pdf') {
         // PDF loads immediately
