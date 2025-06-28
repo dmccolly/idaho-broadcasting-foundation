@@ -13,9 +13,20 @@ const supabase = {
           {id: 3, key_slot: '3', title: 'Station ID - Rock', description: 'High-energy station identification.', submitted_by: 'Admin', created_at: '2025-06-28T10:10:00Z', media_url: 'https://storage.googleapis.com/streamofdan-com/Station_ID_Rock.mp3', media_type: 'audio/mp3'},
           {id: 4, key_slot: '4', title: 'Marty Holtman Santa Express', description: 'Promo for the holiday classic.', submitted_by: 'Admin', created_at: '2025-06-28T10:15:00Z', media_url: 'https://player.vimeo.com/video/1040039534', media_type: 'video/vimeo'},
       ], error: null }),
+       update: () => ({
+        eq: () => Promise.resolve({ error: null })
+      }),
+      insert: () => Promise.resolve({ error: null })
     })
-  })
+  }),
+   storage: {
+    from: () => ({
+      upload: () => Promise.resolve({ error: null }),
+      getPublicUrl: () => ({ data: { publicUrl: '#' } })
+    })
+  }
 };
+
 
 // --- Player Component Definitions ---
 
