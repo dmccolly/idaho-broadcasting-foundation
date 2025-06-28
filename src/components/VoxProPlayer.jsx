@@ -698,14 +698,12 @@ const VoxProPlayer = () => {
                     <p className="text-gray-400 text-sm">Compact professional media player for broadcasting operations.</p>
                 </div>
 
-                {/* --- MODIFIED: Main Control Panel with reduced width --- */}
                 <div className="max-w-md mx-auto bg-gray-800 rounded-lg p-4 shadow-2xl border border-gray-600">
                     <div className="text-center mb-4">
                         <h3 className="text-xl font-bold text-green-400">VoxPro Media Player</h3>
                         <p className="text-gray-400 text-xs">Professional Broadcasting Control System</p>
                     </div>
 
-                    {/* --- MODIFIED: Two-column layout for buttons --- */}
                     <div className="grid grid-cols-2 gap-4">
                         {/* Column 1: START Keys */}
                         <div className="space-y-2">
@@ -763,9 +761,8 @@ const VoxProPlayer = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>  {/* <-- THIS IS THE CORRECTED LINE - The missing closing div is now here */}
+                    </div>
 
-                    {/* --- MODIFIED: Status and Connection Display --- */}
                     <div className="mt-4 text-center">
                         <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium mb-2 ${connectionStatus === 'connected' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
                             <div className={`w-1.5 h-1.5 rounded-full mr-2 ${connectionStatus === 'connected' ? 'bg-green-300' : 'bg-red-300'} animate-pulse`}></div>
@@ -783,20 +780,23 @@ const VoxProPlayer = () => {
                 <div className="mt-6 bg-gray-800 rounded-lg p-4 max-w-4xl mx-auto">
                     <h3 className="text-green-400 font-semibold text-lg mb-3">Current Key Assignments</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {assignments.map((assignment) => (
-                            <div key={assignment.id} className="bg-gray-700 rounded p-3 border border-gray-600">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className={`text-sm font-bold ${currentPlayingKey === assignment.key_slot ? 'text-green-400' : 'text-red-400'}`}>
-                                        Key {assignment.key_slot} {currentPlayingKey === assignment.key_slot ? '(Playing)' : ''}
-                                    </span>
-                                    <span className="text-xs text-gray-400">{assignment.media_type}</span>
+                        {/* --- THIS IS THE FINAL CHANGE --- */}
+                        {[...assignments]
+                            .sort((a, b) => parseInt(a.key_slot) - parseInt(b.key_slot))
+                            .map((assignment) => (
+                                <div key={assignment.id} className="bg-gray-700 rounded p-3 border border-gray-600">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className={`text-sm font-bold ${currentPlayingKey === assignment.key_slot ? 'text-green-400' : 'text-red-400'}`}>
+                                            Key {assignment.key_slot} {currentPlayingKey === assignment.key_slot ? '(Playing)' : ''}
+                                        </span>
+                                        <span className="text-xs text-gray-400">{assignment.media_type}</span>
+                                    </div>
+                                    <h4 className="text-white font-medium mb-1 text-sm">{assignment.title}</h4>
+                                    <p className="text-gray-400 text-xs mb-2 line-clamp-2">{assignment.description}</p>
+                                    <div className="text-xs text-gray-500">
+                                        By: {assignment.submitted_by} | {new Date(assignment.created_at).toLocaleDateString()}
+                                    </div>
                                 </div>
-                                <h4 className="text-white font-medium mb-1 text-sm">{assignment.title}</h4>
-                                <p className="text-gray-400 text-xs mb-2 line-clamp-2">{assignment.description}</p>
-                                <div className="text-xs text-gray-500">
-                                    By: {assignment.submitted_by} | {new Date(assignment.created_at).toLocaleDateString()}
-                                </div>
-                            </div>
                         ))}
                     </div>
                 </div>
