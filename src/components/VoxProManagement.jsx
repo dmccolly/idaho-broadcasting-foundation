@@ -12,6 +12,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const [isMuted, setIsMuted] = useState(false);
   const [error, setError] = useState(null);
   const [visualizationType, setVisualizationType] = useState('none');
+  const [debugInfo, setDebugInfo] = useState('');
   
   // Media refs
   const audioRef = useRef(null);
@@ -34,8 +35,15 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
      assignment.media_url.match(/\.(mp4|webm|mov|avi)$/i) ? 'video' : 
      assignment.media_url.match(/\.(pdf)$/i) ? 'pdf' : 'unknown') : 'unknown';
 
+  // Debug function
+  const addDebug = (message) => {
+    console.log(`[VoxPro Debug] ${message}`);
+    setDebugInfo(prev => prev + `\n${new Date().toLocaleTimeString()}: ${message}`);
+  };
+
   useEffect(() => {
     if (assignment?.media_url) {
+      addDebug(`Starting media load for ${mediaType}: ${assignment.media_url}`);
       loadMedia();
     }
     
@@ -61,6 +69,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     try {
       setIsLoading(true);
       setError(null);
+      addDebug(`loadMedia called for ${mediaType}`);
       
       // Clear any existing timeout
       if (loadingTimeoutRef.current) {
@@ -69,63 +78,105 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       
       // Set a timeout to ensure loading state doesn't persist indefinitely
       loadingTimeoutRef.current = setTimeout(() => {
-        console.warn('Media loading timeout reached');
+        addDebug('Media loading timeout reached');
         setIsLoading(false);
-        if (!error) {
-          setError(`${mediaType} loading timeout - media may still be playable`);
-        }
+        setError(`${mediaType} loading timeout - media may still be playable`);
       }, 10000); // 10 second timeout
       
       if (mediaType === 'audio') {
-        // Wait for audio ref to be available
+        addDebug('Processing audio media type');
+        // Use a more aggressive approach to wait for the ref
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max
+        
         const waitForAudioRef = () => {
+          attempts++;
+          addDebug(`Audio ref attempt ${attempts}, ref exists: ${!!audioRef.current}`);
+          
           if (audioRef.current) {
-            audioRef.current.src = assignment.media_url;
-            audioRef.current.load();
-            initializeVisualization();
-            
-            // Additional fallback - if no events fire within 3 seconds, assume ready
-            setTimeout(() => {
-              if (isLoading && audioRef.current && audioRef.current.readyState >= 1) {
-                console.log('Audio fallback: setting ready state');
-                handleLoadedData();
-              }
-            }, 3000);
-          } else {
+            addDebug('Audio ref found, setting up media');
+            try {
+              audioRef.current.src = assignment.media_url;
+              audioRef.current.load();
+              addDebug('Audio load() called');
+              initializeVisualization();
+              
+              // Fallback timeout
+              setTimeout(() => {
+                if (isLoading && audioRef.current) {
+                  addDebug(`Audio fallback check: readyState=${audioRef.current.readyState}`);
+                  if (audioRef.current.readyState >= 1) {
+                    addDebug('Audio fallback: setting ready state');
+                    handleLoadedData();
+                  }
+                }
+              }, 3000);
+            } catch (err) {
+              addDebug(`Audio setup error: ${err.message}`);
+              setError(`Audio setup failed: ${err.message}`);
+            }
+          } else if (attempts < maxAttempts) {
             // Retry after a short delay
             setTimeout(waitForAudioRef, 100);
+          } else {
+            addDebug('Audio ref timeout - max attempts reached');
+            setError('Audio element not available after 5 seconds');
+            setIsLoading(false);
           }
         };
         waitForAudioRef();
         
       } else if (mediaType === 'video') {
-        // Wait for video ref to be available
+        addDebug('Processing video media type');
+        // Use a more aggressive approach to wait for the ref
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max
+        
         const waitForVideoRef = () => {
+          attempts++;
+          addDebug(`Video ref attempt ${attempts}, ref exists: ${!!videoRef.current}`);
+          
           if (videoRef.current) {
-            videoRef.current.src = assignment.media_url;
-            videoRef.current.load();
-            
-            // Additional fallback - if no events fire within 3 seconds, assume ready
-            setTimeout(() => {
-              if (isLoading && videoRef.current && videoRef.current.readyState >= 1) {
-                console.log('Video fallback: setting ready state');
-                handleLoadedData();
-              }
-            }, 3000);
-          } else {
+            addDebug('Video ref found, setting up media');
+            try {
+              videoRef.current.src = assignment.media_url;
+              videoRef.current.load();
+              addDebug('Video load() called');
+              
+              // Fallback timeout
+              setTimeout(() => {
+                if (isLoading && videoRef.current) {
+                  addDebug(`Video fallback check: readyState=${videoRef.current.readyState}`);
+                  if (videoRef.current.readyState >= 1) {
+                    addDebug('Video fallback: setting ready state');
+                    handleLoadedData();
+                  }
+                }
+              }, 3000);
+            } catch (err) {
+              addDebug(`Video setup error: ${err.message}`);
+              setError(`Video setup failed: ${err.message}`);
+            }
+          } else if (attempts < maxAttempts) {
             // Retry after a short delay
             setTimeout(waitForVideoRef, 100);
+          } else {
+            addDebug('Video ref timeout - max attempts reached');
+            setError('Video element not available after 5 seconds');
+            setIsLoading(false);
           }
         };
         waitForVideoRef();
         
       } else if (mediaType === 'pdf') {
+        addDebug('Processing PDF media type');
         // PDF loads immediately
         if (loadingTimeoutRef.current) {
           clearTimeout(loadingTimeoutRef.current);
         }
         setIsLoading(false);
       } else {
+        addDebug(`Unknown media type: ${mediaType}`);
         // Unknown media type
         if (loadingTimeoutRef.current) {
           clearTimeout(loadingTimeoutRef.current);
@@ -135,6 +186,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       }
       
     } catch (error) {
+      addDebug(`Media loading error: ${error.message}`);
       console.error('Media loading error:', error);
       setError(`Failed to load ${mediaType}: ${error.message}`);
       setIsLoading(false);
@@ -237,10 +289,11 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   };
 
   const handleLoadedData = () => {
-    console.log('Media loaded data event fired');
+    addDebug('Media loaded data event fired');
     const mediaElement = mediaType === 'audio' ? audioRef.current : videoRef.current;
     if (mediaElement) {
       setDuration(mediaElement.duration || 0);
+      addDebug(`Duration set to: ${mediaElement.duration}`);
     }
     setIsLoading(false);
     if (loadingTimeoutRef.current) {
@@ -249,17 +302,16 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   };
 
   const handleLoadedMetadata = () => {
-    console.log('Media loaded metadata event fired');
+    addDebug('Media loaded metadata event fired');
     const mediaElement = mediaType === 'audio' ? audioRef.current : videoRef.current;
     if (mediaElement) {
       setDuration(mediaElement.duration || 0);
+      addDebug(`Metadata duration: ${mediaElement.duration}`);
     }
-    // Don't set loading to false here, wait for loadeddata or timeout
   };
 
   const handleCanPlay = () => {
-    console.log('Media can play event fired');
-    // If we're still loading and can play, consider it ready
+    addDebug('Media can play event fired');
     if (isLoading) {
       setIsLoading(false);
       if (loadingTimeoutRef.current) {
@@ -281,6 +333,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   };
 
   const handlePlay = () => {
+    addDebug('Media play event fired');
     setIsPlaying(true);
     
     if (visualizationType === 'animated') {
@@ -289,6 +342,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   };
 
   const handlePause = () => {
+    addDebug('Media pause event fired');
     setIsPlaying(false);
     
     if (animationRef.current) {
@@ -297,6 +351,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   };
 
   const handleEnded = () => {
+    addDebug('Media ended event fired');
     setIsPlaying(false);
     setCurrentTime(0);
     
@@ -306,8 +361,9 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   };
 
   const handleError = (e) => {
-    console.error('Media error:', e.target.error);
     const errorMessage = e.target.error?.message || 'Unknown playback error';
+    addDebug(`Media error: ${errorMessage}`);
+    console.error('Media error:', e.target.error);
     setError(`${mediaType} playback error: ${errorMessage}`);
     setIsLoading(false);
     setIsPlaying(false);
@@ -318,12 +374,18 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
   const togglePlayPause = () => {
     const mediaElement = mediaType === 'audio' ? audioRef.current : videoRef.current;
-    if (!mediaElement) return;
+    if (!mediaElement) {
+      addDebug('togglePlayPause: No media element available');
+      return;
+    }
 
     if (isPlaying) {
+      addDebug('Pausing media');
       mediaElement.pause();
     } else {
+      addDebug('Playing media');
       mediaElement.play().catch(error => {
+        addDebug(`Play failed: ${error.message}`);
         console.error('Play failed:', error);
         setError(`Play failed: ${error.message}`);
       });
@@ -483,6 +545,13 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
               {visualizationType === 'wavesurfer' ? '📊 WAVE' : '🎨 ANIM'}
             </span>
           )}
+          <button
+            onClick={() => setDebugInfo('')}
+            className="text-xs bg-blue-700 px-2 py-1 rounded hover:bg-blue-600"
+            title="Clear debug info"
+          >
+            🐛 DEBUG
+          </button>
         </div>
         
         <div className="flex items-center gap-2">
@@ -514,47 +583,40 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
           </div>
         )}
 
+        {debugInfo && (
+          <div className="p-2 bg-blue-900 text-blue-100 text-xs max-h-32 overflow-y-auto">
+            <pre className="whitespace-pre-wrap">{debugInfo}</pre>
+          </div>
+        )}
+
         {isLoading && (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="animate-spin text-2xl mb-2">⏳</div>
               <div>Loading {mediaType}...</div>
               <div className="text-xs text-gray-400 mt-2">
-                If this takes too long, try refreshing or check the media URL
+                Check debug info above for details
               </div>
             </div>
           </div>
         )}
 
-        {mediaType === 'pdf' && !isLoading && (
-          <div className="h-full w-full">
-            <iframe
-              src={assignment.media_url}
-              className="w-full h-full border-0"
-              style={{
-                zoom: Math.min(windowSize.width / 600, windowSize.height / 800),
-                transformOrigin: 'top left'
-              }}
-              title={assignment.title}
-            />
-          </div>
-        )}
-
-        {mediaType === 'audio' && !isLoading && (
+        {/* CRITICAL FIX: Always render media elements, control visibility instead */}
+        <div style={{ display: mediaType === 'audio' && !isLoading ? 'block' : 'none' }}>
+          <audio
+            ref={audioRef}
+            onLoadedData={handleLoadedData}
+            onLoadedMetadata={handleLoadedMetadata}
+            onCanPlay={handleCanPlay}
+            onTimeUpdate={handleTimeUpdate}
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onEnded={handleEnded}
+            onError={handleError}
+            preload="metadata"
+          />
+          
           <div className="h-full flex flex-col">
-            <audio
-              ref={audioRef}
-              onLoadedData={handleLoadedData}
-              onLoadedMetadata={handleLoadedMetadata}
-              onCanPlay={handleCanPlay}
-              onTimeUpdate={handleTimeUpdate}
-              onPlay={handlePlay}
-              onPause={handlePause}
-              onEnded={handleEnded}
-              onError={handleError}
-              preload="metadata"
-            />
-            
             <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-4">
               <div className="text-center w-full">
                 <div className="text-6xl mb-4">🎵</div>
@@ -627,23 +689,35 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
               </div>
             </div>
           </div>
-        )}
+        </div>
 
-        {mediaType === 'video' && !isLoading && (
-          <div className="h-full flex flex-col">
-            <video
-              ref={videoRef}
-              onLoadedData={handleLoadedData}
-              onLoadedMetadata={handleLoadedMetadata}
-              onCanPlay={handleCanPlay}
-              onTimeUpdate={handleTimeUpdate}
-              onPlay={handlePlay}
-              onPause={handlePause}
-              onEnded={handleEnded}
-              onError={handleError}
-              className="flex-1 w-full object-contain bg-black"
-              controls
-              preload="metadata"
+        <div style={{ display: mediaType === 'video' && !isLoading ? 'block' : 'none' }}>
+          <video
+            ref={videoRef}
+            onLoadedData={handleLoadedData}
+            onLoadedMetadata={handleLoadedMetadata}
+            onCanPlay={handleCanPlay}
+            onTimeUpdate={handleTimeUpdate}
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onEnded={handleEnded}
+            onError={handleError}
+            className="w-full h-full object-contain bg-black"
+            controls
+            preload="metadata"
+          />
+        </div>
+
+        {mediaType === 'pdf' && !isLoading && (
+          <div className="h-full w-full">
+            <iframe
+              src={assignment.media_url}
+              className="w-full h-full border-0"
+              style={{
+                zoom: Math.min(windowSize.width / 600, windowSize.height / 800),
+                transformOrigin: 'top left'
+              }}
+              title={assignment.title}
             />
           </div>
         )}
