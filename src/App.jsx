@@ -158,19 +158,19 @@ function App() {
           </div>
         );
       case 'Gallery':
-        return (
-          <div className="space-y-8">
-            <div className="text-center bg-gradient-to-r from-blue-50 to-gray-50 p-8 rounded-lg">
-              <h2 className="text-4xl font-bold text-gray-800 mb-4">Video Gallery</h2>
-              <p className="text-xl text-gray-600 max-w-4xl mx-auto">
-                In our ongoing effort to visually preserve Idaho's fascinating radio and television past,
-                the History of Idaho Broadcasting Foundation has conducted more than 75 video interviews
-                with media legends and personalities throughout the state who have generously shared
-                anecdotal insights into their careers.
-              </p>
+         return (
+            <div className="space-y-8">
+              <div className="text-center bg-gradient-to-r from-blue-50 to-gray-50 p-8 rounded-lg">
+                <h2 className="text-4xl font-bold text-gray-800 mb-4">Video Gallery</h2>
+                <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+                  In our ongoing effort to visually preserve Idaho's fascinating radio and television past, 
+                  the History of Idaho Broadcasting Foundation has conducted more than 75 video interviews 
+                  with media legends and personalities throughout the state who have generously shared 
+                  anecdotal insights into their careers.
+                </p>
+              </div>
             </div>
-          </div>
-        );
+          );
       case 'About/Contact':
         return (
           <div className="space-y-6">
