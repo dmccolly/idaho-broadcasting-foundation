@@ -914,4 +914,3 @@ const VoxProManagement = () => {
 };
 
 export default VoxProManagement;
-
