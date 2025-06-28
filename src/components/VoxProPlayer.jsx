@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// In your actual project, this would be: import { supabase } from '../lib/supabase';
-// For this self-contained example, we use a mock object.
+// For this self-contained example, we use a mock object instead of an import.
+// In your actual project, you would use: import { supabase } from '../lib/supabase';
 const supabase = {
   from: () => ({
     select: () => ({
@@ -18,19 +18,12 @@ const supabase = {
 
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [mediaType, setMediaType] = useState(null);
     const [mediaUrl, setMediaUrl] = useState('');
-    
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
-    
-    const playerRef = useRef(null);
-    const windowRef = useRef(null);
     const [windowPosition, setWindowPosition] = useState({ x: window.innerWidth / 2 - 320, y: window.innerHeight / 2 - 240 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    const playerRef = useRef(null);
 
     useEffect(() => {
         if (assignment?.media_url) {
@@ -47,34 +40,15 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         }
     }, [assignment]);
 
-    const handleLoadedData = () => { if (playerRef.current) setDuration(playerRef.current.duration); };
-    const handleTimeUpdate = () => { if (playerRef.current) setCurrentTime(playerRef.current.currentTime); };
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
-    const handleEnded = () => { setIsPlaying(false); setCurrentTime(0); };
-    
-    const formatTime = (seconds) => {
-        if (isNaN(seconds)) return '0:00';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
     const handleMouseDown = (e) => {
         if (e.target.closest('.window-controls')) return;
         setIsDragging(true);
-        setDragStart({
-            x: e.clientX - windowPosition.x,
-            y: e.clientY - windowPosition.y,
-        });
+        setDragStart({ x: e.clientX - windowPosition.x, y: e.clientY - windowPosition.y });
     };
 
     const handleMouseMove = (e) => {
         if (isDragging) {
-            setWindowPosition({
-                x: e.clientX - dragStart.x,
-                y: e.clientY - dragStart.y,
-            });
+            setWindowPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
         }
     };
 
@@ -86,9 +60,6 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         if (isDragging) {
             window.addEventListener('mousemove', handleMouseMove);
             window.addEventListener('mouseup', handleMouseUp);
-        } else {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
         }
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
@@ -96,35 +67,15 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         };
     }, [isDragging]);
 
-
     const renderMediaContent = () => {
         if (isLoading) return <div className="flex items-center justify-center h-full text-white">Loading...</div>;
-        if (error) return <div className="flex items-center justify-center h-full text-red-400">{error}</div>;
-
         switch (mediaType) {
             case 'vimeo':
-                return (
-                    <iframe
-                        src={`${mediaUrl}?autoplay=1&title=0&byline=0&portrait=0`}
-                        className="w-full h-full"
-                        frameBorder="0"
-                        allow="autoplay; fullscreen; picture-in-picture"
-                        title={assignment.title}
-                    ></iframe>
-                );
+                return <iframe src={`${mediaUrl}?autoplay=1&title=0&byline=0&portrait=0`} className="w-full h-full" frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" title={assignment.title}></iframe>;
             case 'video':
-                 return (
-                    <video ref={playerRef} src={mediaUrl} controls autoPlay className="w-full h-full bg-black" onPlay={handlePlay} onPause={handlePause} onEnded={handleEnded} onLoadedData={handleLoadedData} onTimeUpdate={handleTimeUpdate} />
-                );
+                 return <video ref={playerRef} src={mediaUrl} controls autoPlay className="w-full h-full bg-black" />;
             case 'audio':
-                return (
-                    <div className="p-4 bg-gray-800 rounded-lg h-full flex flex-col justify-center items-center">
-                         <div className="text-green-400 text-6xl mb-4">🎵</div>
-                         <audio ref={playerRef} src={mediaUrl} autoPlay controls className="w-full" onPlay={handlePlay} onPause={handlePause} onEnded={handleEnded} onLoadedData={handleLoadedData} onTimeUpdate={handleTimeUpdate}/>
-                         <div className="text-white mt-4 font-semibold">{assignment.title}</div>
-                         <div className="w-full text-center mt-2 text-sm text-gray-400">{formatTime(currentTime)} / {formatTime(duration)}</div>
-                    </div>
-                );
+                return <div className="p-4 bg-gray-800 h-full flex flex-col justify-center items-center"><div className="text-green-400 text-6xl mb-4">🎵</div><audio ref={playerRef} src={mediaUrl} autoPlay controls className="w-full" /><div className="text-white mt-4 font-semibold">{assignment.title}</div></div>;
             default:
                 return <div className="p-4 text-white">Unsupported media type.</div>;
         }
@@ -133,37 +84,18 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     if (isMinimized) {
         return (
             <div className="fixed bottom-4 right-4 bg-gray-800 border border-gray-600 rounded-lg p-2 shadow-lg z-50 animate-pulse">
-                <div className="flex items-center justify-between min-w-48">
-                    <span className="text-white text-sm truncate">{assignment?.title || 'Media Player'}</span>
-                    <div className="flex gap-1 ml-2 window-controls">
-                        <button onClick={() => onMinimize(windowId, false)} className="text-gray-400 hover:text-white p-1" title="Restore">⬜</button>
-                        <button onClick={() => onClose(windowId)} className="text-gray-400 hover:text-red-400 p-1" title="Close">✕</button>
-                    </div>
-                </div>
+                <div className="flex items-center justify-between min-w-48"><span className="text-white text-sm truncate">{assignment?.title || 'Media Player'}</span><div className="flex gap-1 ml-2 window-controls"><button onClick={() => onMinimize(windowId, false)} className="text-gray-400 hover:text-white p-1" title="Restore">⬜</button><button onClick={() => onClose(windowId)} className="text-gray-400 hover:text-red-400 p-1" title="Close">✕</button></div></div>
             </div>
         );
     }
 
     return (
-        <div 
-            ref={windowRef} 
-            className="fixed w-[90vw] max-w-[640px] h-[60vh] max-h-[480px] bg-gray-900 border-gray-700 border-2 rounded-lg shadow-2xl z-50 flex flex-col"
-            style={{ top: windowPosition.y, left: windowPosition.x }}
-        >
-            <div className="bg-gray-800 px-4 py-2 flex items-center justify-between rounded-t-lg cursor-grab window-controls" onMouseDown={handleMouseDown}>
-                <span className="text-white font-bold pointer-events-none">{assignment.title}</span>
-                <div className="flex gap-2">
-                    <button onClick={() => onMinimize(windowId, true)} className="text-gray-400 hover:text-white">_</button>
-                    <button onClick={() => onClose(windowId)} className="text-red-500 hover:text-red-400 font-bold">X</button>
-                </div>
-            </div>
-            <div className="flex-grow bg-black">
-                {renderMediaContent()}
-            </div>
+        <div style={{ top: `${windowPosition.y}px`, left: `${windowPosition.x}px` }} className="fixed w-[90vw] max-w-[640px] h-[60vh] max-h-[480px] bg-gray-900 border-gray-700 border-2 rounded-lg shadow-2xl z-50 flex flex-col">
+            <div className="bg-gray-800 px-4 py-2 flex items-center justify-between rounded-t-lg cursor-grab window-controls" onMouseDown={handleMouseDown}><span className="text-white font-bold pointer-events-none">{assignment.title}</span><div className="flex gap-2"><button onClick={() => onMinimize(windowId, true)} className="text-gray-400 hover:text-white">_</button><button onClick={() => onClose(windowId)} className="text-red-500 hover:text-red-400 font-bold">X</button></div></div>
+            <div className="flex-grow bg-black">{renderMediaContent()}</div>
         </div>
     );
 };
-
 
 const VoxProPlayer = () => {
     const [connectionStatus, setConnectionStatus] = useState('connecting');
