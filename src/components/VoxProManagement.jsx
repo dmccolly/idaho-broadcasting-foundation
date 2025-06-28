@@ -19,6 +19,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const waveformRef = useRef(null);
   const wavesurferRef = useRef(null);
   const animationRef = useRef(null);
+  const loadingTimeoutRef = useRef(null);
   
   // Window drag/resize state
   const [isDragging, setIsDragging] = useState(false);
@@ -39,6 +40,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     }
     
     return () => {
+      // Cleanup
       if (wavesurferRef.current) {
         try {
           wavesurferRef.current.destroy();
@@ -49,6 +51,9 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
     };
   }, [assignment]);
 
@@ -57,20 +62,67 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       setIsLoading(true);
       setError(null);
       
+      // Clear any existing timeout
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+      
+      // Set a timeout to ensure loading state doesn't persist indefinitely
+      loadingTimeoutRef.current = setTimeout(() => {
+        console.warn('Media loading timeout reached');
+        setIsLoading(false);
+        if (!error) {
+          setError(`${mediaType} loading timeout - media may still be playable`);
+        }
+      }, 10000); // 10 second timeout
+      
       if (mediaType === 'audio' && audioRef.current) {
         audioRef.current.src = assignment.media_url;
         audioRef.current.load();
         initializeVisualization();
+        
+        // Additional fallback - if no events fire within 3 seconds, assume ready
+        setTimeout(() => {
+          if (isLoading && audioRef.current && audioRef.current.readyState >= 1) {
+            console.log('Audio fallback: setting ready state');
+            handleLoadedData();
+          }
+        }, 3000);
+        
       } else if (mediaType === 'video' && videoRef.current) {
         videoRef.current.src = assignment.media_url;
         videoRef.current.load();
+        
+        // Additional fallback - if no events fire within 3 seconds, assume ready
+        setTimeout(() => {
+          if (isLoading && videoRef.current && videoRef.current.readyState >= 1) {
+            console.log('Video fallback: setting ready state');
+            handleLoadedData();
+          }
+        }, 3000);
+        
       } else if (mediaType === 'pdf') {
+        // PDF loads immediately
+        if (loadingTimeoutRef.current) {
+          clearTimeout(loadingTimeoutRef.current);
+        }
         setIsLoading(false);
+      } else {
+        // Unknown media type
+        if (loadingTimeoutRef.current) {
+          clearTimeout(loadingTimeoutRef.current);
+        }
+        setIsLoading(false);
+        setError(`Unsupported media type: ${mediaType}`);
       }
       
     } catch (error) {
+      console.error('Media loading error:', error);
       setError(`Failed to load ${mediaType}: ${error.message}`);
       setIsLoading(false);
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
     }
   };
 
@@ -113,6 +165,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       setVisualizationType('wavesurfer');
 
     } catch (error) {
+      console.warn('Wavesurfer initialization failed, using fallback:', error);
       createFallbackVisualization();
     }
   };
@@ -166,10 +219,34 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   };
 
   const handleLoadedData = () => {
+    console.log('Media loaded data event fired');
     const mediaElement = mediaType === 'audio' ? audioRef.current : videoRef.current;
     if (mediaElement) {
-      setDuration(mediaElement.duration);
+      setDuration(mediaElement.duration || 0);
+    }
+    setIsLoading(false);
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    console.log('Media loaded metadata event fired');
+    const mediaElement = mediaType === 'audio' ? audioRef.current : videoRef.current;
+    if (mediaElement) {
+      setDuration(mediaElement.duration || 0);
+    }
+    // Don't set loading to false here, wait for loadeddata or timeout
+  };
+
+  const handleCanPlay = () => {
+    console.log('Media can play event fired');
+    // If we're still loading and can play, consider it ready
+    if (isLoading) {
       setIsLoading(false);
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
     }
   };
 
@@ -211,9 +288,14 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   };
 
   const handleError = (e) => {
-    setError(`${mediaType} playback error: ${e.target.error?.message || 'Unknown error'}`);
+    console.error('Media error:', e.target.error);
+    const errorMessage = e.target.error?.message || 'Unknown playback error';
+    setError(`${mediaType} playback error: ${errorMessage}`);
     setIsLoading(false);
     setIsPlaying(false);
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+    }
   };
 
   const togglePlayPause = () => {
@@ -224,6 +306,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       mediaElement.pause();
     } else {
       mediaElement.play().catch(error => {
+        console.error('Play failed:', error);
         setError(`Play failed: ${error.message}`);
       });
     }
@@ -404,6 +487,12 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         {error && (
           <div className="p-4 bg-red-900 text-red-100 text-sm">
             ⚠️ {error}
+            <button 
+              onClick={() => setError(null)}
+              className="ml-2 text-red-300 hover:text-red-100"
+            >
+              ✕
+            </button>
           </div>
         )}
 
@@ -412,6 +501,9 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
             <div className="text-center">
               <div className="animate-spin text-2xl mb-2">⏳</div>
               <div>Loading {mediaType}...</div>
+              <div className="text-xs text-gray-400 mt-2">
+                If this takes too long, try refreshing or check the media URL
+              </div>
             </div>
           </div>
         )}
@@ -435,6 +527,8 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
             <audio
               ref={audioRef}
               onLoadedData={handleLoadedData}
+              onLoadedMetadata={handleLoadedMetadata}
+              onCanPlay={handleCanPlay}
               onTimeUpdate={handleTimeUpdate}
               onPlay={handlePlay}
               onPause={handlePause}
@@ -476,7 +570,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
                 <button
                   onClick={togglePlayPause}
                   className="text-2xl hover:text-green-400 transition-colors"
-                  disabled={!duration}
+                  disabled={!duration && !error}
                 >
                   {isPlaying ? '⏸️' : '▶️'}
                 </button>
@@ -522,6 +616,8 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
             <video
               ref={videoRef}
               onLoadedData={handleLoadedData}
+              onLoadedMetadata={handleLoadedMetadata}
+              onCanPlay={handleCanPlay}
               onTimeUpdate={handleTimeUpdate}
               onPlay={handlePlay}
               onPause={handlePause}
@@ -531,6 +627,21 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
               controls
               preload="metadata"
             />
+          </div>
+        )}
+
+        {mediaType === 'unknown' && !isLoading && (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="text-4xl mb-4">❓</div>
+              <div className="text-xl mb-2">Unknown Media Type</div>
+              <div className="text-gray-400 mb-4">
+                Cannot determine how to display this file
+              </div>
+              <div className="text-sm text-gray-500">
+                URL: {assignment?.media_url}
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -753,174 +864,151 @@ const VoxProManagement = () => {
                 <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">G</button>
                 <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">H</button>
                 <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">I</button>
-                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">REC</button>
+                <button className="h-10 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold">STOP</button>
               </div>
 
-              <div className="flex justify-center mb-4">
-                <div className="w-24 h-24 border-4 border-green-500 rounded-full flex items-center justify-center">
-                  <div className="text-green-400 font-mono text-lg">
-                    {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                  </div>
-                </div>
+              <div className="grid grid-cols-3 gap-2">
+                <button className="h-8 bg-gray-600 hover:bg-gray-500 rounded text-xs font-bold">FADE</button>
+                <button className="h-8 bg-gray-600 hover:bg-gray-500 rounded text-xs font-bold">NEXT</button>
+                <button className="h-8 bg-gray-600 hover:bg-gray-500 rounded text-xs font-bold">PREV</button>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 bg-gray-800 rounded-lg border border-gray-600 p-6">
-          <h2 className="text-xl font-bold text-green-400 mb-6">Media Management Interface</h2>
+        <div className="w-80 bg-gray-800 rounded-lg border border-gray-600 p-6">
+          <h2 className="text-xl font-bold text-green-400 mb-4">Media Management</h2>
           
-          <div className="bg-gray-900 rounded-lg border border-gray-700 p-4 mb-6">
-            <h3 className="text-lg font-bold text-green-400 mb-4">Current Key Assignments</h3>
-            
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {[1, 2, 3, 4, 5].map((key) => {
-                const assignment = getKeyAssignment(key);
-                return (
-                  <div key={key} className="flex items-center justify-between p-2 bg-gray-800 rounded">
-                    <div className="flex items-center gap-3">
-                      <span className="text-green-400 font-bold">KEY {key}:</span>
-                      <span className="text-white text-sm">
-                        {assignment ? assignment.title : 'No Assignment'}
-                      </span>
-                    </div>
-                    {assignment && (
-                      <button
-                        onClick={() => openWindow(assignment)}
-                        className="text-blue-400 hover:text-blue-300 text-sm"
-                      >
-                        Open
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+          {error && (
+            <div className="bg-red-900 text-red-100 p-3 rounded-lg mb-4 text-sm">
+              {error}
+              <button 
+                onClick={() => setError(null)}
+                className="ml-2 text-red-300 hover:text-red-100"
+              >
+                ✕
+              </button>
             </div>
-          </div>
+          )}
 
-          <div className="bg-gray-900 rounded-lg border border-gray-700 p-4 mb-4">
-            <div className="mb-4">
-              <label className="block text-green-400 text-sm mb-2">Media Title (100 characters max)</label>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Select Key Slot
+              </label>
+              <select
+                value={selectedKeySlot || ''}
+                onChange={(e) => setSelectedKeySlot(e.target.value)}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+              >
+                <option value="">Choose a key slot...</option>
+                {[1, 2, 3, 4, 5].map(key => {
+                  const assignment = getKeyAssignment(key);
+                  return (
+                    <option key={key} value={key}>
+                      Key {key} {assignment ? `(${assignment.title})` : '(Empty)'}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Media Title
+              </label>
               <input
                 type="text"
-                maxLength="100"
                 value={mediaTitle}
                 onChange={(e) => setMediaTitle(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white"
                 placeholder="Enter media title..."
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400"
               />
-              <div className="text-right text-xs text-gray-500 mt-1">
-                {mediaTitle.length}/100
-              </div>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-green-400 text-sm mb-2">Description (300 characters max)</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Description
+              </label>
               <textarea
-                maxLength="300"
                 value={mediaDescription}
                 onChange={(e) => setMediaDescription(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white h-20 resize-none"
                 placeholder="Enter description..."
+                rows={3}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 resize-none"
               />
-              <div className="text-right text-xs text-gray-500 mt-1">
-                {mediaDescription.length}/300
-              </div>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-green-400 text-sm mb-2">Select Media File</label>
-              <div 
-                className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-gray-500 transition-colors"
-                onClick={() => selectedKeySlot && fileInputRef.current?.click()}
-              >
-                <div className="text-yellow-400 text-lg mb-2">📁</div>
-                <div className="text-gray-400">
-                  {selectedKeySlot ? 'Click to select file or drag & drop here' : 'Select a key first'}
-                </div>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Upload Media File
+              </label>
               <input
                 ref={fileInputRef}
                 type="file"
                 onChange={handleFileSelect}
                 accept="audio/*,video/*,.pdf"
-                className="hidden"
+                disabled={!selectedKeySlot || isUploading}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-sm file:bg-green-600 file:text-white hover:file:bg-green-500"
               />
             </div>
 
-            <div className="mb-4">
-              <label className="block text-green-400 text-sm mb-2">Select Key to Replace</label>
-              <div className="grid grid-cols-5 gap-2">
-                {[1, 2, 3, 4, 5].map((key) => {
-                  const assignment = getKeyAssignment(key);
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => setSelectedKeySlot(key.toString())}
-                      className={`
-                        h-12 rounded font-bold transition-all
-                        ${selectedKeySlot === key.toString()
-                          ? 'bg-green-600 text-white'
-                          : assignment
-                          ? 'bg-red-600 text-white hover:bg-red-500'
-                          : 'bg-gray-600 text-white hover:bg-gray-500'
-                        }
-                      `}
-                    >
-                      KEY {key}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => selectedKeySlot && fileInputRef.current?.click()}
-                disabled={!selectedKeySlot || isUploading}
-                className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 text-white py-2 rounded font-bold transition-colors"
-              >
-                {isUploading ? 'Uploading...' : 'Upload & Assign Media'}
-              </button>
-              <button
-                onClick={clearForm}
-                className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded font-bold transition-colors"
-              >
-                Clear Form
-              </button>
-            </div>
-
             {isUploading && (
-              <div className="mt-4">
-                <div className="text-sm text-green-400 mb-2">{uploadStatus}</div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div
+              <div className="bg-gray-700 rounded-lg p-3">
+                <div className="text-sm text-gray-300 mb-2">{uploadStatus}</div>
+                <div className="w-full bg-gray-600 rounded-full h-2">
+                  <div 
                     className="bg-green-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      </div>
 
-      {error && (
-        <div className="max-w-7xl mx-auto mt-4 p-3 bg-red-900 border border-red-500 rounded text-red-100">
-          <div className="flex items-center">
-            <span className="mr-2">⚠️</span>
-            {error}
-          </div>
-        </div>
-      )}
-
-      <div className="max-w-7xl mx-auto mt-6">
-        <div className="bg-gray-800 rounded-lg border border-gray-600 p-4">
-          <div className="text-center">
-            <div className="text-green-400 font-bold mb-2">Upload Media to Key</div>
-            <div className="text-gray-400 text-sm">
-              Select a key above, enter title/description, then upload your media file
+            <div className="flex gap-2">
+              <button
+                onClick={clearForm}
+                className="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded-lg transition-colors"
+              >
+                Clear
+              </button>
             </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-lg font-bold text-green-400 mb-3">Current Assignments</h3>
+            {loading ? (
+              <div className="text-center text-gray-400">Loading...</div>
+            ) : (
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {assignments.map(assignment => (
+                  <div
+                    key={assignment.id}
+                    className="bg-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-600 transition-colors"
+                    onClick={() => openWindow(assignment)}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="font-medium text-white text-sm">
+                          Key {assignment.key_slot}: {assignment.title}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          {assignment.description}
+                        </div>
+                      </div>
+                      <div className="text-xs text-green-400 ml-2">
+                        {assignment.media_type?.split('/')[0] || 'unknown'}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {assignments.length === 0 && (
+                  <div className="text-center text-gray-400 text-sm">
+                    No assignments yet
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -928,11 +1016,11 @@ const VoxProManagement = () => {
       {openWindows.map(window => (
         <UniversalMediaPlayer
           key={window.id}
+          windowId={window.id}
           assignment={window.assignment}
+          isMinimized={window.isMinimized}
           onClose={closeWindow}
           onMinimize={toggleMinimize}
-          isMinimized={window.isMinimized}
-          windowId={window.id}
         />
       ))}
     </div>
@@ -940,3 +1028,4 @@ const VoxProManagement = () => {
 };
 
 export default VoxProManagement;
+
