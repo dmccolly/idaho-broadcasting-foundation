@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from 'react';
 // --- All Components and Mock Data are now in this single file to resolve import errors ---
 
 // In your real project, this would be imported from './lib/supabase'
-// For this self-contained example, we use a mock object.
 const supabase = {
   from: () => ({
     select: () => ({
@@ -15,9 +14,18 @@ const supabase = {
           {id: 4, key_slot: '4', title: 'Marty Holtman Santa Express', description: 'Promo for the holiday classic.', submitted_by: 'Admin', created_at: '2025-06-28T10:15:00Z', media_url: 'https://player.vimeo.com/video/1040039534', media_type: 'video/vimeo'},
           {id: 5, key_slot: '5', title: 'Empty Slot', description: 'This key is available for assignment.', submitted_by: '', created_at: '', media_url: null, media_type: null},
       ], error: null }),
+       update: () => ({ eq: () => Promise.resolve({ error: null }) }),
+       insert: () => Promise.resolve({ error: null })
     })
-  })
+  }),
+   storage: {
+    from: () => ({
+      upload: () => Promise.resolve({ data: null, error: null }),
+      getPublicUrl: () => ({ data: { publicUrl: '#' } })
+    })
+  }
 };
+
 
 // --- Player Component Definitions ---
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
@@ -50,15 +58,8 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         setDragStart({ x: e.clientX - windowPosition.x, y: e.clientY - windowPosition.y });
     };
 
-    const handleMouseMove = (e) => {
-        if (isDragging) {
-            setWindowPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-        }
-    };
-
-    const handleMouseUp = () => {
-        setIsDragging(false);
-    };
+    const handleMouseMove = (e) => { if (isDragging) setWindowPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }); };
+    const handleMouseUp = () => setIsDragging(false);
 
     useEffect(() => {
         if (isDragging) {
@@ -74,14 +75,10 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     const renderMediaContent = () => {
         if (isLoading) return <div className="flex items-center justify-center h-full text-white">Loading...</div>;
         switch (mediaType) {
-            case 'vimeo':
-                return <iframe src={`${mediaUrl}?autoplay=1&title=0&byline=0&portrait=0`} className="w-full h-full" frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" title={assignment.title}></iframe>;
-            case 'video':
-                 return <video ref={playerRef} src={mediaUrl} controls autoPlay className="w-full h-full bg-black" />;
-            case 'audio':
-                return <div className="p-4 bg-gray-800 h-full flex flex-col justify-center items-center"><div className="text-green-400 text-6xl mb-4">🎵</div><audio ref={playerRef} src={mediaUrl} autoPlay controls className="w-full" /><div className="text-white mt-4 font-semibold">{assignment.title}</div></div>;
-            default:
-                return <div className="p-4 text-white">Unsupported media type.</div>;
+            case 'vimeo': return <iframe src={`${mediaUrl}?autoplay=1&title=0&byline=0&portrait=0`} className="w-full h-full" frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" title={assignment.title}></iframe>;
+            case 'video': return <video ref={playerRef} src={mediaUrl} controls autoPlay className="w-full h-full bg-black" />;
+            case 'audio': return <div className="p-4 bg-gray-800 h-full flex flex-col justify-center items-center"><div className="text-green-400 text-6xl mb-4">🎵</div><audio ref={playerRef} src={mediaUrl} autoPlay controls className="w-full" /><div className="text-white mt-4 font-semibold">{assignment.title}</div></div>;
+            default: return <div className="p-4 text-white">Unsupported media type.</div>;
         }
     };
 
@@ -171,6 +168,7 @@ const VoxProPlayer = () => {
         </>
     );
 };
+
 
 // --- Full Page Component Definitions ---
 
