@@ -466,16 +466,16 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         <div className="flex items-center justify-between min-w-48">
           <span className="text-white text-sm truncate">{assignment?.title || 'Media Player'}</span>
           <div className="flex gap-1 ml-2 window-controls">
+            {/* MODIFICATION: Pass windowId to the parent's toggle function */}
             <button
-              {/* MODIFICATION: Pass windowId to the parent's toggle function */}
               onClick={() => onMinimize(windowId)}
               className="text-gray-400 hover:text-white p-1"
               title="Restore"
             >
               ⬜
             </button>
+            {/* MODIFICATION: Pass windowId to the parent's close function */}
             <button
-              {/* MODIFICATION: Pass windowId to the parent's close function */}
               onClick={() => onClose(windowId)}
               className="text-gray-400 hover:text-red-400 p-1"
               title="Close"
@@ -508,8 +508,8 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
           <span className="text-white font-medium">Universal Player - {assignment?.title}</span>
         </div>
         <div className="flex gap-2 window-controls">
+          {/* MODIFICATION: Pass windowId to the parent's toggle function */}
           <button
-            {/* MODIFICATION: Pass windowId to the parent's toggle function */}
             onClick={() => onMinimize(windowId)}
             className="text-gray-400 hover:text-white px-2 py-1 rounded"
             title="Minimize"
@@ -523,8 +523,8 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
           >
             {isMaximized ? "⧉" : "⬜"}
           </button>
+          {/* MODIFICATION: Pass windowId to the parent's close function */}
           <button
-            {/* MODIFICATION: Pass windowId to the parent's close function */}
             onClick={() => onClose(windowId)}
             className="text-gray-400 hover:text-red-400 px-2 py-1 rounded"
             title="Close"
@@ -817,4 +817,132 @@ const VoxProManagement = () => {
               <select
                 value={selectedKeySlot || ''}
                 onChange={(e) => setSelectedKeySlot(e.target.value)}
-                className="w-full bg-gray-7
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+              >
+                <option value="">Choose a key slot...</option>
+                {[1, 2, 3, 4, 5].map(key => {
+                  const assignment = getKeyAssignment(key);
+                  return (
+                    <option key={key} value={key}>
+                      Key {key} {assignment ? `(${assignment.title})` : '(Empty)'}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Media Title
+              </label>
+              <input
+                type="text"
+                value={mediaTitle}
+                onChange={(e) => setMediaTitle(e.target.value)}
+                placeholder="Enter media title..."
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Description
+              </label>
+              <textarea
+                value={mediaDescription}
+                onChange={(e) => setMediaDescription(e.target.value)}
+                placeholder="Enter description..."
+                rows={3}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Upload Media File
+              </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileSelect}
+                accept="audio/*,video/*,.pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.webp,.svg"
+                disabled={!selectedKeySlot || isUploading}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-sm file:bg-green-600 file:text-white hover:file:bg-green-500"
+              />
+            </div>
+
+            {isUploading && (
+              <div className="bg-gray-700 rounded-lg p-3">
+                <div className="text-sm text-gray-300 mb-2">{uploadStatus}</div>
+                <div className="w-full bg-gray-600 rounded-full h-2">
+                  <div
+                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={clearForm}
+                className="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded-lg transition-colors"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-lg font-bold text-green-400 mb-3">Current Assignments</h3>
+            {loading ? (
+              <div className="text-center text-gray-400">Loading...</div>
+            ) : (
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {assignments.map(assignment => (
+                  <div
+                    key={assignment.id}
+                    className="bg-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-600 transition-colors"
+                    onClick={() => openWindow(assignment)}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="font-medium text-white text-sm">
+                          Key {assignment.key_slot}: {assignment.title}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          {assignment.description}
+                        </div>
+                      </div>
+                      <div className="text-xs text-green-400 ml-2">
+                        {assignment.media_type?.split('/')[0] || 'unknown'}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {assignments.length === 0 && (
+                  <div className="text-center text-gray-400 text-sm">
+                    No assignments yet
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {openWindows.map(window => (
+        <UniversalMediaPlayer
+          key={window.id}
+          windowId={window.id}
+          assignment={window.assignment}
+          isMinimized={window.isMinimized}
+          onClose={closeWindow}
+          onMinimize={toggleMinimize}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default VoxProManagement;
