@@ -748,3 +748,73 @@ const VoxProPlayer = () => {
                         </div>
 
                         {/* Column 2: Control Buttons */}
+                        <div className="grid grid-cols-2 gap-2">
+                            <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">A</button>
+                            <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">B</button>
+                            <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">C</button>
+                            <button className="h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">D</button>
+
+                            <button className="h-10 bg-gradient-to-b from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">DUP</button>
+                            <button className="h-10 bg-gradient-to-b from-yellow-600 to-yellow-800 hover:from-yellow-500 hover:to-yellow-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">CUE</button>
+                            <button className="h-10 bg-gradient-to-b from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">REC</button>
+                            <div className="h-10 bg-gradient-to-b from-gray-700 to-gray-900 rounded border-2 border-gray-500 flex items-center justify-center">
+                                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                    <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>  {/* <-- THIS IS THE CORRECTED LINE - The missing closing div is now here */}
+
+                    {/* --- MODIFIED: Status and Connection Display --- */}
+                    <div className="mt-4 text-center">
+                        <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium mb-2 ${connectionStatus === 'connected' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+                            <div className={`w-1.5 h-1.5 rounded-full mr-2 ${connectionStatus === 'connected' ? 'bg-green-300' : 'bg-red-300'} animate-pulse`}></div>
+                            {statusMessage}
+                        </div>
+                        <div className="bg-gray-800 px-3 py-1 rounded border border-gray-600">
+                            <div className="text-green-400 text-xs font-medium">
+                                {currentPlayingKey ? `Playing: Key ${currentPlayingKey}` : 'Ready'} | Windows: {activeWindows.filter(w => !w.isMinimized).length}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Compact Assignment List */}
+                <div className="mt-6 bg-gray-800 rounded-lg p-4 max-w-4xl mx-auto">
+                    <h3 className="text-green-400 font-semibold text-lg mb-3">Current Key Assignments</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {assignments.map((assignment) => (
+                            <div key={assignment.id} className="bg-gray-700 rounded p-3 border border-gray-600">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className={`text-sm font-bold ${currentPlayingKey === assignment.key_slot ? 'text-green-400' : 'text-red-400'}`}>
+                                        Key {assignment.key_slot} {currentPlayingKey === assignment.key_slot ? '(Playing)' : ''}
+                                    </span>
+                                    <span className="text-xs text-gray-400">{assignment.media_type}</span>
+                                </div>
+                                <h4 className="text-white font-medium mb-1 text-sm">{assignment.title}</h4>
+                                <p className="text-gray-400 text-xs mb-2 line-clamp-2">{assignment.description}</p>
+                                <div className="text-xs text-gray-500">
+                                    By: {assignment.submitted_by} | {new Date(assignment.created_at).toLocaleDateString()}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Enhanced Floating Windows */}
+            {activeWindows.map((window) => (
+                <UniversalMediaPlayer
+                    key={window.id}
+                    assignment={window.assignment}
+                    onClose={() => closeWindow(window.id)}
+                    onMinimize={(minimize) => minimizeWindow(window.id, minimize)}
+                    isMinimized={window.isMinimized}
+                    windowId={window.id}
+                />
+            ))}
+        </div>
+    );
+};
+
+export default VoxProPlayer;
