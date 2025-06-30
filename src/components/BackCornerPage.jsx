@@ -672,7 +672,7 @@ const BackCornerPage = () => {
   useEffect(() => {
     const initializeConnection = async () => {
       try {
-        const { error } = await mockSupabase
+        const { error } = await supabase
           .from('assignments')
           .select('*')
           .limit(1);
@@ -685,7 +685,7 @@ const BackCornerPage = () => {
         setStatusMessage('Connected to Supabase');
         loadAssignments();
 
-        const subscription = mockSupabase
+        const subscription = supabase
           .channel('public:assignments')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, payload => {
             console.log('Change received!', payload);
@@ -694,7 +694,7 @@ const BackCornerPage = () => {
           .subscribe();
         
         return () => {
-          mockSupabase.removeChannel(subscription);
+          supabase.removeChannel(subscription);
         };
 
       } catch (err) {
@@ -709,7 +709,7 @@ const BackCornerPage = () => {
 
   const loadAssignments = async () => {
     try {
-      const { data, error } = await mockSupabase
+      const { data, error } = await supabase
         .from('assignments')
         .select('*')
         .order('created_at', { ascending: false });
