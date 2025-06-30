@@ -28,32 +28,32 @@ const App = () => {
                 }`}
               >
                 {item}
-</button>
-))}
-</div>
-</div>
-</div>
-</nav>
-);
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
 
-// Home Page
-const HomePage = () => (
-<div>
-{/* Hero Section */}
-<div className="relative bg-gradient-to-r from-blue-900 to-blue-700 text-white">
-<div className="max-w-7xl mx-auto px-4 py-20">
-<div className="grid md:grid-cols-2 gap-12 items-center">
-<div>
-<h1 className="text-6xl font-bold mb-6">Radio History</h1>
-<p className="text-2xl mb-8 text-blue-100">an adventure in evolution</p>
-<p className="text-lg text-blue-50">
-Discover the rich heritage of Idaho's broadcasting industry.
-</p>
-</div>
-<div className="w-full h-64 bg-gray-800 rounded-lg flex items-center justify-center">
-<div className="text-center">
-<div className="text-6xl mb-4">🎙️</div>
-<p className="text-gray-300">Vintage Broadcasting Equipment</p>
+  // Home Page
+  const HomePage = () => (
+    <div>
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-blue-900 to-blue-700 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-20">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 className="text-6xl font-bold mb-6">Radio History</h1>
+              <p className="text-2xl mb-8 text-blue-100">an adventure in evolution</p>
+              <p className="text-lg text-blue-50">
+                Discover the rich heritage of Idaho's broadcasting industry.
+              </p>
+            </div>
+            <div className="w-full h-64 bg-gray-800 rounded-lg flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-6xl mb-4">🎙️</div>
+                <p className="text-gray-300">Vintage Broadcasting Equipment</p>
 </div>
 </div>
 </div>
