@@ -6,9 +6,9 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mediaType, setMediaType] = useState(null);
-  const [windowSize, setWindowSize] = useState({
-    width: assignment?.media_url?.match(/\.(pdf)$/i) ? 900 : 800,
-    height: assignment?.media_url?.match(/\.(pdf)$/i) ? 700 : 600
+  const [windowSize, setWindowSize] = useState({ 
+    width: assignment?.media_url?.match(/\.(pdf)$/i) ? 900 : 800, 
+    height: assignment?.media_url?.match(/\.(pdf)$/i) ? 700 : 600 
   });
   const [windowPosition, setWindowPosition] = useState({ x: window.innerWidth - 820, y: window.innerHeight - 620 });
   const [isDragging, setIsDragging] = useState(false);
@@ -16,14 +16,14 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isMaximized, setIsMaximized] = useState(false);
   const [previousSize, setPreviousSize] = useState(null);
-
+  
   // Audio state
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
-
+  
   const playerRef = useRef(null);
   const windowRef = useRef(null);
   const visualizationRef = useRef(null);
@@ -33,7 +33,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     if (assignment?.media_url) {
       detectMediaType(assignment.media_url);
     }
-
+    
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
@@ -43,7 +43,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
   const detectMediaType = (url) => {
     const extension = url.split('.').pop().toLowerCase();
-
+    
     if (['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(extension)) {
       setMediaType('video');
     } else if (['mp3', 'wav', 'ogg', 'aac', 'm4a'].includes(extension)) {
@@ -65,11 +65,11 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       if (!visualizationRef.current) return;
 
       visualizationRef.current.innerHTML = '';
-
+      
       // Create container for animated bars
       const container = document.createElement('div');
       container.className = 'flex items-end justify-center h-16 gap-1 bg-gray-900 rounded p-2';
-
+      
       // Create 60 green animated bars
       for (let i = 0; i < 60; i++) {
         const bar = document.createElement('div');
@@ -79,33 +79,34 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         bar.style.opacity = '0.7';
         container.appendChild(bar);
       }
-
+      
       visualizationRef.current.appendChild(container);
+      console.log('✅ Green visualization bars created');
     }, 100);
   };
 
   // Animate visualization when playing
   const startVisualization = () => {
     if (!visualizationRef.current) return;
-
+    
     const bars = visualizationRef.current.querySelectorAll('div > div');
-
+    
     const animate = () => {
       if (!isPlaying) return;
-
+      
       bars.forEach((bar, index) => {
         // Create wave animation
         const wave = Math.sin((Date.now() * 0.01) + (index * 0.2)) * 25 + 15;
         const randomHeight = Math.random() * 20 + 10;
         const finalHeight = Math.max(4, wave + randomHeight);
-
+        
         bar.style.height = `${finalHeight}px`;
         bar.style.opacity = Math.random() * 0.5 + 0.5;
       });
-
+      
       animationRef.current = requestAnimationFrame(animate);
     };
-
+    
     animate();
   };
 
@@ -115,6 +116,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     if (mediaElement) {
       setDuration(mediaElement.duration);
       setIsLoading(false);
+      console.log(`✅ ${mediaType} loaded:`, assignment.title, `Duration: ${mediaElement.duration}s`);
     }
   };
 
@@ -127,6 +129,8 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
   const handlePlay = () => {
     setIsPlaying(true);
+    console.log(`🔊 ${mediaType} playing - you should hear sound:`, assignment.title);
+    
     if (mediaType === 'audio') {
       startVisualization();
     }
@@ -134,6 +138,8 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
   const handlePause = () => {
     setIsPlaying(false);
+    console.log(`⏸️ ${mediaType} paused:`, assignment.title);
+    
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
     }
@@ -142,12 +148,15 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const handleEnded = () => {
     setIsPlaying(false);
     setCurrentTime(0);
+    console.log(`⏹️ ${mediaType} ended:`, assignment.title);
+    
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
     }
   };
 
   const handleError = (e) => {
+    console.error(`${mediaType} error:`, e.target.error);
     setError(`${mediaType} playback error: ${e.target.error?.message || 'Unknown error'}`);
     setIsLoading(false);
     setIsPlaying(false);
@@ -162,6 +171,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       mediaElement.pause();
     } else {
       mediaElement.play().catch(error => {
+        console.error('Play failed:', error);
         setError(`Play failed: ${error.message}`);
       });
     }
@@ -175,7 +185,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     const x = e.clientX - rect.left;
     const percentage = x / rect.width;
     const newTime = percentage * duration;
-
+    
     mediaElement.currentTime = newTime;
     setCurrentTime(newTime);
   };
@@ -183,7 +193,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
-
+    
     const mediaElement = playerRef.current;
     if (mediaElement) {
       mediaElement.volume = newVolume;
@@ -210,7 +220,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   // Window dragging
   const handleMouseDown = (e) => {
     if (e.target.closest('.window-controls') || e.target.closest('.resize-handle')) return;
-
+    
     setIsDragging(true);
     setDragStart({
       x: e.clientX - windowPosition.x,
@@ -248,7 +258,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
     if (isResizing) {
       const deltaX = e.clientX - dragStart.x;
       const deltaY = e.clientY - dragStart.y;
-
+      
       setWindowSize({
         width: Math.max(400, dragStart.width + deltaX),
         height: Math.max(300, dragStart.height + deltaY)
@@ -281,16 +291,15 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   // Add event listeners
   useEffect(() => {
     if (isDragging || isResizing) {
-      const moveHandler = isDragging ? handleMouseMove : handleResizeMove;
-      document.addEventListener('mousemove', moveHandler);
+      document.addEventListener('mousemove', isDragging ? handleMouseMove : handleResizeMove);
       document.addEventListener('mouseup', handleMouseUp);
-
+      
       return () => {
-        document.removeEventListener('mousemove', moveHandler);
+        document.removeEventListener('mousemove', isDragging ? handleMouseMove : handleResizeMove);
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, isResizing, dragStart]);
+  }, [isDragging, isResizing, dragStart, windowPosition, windowSize]);
 
   const renderMediaContent = () => {
     if (isLoading) {
@@ -349,9 +358,9 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
 
             <div className="flex-1 flex flex-col items-center justify-center">
               <div className="text-green-400 text-6xl mb-4">🎵</div>
-
+              
               {/* Green Visualization Bars - Grows with window */}
-              <div
+              <div 
                 ref={visualizationRef}
                 className="w-full flex-1 max-h-32 mb-4"
               />
@@ -367,11 +376,11 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
                 >
                   {isPlaying ? '⏸️' : '▶️'}
                 </button>
-
+                
                 <div className="text-sm text-gray-400">
                   {formatTime(currentTime)} / {formatTime(duration)}
                 </div>
-
+                
                 <div className="flex items-center gap-2 ml-auto">
                   <button
                     onClick={toggleMute}
@@ -390,7 +399,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
                   />
                 </div>
               </div>
-
+              
               {/* Progress Bar */}
               <div
                 className="w-full h-2 bg-gray-700 rounded-full cursor-pointer overflow-hidden"
@@ -423,6 +432,10 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
             <iframe
               src={assignment.media_url}
               className="w-full h-full border-0 rounded"
+              style={{
+                zoom: Math.min(windowSize.width / 600, windowSize.height / 800),
+                transformOrigin: 'top left'
+              }}
               title={assignment.title}
             />
           </div>
@@ -474,7 +487,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   }
 
   return (
-    <div
+    <div 
       ref={windowRef}
       className="fixed bg-gray-900 border border-gray-600 rounded-lg shadow-2xl z-40 overflow-hidden select-none"
       style={{
@@ -518,14 +531,14 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       </div>
 
       {/* Content Area - GROWS WITH WINDOW */}
-      <div className="flex h-full overflow-hidden" style={{ height: `calc(${windowSize.height}px - 40px)` }}>
+      <div className="flex h-full overflow-hidden" style={{ height: windowSize.height - 40 }}>
         {/* Media Player Section - GROWS */}
         <div className="flex-1 p-4 overflow-hidden flex flex-col">
           <div className="mb-2 flex-shrink-0">
             <h3 className="text-white font-semibold text-lg">{assignment?.title || 'No Title'}</h3>
             <p className="text-gray-400 text-sm">Key: {assignment?.key_slot} | Type: {mediaType || 'Unknown'}</p>
           </div>
-
+          
           {/* Media Content - TAKES REMAINING SPACE */}
           <div className="flex-1 overflow-hidden">
             {renderMediaContent()}
@@ -551,7 +564,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
       </div>
 
       {/* Resize Handle */}
-      <div
+      <div 
         className="absolute bottom-0 right-0 w-4 h-4 bg-gray-600 cursor-se-resize resize-handle"
         onMouseDown={handleResizeStart}
         title="Resize window"
@@ -562,103 +575,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   );
 };
 
-// VOXPRO PLAYER WIDGET FOR TOP-RIGHT
-const VoxProPlayerWidget = ({ onKeyClick, currentPlayingKey, assignments, connectionStatus, statusMessage, setStatusMessage }) => {
-  const getKeyAssignment = (keySlot) => {
-    return assignments.find(a => a.key_slot === keySlot);
-  };
-
-  return (
-    <div className="bg-gray-900 rounded-lg p-4 shadow-xl border border-gray-700">
-      {/* VoxPro Header */}
-      <div className="text-center mb-4">
-        <h3 className="text-lg font-bold text-green-400 mb-1">VoxPro Media Player</h3>
-        <p className="text-gray-400 text-xs">Professional Broadcasting Control</p>
-
-        {/* Connection Status */}
-        <div className="mt-2">
-          <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-            connectionStatus === 'connected'
-              ? 'bg-green-600 text-white'
-              : 'bg-red-600 text-white'
-          }`}>
-            <div className={`w-1.5 h-1.5 rounded-full mr-2 ${
-              connectionStatus === 'connected' ? 'bg-green-300' : 'bg-red-300'
-            } ${connectionStatus === 'connected' ? 'animate-pulse' : ''}`}></div>
-            {statusMessage}
-          </div>
-        </div>
-      </div>
-
-      {/* START Keys */}
-      <div className="grid grid-cols-5 gap-2">
-        {[1, 2, 3, 4, 5].map((key) => {
-          const assignment = getKeyAssignment(key.toString());
-          const isPlaying = currentPlayingKey === key.toString();
-
-          return (
-            <button
-              key={key}
-              onClick={() => onKeyClick(key.toString())}
-              onMouseEnter={() => {
-                if (assignment) {
-                  setStatusMessage(`Key ${key}: ${assignment.title}`);
-                }
-              }}
-              onMouseLeave={() => {
-                setStatusMessage(connectionStatus === 'connected' ? 'Connected to Supabase' : 'Failed to connect to Supabase');
-              }}
-              className={`
-                w-14 h-14 rounded-lg font-bold text-white text-base
-                transition-all duration-200 transform hover:scale-105
-                flex items-center justify-center
-                ${isPlaying
-                  ? 'bg-gradient-to-b from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 shadow-lg ring-2 ring-green-300'
-                  : assignment
-                  ? 'bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 shadow-lg'
-                  : 'bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 cursor-not-allowed'
-                }
-                border-2 border-gray-500 shadow-md
-              `}
-              title={assignment ? assignment.title : `Key ${key} - No Assignment`}
-              disabled={!assignment && !isPlaying}
-            >
-              {isPlaying ? 'STOP' : key}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-// CONDENSED KEY ASSIGNMENTS WIDGET 
-const KeyAssignmentsWidget = ({ assignments, currentPlayingKey }) => {
-  return (
-    <div className="bg-gray-900 rounded-lg p-3 border border-gray-700 shadow-xl">
-      <h3 className="text-green-400 font-semibold text-base mb-3 text-center">Current Key Assignments</h3>
-      <div className="space-y-1.5">
-        {assignments.map((assignment) => (
-          <div key={assignment.id} className="bg-gray-800 rounded p-2 border border-gray-600">
-            <div className="flex items-center justify-between">
-              <span className={`text-xs font-bold ${
-                currentPlayingKey === assignment.key_slot ? 'text-green-400' : 'text-red-400'
-              }`}>
-                Key {assignment.key_slot}
-              </span>
-              <span className="text-xs text-gray-400">{assignment.media_type}</span>
-            </div>
-            <h4 className="text-white font-medium text-xs truncate mt-1">{assignment.title}</h4>
-            <p className="text-gray-400 text-xs truncate">{assignment.description}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// MAIN BACK CORNER PAGE COMPONENT
-const BackCornerPage = () => {
+const VoxProPlayer = () => {
   // State management
   const [connectionStatus, setConnectionStatus] = useState('connecting');
   const [statusMessage, setStatusMessage] = useState('Connecting to Supabase...');
@@ -671,35 +588,25 @@ const BackCornerPage = () => {
   useEffect(() => {
     const initializeConnection = async () => {
       try {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('assignments')
           .select('*')
           .limit(1);
 
         if (error) {
-          throw error;
+          console.error('Supabase connection error:', error);
+          setConnectionStatus('disconnected');
+          setStatusMessage('Failed to connect to Supabase');
+          return;
         }
 
         setConnectionStatus('connected');
         setStatusMessage('Connected to Supabase');
         loadAssignments();
-
-        const subscription = supabase
-          .channel('public:assignments')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, payload => {
-            console.log('Change received!', payload);
-            loadAssignments();
-          })
-          .subscribe();
-        
-        return () => {
-          supabase.removeChannel(subscription);
-        };
-
       } catch (err) {
-        console.error('Supabase connection error:', err);
-        setConnectionStatus('disconnected');
-        setStatusMessage('Failed to connect to Supabase');
+        console.error('Connection initialization error:', err);
+        setConnectionStatus('error');
+        setStatusMessage('Connection error occurred');
       }
     };
 
@@ -730,20 +637,20 @@ const BackCornerPage = () => {
 
   const handleKeyClick = async (keySlot) => {
     const assignment = getKeyAssignment(keySlot);
-
+    
     if (!assignment) {
       console.log(`No assignment found for key ${keySlot}`);
       return;
     }
 
-    // If this key is currently playing, stop it and close its window
+    // If this key is currently playing, stop it
     if (currentPlayingKey === keySlot) {
       setCurrentPlayingKey(null);
       setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== keySlot));
       return;
     }
 
-    // Stop any other currently playing key and close its window
+    // Stop any currently playing key and close its window
     if (currentPlayingKey) {
       setActiveWindows(prev => prev.filter(w => w.assignment.key_slot !== currentPlayingKey));
     }
@@ -751,7 +658,7 @@ const BackCornerPage = () => {
     // Start playing this key
     setCurrentPlayingKey(keySlot);
 
-    // Create a new window, replacing any existing ones
+    // Create new window
     const newWindow = {
       id: windowCounter,
       assignment,
@@ -763,17 +670,20 @@ const BackCornerPage = () => {
   };
 
   const closeWindow = (windowId) => {
-    const windowToClose = activeWindows.find(w => w.id === windowId);
-    if (windowToClose && windowToClose.assignment.key_slot === currentPlayingKey) {
-      setCurrentPlayingKey(null);
+    const window = activeWindows.find(w => w.id === windowId);
+    if (window) {
+      if (currentPlayingKey === window.assignment.key_slot) {
+        setCurrentPlayingKey(null);
+      }
     }
+    
     setActiveWindows(prev => prev.filter(w => w.id !== windowId));
   };
 
   const minimizeWindow = (windowId, minimize) => {
-    setActiveWindows(prev =>
-      prev.map(w =>
-        w.id === windowId
+    setActiveWindows(prev => 
+      prev.map(w => 
+        w.id === windowId 
           ? { ...w, isMinimized: minimize }
           : w
       )
@@ -781,95 +691,125 @@ const BackCornerPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="flex gap-6">
-          
-          {/* LEFT COLUMN - MAIN ARTICLE CONTENT */}
-          <div className="flex-1">
-            <div className="bg-white">
-              
-             <h1 className="text-3xl font-bold text-gray-800 mb-6">The Back Corner - Updated</h1>
-              
-              <div className="prose prose-lg max-w-none">
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Welcome to The Back Corner, where we share behind-the-scenes stories, technical insights, 
-                  and community highlights from our broadcasting studio. This is your normal article space 
-                  where you can add any content - blog posts, news updates, photo galleries, or documentation.
-                </p>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <div className="container mx-auto px-4 py-6">
+        {/* Compact Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-green-400 mb-1">The Back Corner</h1>
+          <h2 className="text-xl text-gray-300 mb-2">VoxPro Media Player</h2>
+          <p className="text-gray-400 text-sm">Compact professional media player for broadcasting operations.</p>
+        </div>
 
-                <h2 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">Latest Stories</h2>
-                
-                <article className="mb-8 pb-6 border-b border-gray-200">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Behind the Microphone: A Day in the Life</h3>
-                  <p className="text-gray-600 mb-4 leading-relaxed">
-                    Ever wondered what happens when the "ON AIR" light goes off? Join us for an exclusive look behind 
-                    the scenes of our daily broadcasting operations, from early morning prep to late-night sign-off.
-                  </p>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <span>📅 June 28, 2025</span>
-                    <span className="mx-2">•</span>
-                    <span>👤 Radio Team</span>
-                  </div>
-                </article>
-
-                <article className="mb-8 pb-6 border-b border-gray-200">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Technical Spotlight: VoxPro Broadcasting System</h3>
-                  <p className="text-gray-600 mb-4 leading-relaxed">
-                    Our state-of-the-art VoxPro media control system enables seamless live broadcasting with 
-                    professional-grade audio management. The compact interface you see on this page represents 
-                    just a fraction of the system's capabilities.
-                  </p>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <span>📅 June 27, 2025</span>
-                    <span className="mx-2">•</span>
-                    <span>👤 Engineering Team</span>
-                  </div>
-                </article>
-
-                <article>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Community Voices: Listener Stories</h3>
-                  <p className="text-gray-600 mb-4 leading-relaxed">
-                    From heartwarming thank-you messages to exciting contest wins, discover the amazing stories 
-                    from our listening community. These are the moments that make broadcasting truly special.
-                  </p>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <span>📅 June 26, 2025</span>
-                    <span className="mx-2">•</span>
-                    <span>👤 Community Team</span>
-                  </div>
-                </article>
-
-                <div className="bg-gray-50 rounded-lg p-6 mt-8">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-2">📝 Add Your Content Here</h4>
-                  <p className="text-gray-600">
-                    This space functions like any other article page on your site. Replace this content 
-                    with your actual articles, news, or any other containers you need.
-                  </p>
-                </div>
+        {/* Compact Main Control Panel */}
+        <div className="max-w-xl mx-auto bg-gray-800 rounded-lg p-6 shadow-2xl border border-gray-600">
+          {/* Compact VoxPro Header */}
+          <div className="text-center mb-4">
+            <h3 className="text-2xl font-bold text-green-400 mb-1">VoxPro Media Player</h3>
+            <p className="text-gray-400 text-xs">Professional Broadcasting Control System</p>
+            
+            {/* Connection Status */}
+            <div className="mt-3">
+              <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                connectionStatus === 'connected' 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-red-600 text-white'
+              }`}>
+                <div className={`w-1.5 h-1.5 rounded-full mr-2 ${
+                  connectionStatus === 'connected' ? 'bg-green-300' : 'bg-red-300'
+                } animate-pulse`}></div>
+                {statusMessage}
               </div>
             </div>
           </div>
 
-          {/* RIGHT COLUMN - VOXPRO WIDGETS STACKED */}
-          <div className="w-72 flex flex-col gap-4">
-            
-            {/* VOXPRO PLAYER WIDGET (TOP) */}
-            <VoxProPlayerWidget
-              onKeyClick={handleKeyClick}
-              currentPlayingKey={currentPlayingKey}
-              assignments={assignments}
-              connectionStatus={connectionStatus}
-              statusMessage={statusMessage}
-              setStatusMessage={setStatusMessage}
-            />
+          {/* Compact START Keys */}
+          <div className="mb-4">
+            <div className="grid grid-cols-5 gap-2 justify-center">
+              {[1, 2, 3, 4, 5].map((key) => {
+                const assignment = getKeyAssignment(key.toString());
+                const isPlaying = currentPlayingKey === key.toString();
+                
+                return (
+                  <button
+                    key={key}
+                    onClick={() => handleKeyClick(key.toString())}
+                    onMouseEnter={() => {
+                      if (assignment) {
+                        setStatusMessage(`Key ${key}: ${assignment.title}`);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      setStatusMessage(connectionStatus === 'connected' ? 'Connected to Supabase' : statusMessage);
+                    }}
+                    className={`
+                      w-16 h-16 rounded-lg font-bold text-white text-lg
+                      transition-all duration-200 transform hover:scale-105
+                      ${isPlaying
+                        ? 'bg-gradient-to-b from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 shadow-lg' 
+                        : assignment 
+                        ? 'bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 shadow-lg' 
+                        : 'bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700'
+                      }
+                      border-2 border-gray-500 shadow-md
+                    `}
+                    title={assignment ? assignment.title : `Key ${key} - No Assignment`}
+                  >
+                    {isPlaying ? 'STOP' : key}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-            {/* KEY ASSIGNMENTS WIDGET (BOTTOM) */}
-            <KeyAssignmentsWidget
-              assignments={assignments}
-              currentPlayingKey={currentPlayingKey}
-            />
+          {/* Compact Control Buttons */}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">A</button>
+            <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">B</button>
+            <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">C</button>
+            <button className="w-12 h-10 bg-gradient-to-b from-gray-600 to-gray-800 hover:from-gray-500 hover:to-gray-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-sm">D</button>
             
+            <button className="w-12 h-10 bg-gradient-to-b from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">DUP</button>
+            <button className="w-12 h-10 bg-gradient-to-b from-yellow-600 to-yellow-800 hover:from-yellow-500 hover:to-yellow-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">CUE</button>
+            <button className="w-12 h-10 bg-gradient-to-b from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 rounded border-2 border-gray-500 font-bold text-white transition-all text-xs">REC</button>
+            <div className="w-12 h-10 bg-gradient-to-b from-gray-700 to-gray-900 rounded border-2 border-gray-500 flex items-center justify-center">
+              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Compact Status Display */}
+          <div className="text-center">
+            <div className="bg-gray-800 px-3 py-1 rounded border border-gray-600">
+              <div className="text-green-400 text-xs font-medium">
+                {currentPlayingKey ? `Playing: Key ${currentPlayingKey}` : 'Ready'} | 
+                Windows: {activeWindows.filter(w => !w.isMinimized).length}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Compact Assignment List */}
+        <div className="mt-6 bg-gray-800 rounded-lg p-4 max-w-4xl mx-auto">
+          <h3 className="text-green-400 font-semibold text-lg mb-3">Current Key Assignments</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {assignments.map((assignment) => (
+              <div key={assignment.id} className="bg-gray-700 rounded p-3 border border-gray-600">
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`text-sm font-bold ${
+                    currentPlayingKey === assignment.key_slot ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    Key {assignment.key_slot} {currentPlayingKey === assignment.key_slot ? '(Playing)' : ''}
+                  </span>
+                  <span className="text-xs text-gray-400">{assignment.media_type}</span>
+                </div>
+                <h4 className="text-white font-medium mb-1 text-sm">{assignment.title}</h4>
+                <p className="text-gray-400 text-xs mb-2 line-clamp-2">{assignment.description}</p>
+                <div className="text-xs text-gray-500">
+                  By: {assignment.submitted_by} | {new Date(assignment.created_at).toLocaleDateString()}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -889,4 +829,4 @@ const BackCornerPage = () => {
   );
 };
 
-export default BackCornerPage;
+export default VoxProPlayer;
