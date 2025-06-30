@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import BackCornerPage from './BackCornerPage'; // Add this line (adjust path if needed)
+import BackCornerPage from './ui/BackCornerPage.jsx'; // With .jsx extension
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
 
