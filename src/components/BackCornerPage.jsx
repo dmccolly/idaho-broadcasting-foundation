@@ -789,7 +789,7 @@ const BackCornerPage = () => {
           <div className="flex-1">
             <div className="bg-white">
               
-              <h1 className="text-3xl font-bold text-gray-800 mb-6">The Back Corner</h1>
+             <h1 className="text-3xl font-bold text-gray-800 mb-6">The Back Corner - Updated</h1>
               
               <div className="prose prose-lg max-w-none">
                 <p className="text-gray-600 mb-6 leading-relaxed">
