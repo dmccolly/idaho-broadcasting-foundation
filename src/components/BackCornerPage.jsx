@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
-
 // Enhanced Universal Media Player Component - CONTENT GROWS WITH WINDOW
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
   const [isLoading, setIsLoading] = useState(true);
