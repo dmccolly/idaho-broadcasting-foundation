@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 // Mock Supabase for demo - replace with your actual supabase import
-const mockSupabase = {
+import { supabase } from '../lib/supabase';
   from: () => ({
     select: () => ({
       limit: () => Promise.resolve({ data: [], error: null }),
