@@ -1,27 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-
-// Mock Supabase for demo - replace with your actual supabase import
 import { supabase } from '../lib/supabase';
-  from: () => ({
-    select: () => ({
-      limit: () => Promise.resolve({ data: [], error: null }),
-      order: () => Promise.resolve({ 
-        data: [
-          { id: 1, key_slot: '1', title: 'Morning Show Intro', description: 'Daily morning show opening music and jingle', media_type: 'audio', media_url: '/audio/intro.mp3', submitted_by: 'Producer', created_at: '2024-06-28' },
-          { id: 2, key_slot: '2', title: 'News Transition', description: 'Smooth transition music for news segments', media_type: 'audio', media_url: '/audio/news.mp3', submitted_by: 'Editor', created_at: '2024-06-28' },
-          { id: 3, key_slot: '3', title: 'Weather Report', description: 'Background music for weather forecasts', media_type: 'audio', media_url: '/audio/weather.mp3', submitted_by: 'Meteorologist', created_at: '2024-06-27' },
-          { id: 4, key_slot: '4', title: 'Commercial Break', description: 'Standard commercial break transition', media_type: 'audio', media_url: '/audio/commercial.mp3', submitted_by: 'Producer', created_at: '2024-06-27' },
-          { id: 5, key_slot: '5', title: 'Sports Update', description: 'Energetic sports segment opener', media_type: 'audio', media_url: '/audio/sports.mp3', submitted_by: 'Sports Desk', created_at: '2024-06-26' }
-        ], 
-        error: null 
-      })
-    })
-  }),
-  channel: () => ({
-    on: () => ({ subscribe: () => {} }),
-  }),
-  removeChannel: () => {}
-};
+
 
 // Enhanced Universal Media Player Component - CONTENT GROWS WITH WINDOW
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
