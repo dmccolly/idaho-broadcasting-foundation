@@ -1,25 +1,9 @@
 import React, { useState } from 'react';
 import BackCornerPage from './components/BackCornerPage.jsx';
+
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
 
- const App = () => {
-  const [currentPage, setCurrentPage] = useState('home');
-  
-  // Add this line to see what page is currently set
-  console.log('Current page:', currentPage);
-
-  // And in your return statement, add this right before the render logic:
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      {console.log('Checking pages - currentPage:', currentPage)}
-      {console.log('thebackcorner check:', currentPage === 'thebackcorner')}
-      {currentPage === 'home' && <HomePage />}
-      {currentPage === 'thebackcorner' && <BackCornerPage />}
-      {/* rest of your code */}  
-  
-  
   // Navigation
   const Navigation = () => (
     <nav className="bg-white border-b border-gray-200">
@@ -110,14 +94,14 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
-     {currentPage === 'home' && <HomePage />}
-{currentPage === 'thebackcorner' && <BackCornerPage />}
-{currentPage !== 'home' && currentPage !== 'thebackcorner' && (
-  <div className="max-w-4xl mx-auto px-4 py-16">
-    <h1 className="text-4xl font-bold mb-8 capitalize">{currentPage.replace(/([A-Z])/g, ' $1')}</h1>
-    <p className="text-lg text-gray-600">Content for {currentPage} page will be added here.</p>
-  </div>
-)}
+      {currentPage === 'home' && <HomePage />}
+      {currentPage === 'thebackcorner' && <BackCornerPage />}
+      {currentPage !== 'home' && currentPage !== 'thebackcorner' && (
+        <div className="max-w-4xl mx-auto px-4 py-16">
+          <h1 className="text-4xl font-bold mb-8 capitalize">{currentPage.replace(/([A-Z])/g, ' $1')}</h1>
+          <p className="text-lg text-gray-600">Content for {currentPage} page will be added here.</p>
+        </div>
+      )}
     </div>
   );
 };
