@@ -3,6 +3,23 @@ import BackCornerPage from './components/BackCornerPage.jsx';
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
 
+ const App = () => {
+  const [currentPage, setCurrentPage] = useState('home');
+  
+  // Add this line to see what page is currently set
+  console.log('Current page:', currentPage);
+
+  // And in your return statement, add this right before the render logic:
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      {console.log('Checking pages - currentPage:', currentPage)}
+      {console.log('thebackcorner check:', currentPage === 'thebackcorner')}
+      {currentPage === 'home' && <HomePage />}
+      {currentPage === 'thebackcorner' && <BackCornerPage />}
+      {/* rest of your code */}  
+  
+  
   // Navigation
   const Navigation = () => (
     <nav className="bg-white border-b border-gray-200">
