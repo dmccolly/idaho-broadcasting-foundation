@@ -27,19 +27,19 @@ const HomeEventBanner = ({ onEventClick }) => {
     switch (type) {
       case 'memorial':
         return {
-          background: 'bg-gradient-to-r from-slate-600 to-slate-700',
+          background: 'bg-slate-700',
           accent: 'bg-blue-400',
           text: 'text-white'
         }
       case 'celebration':
         return {
-          background: 'bg-gradient-to-r from-blue-600 to-blue-700',
+          background: 'bg-blue-700',
           accent: 'bg-yellow-400',
           text: 'text-white'
         }
       default:
         return {
-          background: 'bg-gradient-to-r from-gray-600 to-gray-700',
+          background: 'bg-gray-700',
           accent: 'bg-green-400',
           text: 'text-white'
         }

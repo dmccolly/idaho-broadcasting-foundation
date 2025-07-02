@@ -4,9 +4,7 @@ import React, { useState } from 'react';
 import './RadioPage.css';
 
 // IMPORTANT: Ensure these images are uploaded to src/assets/images/
-import wowCountryLogo from '../assets/images/wow-country-104-3-logo.png';
 import q104Logo from '../assets/images/q104-logo.png';
-import radioConsoleDark from '../assets/images/RadioCOnsoleDark.png';
 
 const stationData = [
   {
@@ -149,11 +147,8 @@ const RadioPage = () => {
   return (
     <div className="radio-page-container">
       <div className="header-graphic">
-        <img src={radioConsoleDark} alt="Radio Console" className="header-image" />
-        <div className="header-text-container">
-          <h1 className="header-title-overlay">Radio History</h1>
-          <p className="header-subtitle-overlay">an adventure in evolution</p>
-        </div>
+        <h1 className="header-title-overlay">Radio History</h1>
+        <p className="header-subtitle-overlay">an adventure in evolution</p>
       </div>
 
       <div className="station-cards-grid">

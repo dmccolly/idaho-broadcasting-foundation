@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-const VoxProSystem = ({ mode = 'admin' }) => {
+const VoxProSystem = () => {
   // Configuration
   const API_BASE_URL = 'https://dyh6i3cqmlzj.manus.space/api'
   
@@ -171,21 +171,6 @@ const VoxProSystem = ({ mode = 'admin' }) => {
     }
   }
 
-  const deleteMedia = async (mediaId) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/media/${mediaId}`, {
-        method: 'DELETE'
-      })
-
-      const data = await response.json()
-      if (data.success) {
-        await loadMediaLibrary()
-        await loadKeyAssignments()
-      }
-    } catch (error) {
-      console.error('Delete media error:', error)
-    }
-  }
 
   const getKeyTitle = (keyName) => {
     const assignment = keyAssignments[keyName]
@@ -193,7 +178,7 @@ const VoxProSystem = ({ mode = 'admin' }) => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-900 to-blue-700 text-white p-6 rounded-lg">
+    <div className="bg-blue-800 text-white p-6 rounded-lg">
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold">VoxPro Enterprise Media Management System</h3>

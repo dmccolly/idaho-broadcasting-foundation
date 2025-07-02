@@ -15,7 +15,7 @@ export async function uploadFile(file, keySlot, title, description) {
     const filePath = `${fileName}`;
 
     // Upload any file type to media bucket
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('media')
       .upload(filePath, file, {
         cacheControl: '3600',

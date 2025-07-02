@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
 // Enhanced Universal Media Player Component - CONTENT GROWS WITH WINDOW
-const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
+const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mediaType, setMediaType] = useState(null);
@@ -876,14 +876,13 @@ const BackCornerPage = () => {
 
       {/* Enhanced Floating Windows */}
       {activeWindows.map((window) => (
-        <UniversalMediaPlayer
-          key={window.id}
-          assignment={window.assignment}
-          onClose={() => closeWindow(window.id)}
-          onMinimize={(minimize) => minimizeWindow(window.id, minimize)}
-          isMinimized={window.isMinimized}
-          windowId={window.id}
-        />
+          <UniversalMediaPlayer
+            key={window.id}
+            assignment={window.assignment}
+            onClose={() => closeWindow(window.id)}
+            onMinimize={(minimize) => minimizeWindow(window.id, minimize)}
+            isMinimized={window.isMinimized}
+          />
       ))}
     </div>
   );

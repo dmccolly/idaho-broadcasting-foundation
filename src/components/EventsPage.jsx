@@ -9,7 +9,6 @@ const EventsPage = () => {
     attending: '',
     message: ''
   })
-  const [showArchive, setShowArchive] = useState(false)
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -34,14 +33,6 @@ const EventsPage = () => {
     })
   }
 
-  const formatArchiveDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    })
-  }
 
   const currentEvent = eventsData.current
 
@@ -57,13 +48,13 @@ const EventsPage = () => {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {currentEvent && (
           <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
-            <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-6">
+            <div className="bg-gray-100 border-b p-6">
               <div className="flex items-center space-x-4">
                 <div className="w-2 h-16 bg-blue-400 rounded"></div>
                 <div>
-                  <h2 className="text-2xl font-bold">{currentEvent.title}</h2>
-                  <p className="text-blue-200 text-lg">{currentEvent.subtitle}</p>
-                  <p className="text-gray-300 text-sm">{formatEventDate(currentEvent.date)} • {currentEvent.time}</p>
+                  <h2 className="text-2xl font-bold text-gray-800">{currentEvent.title}</h2>
+                  <p className="text-gray-600 text-lg">{currentEvent.subtitle}</p>
+                  <p className="text-gray-500 text-sm">{formatEventDate(currentEvent.date)} • {currentEvent.time}</p>
                 </div>
               </div>
             </div>
@@ -178,9 +169,9 @@ const EventsPage = () => {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
 
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="p-6 border-b">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-800">Event Archive</h2>
-              <button
+export default EventsPage
