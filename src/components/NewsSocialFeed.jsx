@@ -109,13 +109,13 @@ const UpdatedEventsPage = () => {
         {currentEvent && (
           <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
             {/* Memorial Header */}
-            <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-6">
+            <div className="bg-gray-100 border-b p-6">
               <div className="flex items-center space-x-4">
                 <div className="w-2 h-16 bg-blue-400 rounded"></div>
                 <div>
-                  <h2 className="text-2xl font-bold">{currentEvent.title}</h2>
-                  <p className="text-blue-200 text-lg">{currentEvent.subtitle}</p>
-                  <p className="text-gray-300 text-sm">{formatEventDate(currentEvent.date)} • {currentEvent.time}</p>
+                  <h2 className="text-2xl font-bold text-gray-800">{currentEvent.title}</h2>
+                  <p className="text-gray-600 text-lg">{currentEvent.subtitle}</p>
+                  <p className="text-gray-500 text-sm">{formatEventDate(currentEvent.date)} • {currentEvent.time}</p>
                 </div>
               </div>
             </div>
