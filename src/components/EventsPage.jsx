@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { eventsData } from '../data/eventsData'
+import { eventsData } from '../Data/eventsData'
 
 const EventsPage = () => {
   const [rsvpFormData, setRsvpFormData] = useState({
@@ -184,3 +184,57 @@ const EventsPage = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-800">Event Archive</h2>
               <button
+                onClick={() => setShowArchive(!showArchive)}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center space-x-1"
+              >
+                <span>{showArchive ? 'Hide' : 'View'} Past Events</span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${showArchive ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-gray-600 text-sm mt-1">Browse our history of foundation events and celebrations</p>
+          </div>
+
+          {showArchive && (
+            <div className="p-6">
+              <div className="space-y-4">
+                {eventsData.archive.map((event) => (
+                  <div key={event.id} className="border-l-4 border-gray-300 pl-4 py-2 hover:border-blue-400 transition-colors">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-medium text-gray-800">{event.title}</h3>
+                        <p className="text-gray-600 text-sm mt-1">{event.description}</p>
+                      </div>
+                      <div className="text-right text-sm text-gray-500 ml-4 flex-shrink-0">
+                        <div>{formatArchiveDate(event.date)}</div>
+                        <div className="text-xs bg-gray-100 px-2 py-1 rounded mt-1 capitalize">{event.type}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Mission Statement */}
+        <div className="bg-white rounded-lg shadow-sm p-6 text-center mt-8">
+          <h3 className="text-xl font-semibold text-gray-800 mb-3">Our Mission</h3>
+          <p className="text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            We celebrate, honor, and preserve the rich history of Idaho broadcasting.
+            We strive to highlight how TV and radio stations have shaped Idaho's history
+            and their ongoing contributions to the communities they serve.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default EventsPage;
