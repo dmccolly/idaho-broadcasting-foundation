@@ -1,22 +1,26 @@
 import React, { useState } from 'react';
 import BackCornerPage from './components/BackCornerPage.jsx';
+import RadioPage from './components/RadioPage.jsx';
+import TelevisionPage from './components/TelevisionPage.jsx';
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
 
   // Navigation
+  const [galleryOpen, setGalleryOpen] = useState(false);
+
   const Navigation = () => (
     <nav className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          <button 
+        <div className="flex justify-between items-center h-16 relative">
+          <button
             onClick={() => setCurrentPage('home')}
             className="text-2xl font-bold text-blue-600"
           >
             History of Idaho Broadcasting Foundation
           </button>
           <div className="flex space-x-8">
-            {['HOME', 'MUSEUM', 'EVENTS', 'THE BACK CORNER', 'GALLERY', 'ABOUT/CONTACT', 'NEWS/SOCIAL', 'ADMIN'].map((item) => (
+            {['HOME', 'EVENTS', 'THE BACK CORNER', 'ABOUT/CONTACT', 'NEWS/SOCIAL', 'ADMIN'].map((item) => (
               <button
                 key={item}
                 onClick={() => setCurrentPage(item.toLowerCase().replace(/[^a-z]/g, ''))}
@@ -29,6 +33,40 @@ const App = () => {
                 {item}
               </button>
             ))}
+            <div className="relative">
+              <button
+                onClick={() => setGalleryOpen(!galleryOpen)}
+                className={`px-3 py-2 text-sm font-medium ${
+                  currentPage === 'television' || currentPage === 'radio'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-700 hover:text-blue-600'
+                }`}
+              >
+                GALLERY
+              </button>
+              {galleryOpen && (
+                <div className="absolute right-0 mt-2 bg-white border rounded shadow">
+                  <button
+                    onClick={() => {
+                      setCurrentPage('television');
+                      setGalleryOpen(false);
+                    }}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                  >
+                    Television
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCurrentPage('radio');
+                      setGalleryOpen(false);
+                    }}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                  >
+                    Radio
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -96,7 +134,9 @@ const App = () => {
       <Navigation />
       {currentPage === 'home' && <HomePage />}
       {currentPage === 'thebackcorner' && <BackCornerPage />}
-      {currentPage !== 'home' && currentPage !== 'thebackcorner' && (
+      {currentPage === 'radio' && <RadioPage />}
+      {currentPage === 'television' && <TelevisionPage />}
+      {['events', 'aboutcontact', 'newssocial', 'admin'].includes(currentPage) && (
         <div className="max-w-4xl mx-auto px-4 py-16">
           <h1 className="text-4xl font-bold mb-8 capitalize">{currentPage.replace(/([A-Z])/g, ' $1')}</h1>
           <p className="text-lg text-gray-600">Content for {currentPage} page will be added here.</p>
