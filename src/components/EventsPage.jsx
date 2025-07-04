@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { eventsData } from '../data/eventsData'
+import { eventsData } from '../Data/eventsData'
 
 const EventsPage = () => {
   const [rsvpFormData, setRsvpFormData] = useState({

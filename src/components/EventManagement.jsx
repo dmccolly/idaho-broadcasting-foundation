@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import eventsData, { eventUtils } from '../data/eventsData'
+import eventsData, { eventUtils } from '../Data/eventsData'
 
 const EventManagement = ({ onBack }) => {
   const [title, setTitle] = useState('')
