@@ -68,12 +68,23 @@ export const eventUtils = {
 
   formatDate: (dateString) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     })
+  },
+
+  addEvent: (event, makeCurrent = false) => {
+    if (makeCurrent) {
+      if (eventsData.current) {
+        eventsData.archive.unshift(eventsData.current)
+      }
+      eventsData.current = event
+    } else {
+      eventsData.archive.unshift(event)
+    }
   }
 }
 

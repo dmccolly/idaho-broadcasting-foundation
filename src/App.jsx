@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import BackCornerPage from './components/BackCornerPage.jsx';
 import AdminPage from './components/AdminPage.jsx';
+import EventsPage from './components/EventsPage.jsx';
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
@@ -80,9 +81,10 @@ const App = () => {
     <div className="min-h-screen bg-gray-50">
       <Navigation />
       {currentPage === 'home' && <HomePage />}
+      {currentPage === 'events' && <EventsPage />}
       {currentPage === 'thebackcorner' && <BackCornerPage />}
       {currentPage === 'admin' && <AdminPage />}
-      {currentPage !== 'home' && currentPage !== 'thebackcorner' && currentPage !== 'admin' && (
+      {currentPage !== 'home' && currentPage !== 'thebackcorner' && currentPage !== 'admin' && currentPage !== 'events' && (
         <div className="max-w-4xl mx-auto px-4 py-16">
           <h1 className="text-4xl font-bold mb-8 capitalize">{currentPage.replace(/([A-Z])/g, ' $1')}</h1>
           <p className="text-lg text-gray-600">Content for {currentPage} page will be added here.</p>

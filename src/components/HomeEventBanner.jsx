@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { eventUtils } from '../data/eventsData'
+import { eventUtils } from '../Data/eventsData'
 
 const HomeEventBanner = ({ onEventClick }) => {
   const [currentEvent, setCurrentEvent] = useState(null)
