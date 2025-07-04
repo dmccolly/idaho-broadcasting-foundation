@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import BackCornerPage from './components/BackCornerPage.jsx';
+import AdminPage from './components/AdminPage.jsx';
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
@@ -16,7 +17,7 @@ const App = () => {
             History of Idaho Broadcasting Foundation
           </button>
           <div className="flex space-x-8">
-            {['HOME', 'MUSEUM', 'EVENTS', 'THE BACK CORNER', 'GALLERY', 'ABOUT/CONTACT', 'NEWS/SOCIAL', 'ADMIN'].map((item) => (
+            {['HOME', 'EVENTS', 'THE BACK CORNER', 'GALLERY', 'ABOUT/CONTACT', 'NEWS/SOCIAL', 'ADMIN'].map((item) => (
               <button
                 key={item}
                 onClick={() => setCurrentPage(item.toLowerCase().replace(/[^a-z]/g, ''))}
@@ -39,23 +40,10 @@ const App = () => {
   const HomePage = () => (
     <div>
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-900 to-blue-700 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-20">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-6xl font-bold mb-6">Radio History</h1>
-              <p className="text-2xl mb-8 text-blue-100">an adventure in evolution</p>
-              <p className="text-lg text-blue-50">
-                Discover the rich heritage of Idaho's broadcasting industry.
-              </p>
-            </div>
-            <div className="w-full h-64 bg-gray-800 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🎙️</div>
-                <p className="text-gray-300">Vintage Broadcasting Equipment</p>
-              </div>
-            </div>
-          </div>
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-24 text-center">
+          <h1 className="text-5xl font-extrabold mb-4 text-gray-900">Idaho Broadcasting History</h1>
+          <p className="text-lg text-gray-600">Celebrating radio and television across the Gem State</p>
         </div>
       </div>
 
@@ -71,9 +59,6 @@ const App = () => {
             { station: "KIZD - 630 AM", freq: "630 AM", desc: "KIZD brings classic talk radio and news coverage..." }
           ].map((station, i) => (
             <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="h-48 bg-gray-200 flex items-center justify-center">
-                <div className="text-4xl">📻</div>
-              </div>
               <div className="p-6">
                 <div className="flex justify-between mb-2">
                   <h3 className="text-xl font-bold">{station.station}</h3>
@@ -96,7 +81,8 @@ const App = () => {
       <Navigation />
       {currentPage === 'home' && <HomePage />}
       {currentPage === 'thebackcorner' && <BackCornerPage />}
-      {currentPage !== 'home' && currentPage !== 'thebackcorner' && (
+      {currentPage === 'admin' && <AdminPage />}
+      {currentPage !== 'home' && currentPage !== 'thebackcorner' && currentPage !== 'admin' && (
         <div className="max-w-4xl mx-auto px-4 py-16">
           <h1 className="text-4xl font-bold mb-8 capitalize">{currentPage.replace(/([A-Z])/g, ' $1')}</h1>
           <p className="text-lg text-gray-600">Content for {currentPage} page will be added here.</p>
