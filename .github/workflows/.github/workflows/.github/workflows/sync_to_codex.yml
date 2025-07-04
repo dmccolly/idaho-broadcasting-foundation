@@ -1,0 +1,25 @@
+name: Sync to codex-files
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up git
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+
+      - name: Push to codex-files repo
+        env:
+          TOKEN: ${{ secrets.CODEX_REPO_TOKEN }}
+        run: |
+          git remote add codex https://$TOKEN@github.com/dmcolly/codex-files.git
+          git push --force codex main
