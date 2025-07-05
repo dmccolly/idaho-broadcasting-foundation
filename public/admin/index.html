@@ -4,24 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Idaho Broadcasting Foundation - Content Editor</title>
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-</head>
-<body>
-  <!-- Include the script that builds the page and powers Decap CMS -->
-  <script src="https://unpkg.com/@decap/decap-cms@^latest/dist/decap-cms.js"></script>
-  
-  <!-- Initialize Netlify Identity -->
-  <script>
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.on("init", user => {
-        if (!user) {
-          window.netlifyIdentity.on("login", () => {
-            document.location.href = "/admin/";
+  <    <!-- Netlify Identity widget -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
+    <!-- Netlify CMS bundle -->
+    <script src="https://unpkg.com/netlify-cms-app@^2.15.0/dist/netlify-cms-app.js"></script>
+
+    <!-- Initialize CMS after scripts load -->
+    <script>
+      window.addEventListener('load', function () {
+        if (window.netlifyIdentity) {
+          window.netlifyIdentity.on('init', user => {
+            if (!user) {
+              window.netlifyIdentity.on('login', () => {
+                document.location.href = '/admin/';
+              });
+            }
           });
         }
-      })
-       CMS.init();;
-    }
-  </script>
+        if (window.NetlifyCms) {
+          window.NetlifyCms.init();
+        }
+      });
+    </script>pt>
 </body>
 </html>
