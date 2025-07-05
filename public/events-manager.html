@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events Manager - Idaho Broadcasting Foundation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e74c3c;
+        }
+        
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #c0392b;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+        }
+        
+        .events-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .event-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #e74c3c;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .event-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .event-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .event-details {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .event-actions {
+            text-align: right;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Events Manager</h1>
+            <p class="subtitle">Manage events for the Idaho Broadcasting Foundation website</p>
+        </div>
+        
+        <div id="successMessage" class="success-message">
+            Event saved successfully!
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Add New Event</h2>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label for="eventTitle">Event Title *</label>
+                    <input type="text" id="eventTitle" name="eventTitle" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventDate">Event Date *</label>
+                        <input type="date" id="eventDate" name="eventDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventTime">Event Time *</label>
+                        <input type="time" id="eventTime" name="eventTime" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventLocation">Location *</label>
+                    <input type="text" id="eventLocation" name="eventLocation" placeholder="e.g., Boise Convention Center" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventAddress">Full Address (for maps)</label>
+                    <input type="text" id="eventAddress" name="eventAddress" placeholder="e.g., 850 W Front St, Boise, ID 83702">
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventDescription">Event Description *</label>
+                    <textarea id="eventDescription" name="eventDescription" placeholder="Describe the event, what attendees can expect, etc." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventType">Event Type</label>
+                    <select id="eventType" name="eventType">
+                        <option value="Conference">Conference</option>
+                        <option value="Workshop">Workshop</option>
+                        <option value="Seminar">Seminar</option>
+                        <option value="Meeting">Meeting</option>
+                        <option value="Training">Training</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Add Event</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Current Events</h2>
+            <div id="eventsList" class="events-list">
+                <!-- Sample events - these would be populated dynamically -->
+                <div class="event-item">
+                    <div class="event-title">Idaho Broadcasting Conference 2025</div>
+                    <div class="event-details">Friday, August 15, 2025 at 09:00 AM • Boise Convention Center</div>
+                    <div class="event-actions">
+                        <button class="btn btn-secondary btn-small" onclick="editEvent(1)">Edit</button>
+                        <button class="btn btn-primary btn-small" onclick="deleteEvent(1)">Delete</button>
+                    </div>
+                </div>
+                
+                <div class="event-item">
+                    <div class="event-title">Radio Production Workshop</div>
+                    <div class="event-details">Saturday, September 21, 2025 at 02:00 PM • Idaho State University Media Center</div>
+                    <div class="event-actions">
+                        <button class="btn btn-secondary btn-small" onclick="editEvent(2)">Edit</button>
+                        <button class="btn btn-primary btn-small" onclick="deleteEvent(2)">Delete</button>
+                    </div>
+                </div>
+                
+                <div class="event-item">
+                    <div class="event-title">Digital Broadcasting Seminar</div>
+                    <div class="event-details">Thursday, October 10, 2025 at 10:00 AM • University of Idaho</div>
+                    <div class="event-actions">
+                        <button class="btn btn-secondary btn-small" onclick="editEvent(3)">Edit</button>
+                        <button class="btn btn-primary btn-small" onclick="deleteEvent(3)">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Actions</h2>
+            <button class="btn btn-success" onclick="generateEventsPage()">Update Events Page</button>
+            <button class="btn btn-secondary" onclick="previewEvents()">Preview Events</button>
+        </div>
+        
+        <a href="/admin.html" class="back-link">← Back to Admin Dashboard</a>
+    </div>
+
+    <script>
+        // Form handling
+        document.getElementById('eventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(this);
+            const eventData = {};
+            for (let [key, value] of formData.entries()) {
+                eventData[key] = value;
+            }
+            
+            // Here you would typically send the data to a server
+            console.log('Event data:', eventData);
+            
+            // Show success message
+            document.getElementById('successMessage').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('successMessage').style.display = 'none';
+            }, 3000);
+            
+            // Add to events list (in a real app, this would refresh from server)
+            addEventToList(eventData);
+            
+            // Clear form
+            clearForm();
+        });
+        
+        function clearForm() {
+            document.getElementById('eventForm').reset();
+        }
+        
+        function addEventToList(eventData) {
+            const eventsList = document.getElementById('eventsList');
+            const eventItem = document.createElement('div');
+            eventItem.className = 'event-item';
+            
+            const date = new Date(eventData.eventDate + 'T' + eventData.eventTime);
+            const formattedDate = date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            const formattedTime = date.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit' 
+            });
+            
+            eventItem.innerHTML = `
+                <div class="event-title">${eventData.eventTitle}</div>
+                <div class="event-details">${formattedDate} at ${formattedTime} • ${eventData.eventLocation}</div>
+                <div class="event-actions">
+                    <button class="btn btn-secondary btn-small" onclick="editEvent('new')">Edit</button>
+                    <button class="btn btn-primary btn-small" onclick="deleteEvent('new')">Delete</button>
+                </div>
+            `;
+            
+            eventsList.appendChild(eventItem);
+        }
+        
+        function editEvent(id) {
+            alert('Edit functionality would be implemented here for event ID: ' + id);
+        }
+        
+        function deleteEvent(id) {
+            if (confirm('Are you sure you want to delete this event?')) {
+                alert('Delete functionality would be implemented here for event ID: ' + id);
+            }
+        }
+        
+        function generateEventsPage() {
+            alert('This would generate the updated events.html page with all current events');
+        }
+        
+        function previewEvents() {
+            window.open('/events.html', '_blank');
+        }
+    </script>
+</body>
+</html>
+
