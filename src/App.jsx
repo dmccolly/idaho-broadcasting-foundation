@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import BackCornerPage from './components/BackCornerPage.jsx';
 import AdminPage from './components/AdminPage.jsx';
-  import GalleryPage from './components/GalleryPage.js
+  import GalleryPage from './components/Galleryx';Page.js
     const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
 
