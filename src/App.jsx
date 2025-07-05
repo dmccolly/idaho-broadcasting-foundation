@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import BackCornerPage from './components/BackCornerPage.jsx';
 import AdminPage from './components/AdminPage.jsx';
-  import GalleryPage from './components/GalleryPage.jsx';s
-const App = () => {
+  import GalleryPage from './components/GalleryPage.js
+    const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
 
   // Navigation
@@ -80,9 +80,9 @@ const App = () => {
     <div className="min-h-screen bg-gray-50">
       <Navigation />
       {currentPage === 'home' && <HomePage />}
-      {currentPage === 'thebackcorner' && <BackCornerPag
-                                                    {currentPage === 'gallery' && <GalleryPage />}
-e />}
+     {currentPage === 'thebackcorner' && <BackCornerPage />}
+{currentPage === 'gallery' && <GalleryPage />}
+
       {currentPage === 'admin' && <AdminPage />}
       {currentPage !== 'home' && currentPage !== 'thebackcorner' && currentPage !== 'admin' && (
         <div className="max-w-4xl mx-auto px-4 py-16">
