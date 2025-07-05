@@ -3,6 +3,7 @@ import { eventsData } from '../data/eventsData'
 
 const EventsPage = () => {
   const [events, setEvents] = useState([])
+  const [expandedId, setExpandedId] = useState(null)
 
   useEffect(() => {
     const stored = localStorage.getItem('ibf_events')
@@ -38,7 +39,17 @@ const EventsPage = () => {
               {ev.subtitle && <p className="text-gray-600">{ev.subtitle}</p>}
               <div className="text-sm text-gray-500 mb-2">{ev.date} {ev.time}</div>
               <p className="text-gray-700 mb-2">{ev.description}</p>
-              {ev.details && <p className="text-gray-700">{ev.details}</p>}
+              {expandedId === ev.id && ev.details && (
+                <p className="text-gray-700 whitespace-pre-line">{ev.details}</p>
+              )}
+              {ev.details && (
+                <button
+                  onClick={() => setExpandedId(expandedId === ev.id ? null : ev.id)}
+                  className="mt-2 text-sm text-blue-600 hover:underline"
+                >
+                  {expandedId === ev.id ? 'Hide Details' : 'Read More'}
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -49,11 +60,25 @@ const EventsPage = () => {
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Past Events</h2>
           <ul className="space-y-2">
             {archived.map(ev => (
-              <li key={ev.id} className="text-blue-600 underline">
-                {ev.title} - {ev.date}
+              <li key={ev.id}>
+                <a href={`#${ev.id}`} className="text-blue-600 underline">
+                  {ev.title} - {ev.date}
+                </a>
               </li>
             ))}
           </ul>
+          <div className="space-y-6 mt-6">
+            {archived.map(ev => (
+              <div id={ev.id} key={`section-${ev.id}`} className="bg-gray-50 rounded shadow">
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-gray-800">{ev.title}</h3>
+                  <div className="text-sm text-gray-500 mb-2">{ev.date}</div>
+                  <p className="text-gray-700 mb-2">{ev.description}</p>
+                  {ev.details && <p className="text-gray-700 whitespace-pre-line">{ev.details}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
