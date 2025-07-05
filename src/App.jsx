@@ -1,97 +1,544 @@
-import React, { useState } from 'react';
-import BackCornerPage from './components/BackCornerPage.jsx';
-import AdminPage from './components/AdminPage.jsx';
-  import GalleryPage from './components/GalleryPage.jsx';
-    const App = () => {
-  const [currentPage, setCurrentPage] = useState('home');
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import AdminDashboard from './components/AdminDashboard';
+import EventsPage from './components/EventsPage';
+import EventsManager from './components/EventsManager';
 
-  // Navigation
-  const Navigation = () => (
-    <nav className="bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          <button 
-            onClick={() => setCurrentPage('home')}
-            className="text-2xl font-bold text-blue-600"
-          >
-            History of Idaho Broadcasting Foundation
-          </button>
-          <div className="flex space-x-8">
-            {['HOME', 'EVENTS', 'THE BACK CORNER', 'GALLERY', 'ABOUT/CONTACT', 'NEWS/SOCIAL', 'ADMIN'].map((item) => (
-              <button
-                key={item}
-                onClick={() => setCurrentPage(item.toLowerCase().replace(/[^a-z]/g, ''))}
-                className={`px-3 py-2 text-sm font-medium ${
-                  currentPage === item.toLowerCase().replace(/[^a-z]/g, '')
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
-
-  // Home Page
-  const HomePage = () => (
-    <div>
-      {/* Hero Section */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-24 text-center">
-          <h1 className="text-5xl font-extrabold mb-4 text-gray-900">Idaho Broadcasting History</h1>
-          <p className="text-lg text-gray-600">Celebrating radio and television across the Gem State</p>
-        </div>
-      </div>
-
-      {/* Radio Stations */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[
-            { station: "KIDO - 104.3 FM", freq: "104.3 FM", desc: "KIDO is a dynamic station, combining the best of country and rock..." },
-            { station: "KCIX - 105.9 FM", freq: "105.9 FM", desc: "KCIX 'Mix 105.9' offers a diverse blend of adult contemporary hits..." },
-            { station: "KTHI - 107.1 FM", freq: "107.1 FM", desc: "KTHI specializes in classic hits from the 70s, 80s, and 90s..." },
-            { station: "KQXR - 100.3 FM", freq: "100.3 FM", desc: "KQXR delivers contemporary hits and classic rock favorites..." },
-            { station: "KIDZ - 690 AM", freq: "690 AM", desc: "KIDZ focuses on news, talk, and sports programming..." },
-            { station: "KIZD - 630 AM", freq: "630 AM", desc: "KIZD brings classic talk radio and news coverage..." }
-          ].map((station, i) => (
-            <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="p-6">
-                <div className="flex justify-between mb-2">
-                  <h3 className="text-xl font-bold">{station.station}</h3>
-                  <span className="text-blue-600 font-semibold">{station.freq}</span>
-                </div>
-                <p className="text-gray-600 text-sm mb-4">{station.desc}</p>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                  Read Full History
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
+// Main Layout Component
+const Layout = ({ children }) => {
+  const location = useLocation();
+  
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      {currentPage === 'home' && <HomePage />}
-     {currentPage === 'thebackcorner' && <BackCornerPage />}
-{currentPage === 'gallery' && <GalleryPage />}
-
-      {currentPage === 'admin' && <AdminPage />}
-      {currentPage !== 'home' && currentPage !== 'thebackcorner' && currentPage !== 'admin' && (
-        <div className="max-w-4xl mx-auto px-4 py-16">
-          <h1 className="text-4xl font-bold mb-8 capitalize">{currentPage.replace(/([A-Z])/g, ' $1')}</h1>
-          <p className="text-lg text-gray-600">Content for {currentPage} page will be added here.</p>
+      {/* Header Navigation */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center">
+              <Link to="/" className="text-2xl font-bold text-gray-800">
+                Idaho Broadcasting Foundation
+              </Link>
+            </div>
+            
+            <nav className="hidden md:flex space-x-8">
+              <Link 
+                to="/" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/' 
+                    ? 'bg-blue-100 text-blue-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                HOME
+              </Link>
+              <Link 
+                to="/events" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/events' 
+                    ? 'bg-orange-100 text-orange-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                EVENTS
+              </Link>
+              <Link 
+                to="/back-corner" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/back-corner' 
+                    ? 'bg-purple-100 text-purple-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                THE BACK CORNER
+              </Link>
+              <Link 
+                to="/gallery" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/gallery' 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                GALLERY
+              </Link>
+              <Link 
+                to="/about" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/about' 
+                    ? 'bg-pink-100 text-pink-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                ABOUT/CONTACT
+              </Link>
+              <Link 
+                to="/news" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/news' 
+                    ? 'bg-indigo-100 text-indigo-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                NEWS/SOCIAL
+              </Link>
+              <Link 
+                to="/admin" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname.startsWith('/admin') 
+                    ? 'bg-red-100 text-red-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                ADMIN
+              </Link>
+            </nav>
+            
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <button className="text-gray-600 hover:text-gray-900">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
-      )}
+      </header>
+      
+      {/* Main Content */}
+      <main>
+        {children}
+      </main>
+      
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-8 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-gray-300">
+              © 2025 Idaho Broadcasting Foundation. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
 
+// Home Page Component
+const HomePage = () => (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <h1 className="text-4xl font-bold text-gray-900 mb-6">
+        Welcome to Idaho Broadcasting Foundation
+      </h1>
+      <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+        Supporting broadcasting excellence across Idaho through education, 
+        resources, and community engagement.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">Broadcasting Events</h3>
+          <p className="text-gray-600">
+            Join our conferences, workshops, and seminars designed for broadcasting professionals.
+          </p>
+          <Link to="/events" className="text-blue-600 hover:text-blue-800 font-medium mt-3 inline-block">
+            View Events →
+          </Link>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">The Back Corner</h3>
+          <p className="text-gray-600">
+            Explore our interactive broadcasting tools and resources.
+          </p>
+          <Link to="/back-corner" className="text-blue-600 hover:text-blue-800 font-medium mt-3 inline-block">
+            Explore Tools →
+          </Link>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">News & Updates</h3>
+          <p className="text-gray-600">
+            Stay informed with the latest broadcasting news and foundation updates.
+          </p>
+          <Link to="/news" className="text-blue-600 hover:text-blue-800 font-medium mt-3 inline-block">
+            Read News →
+          </Link>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// Back Corner Page Component
+const BackCornerPage = () => (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">The Back Corner</h1>
+      <p className="text-lg text-gray-600 mb-8">
+        Broadcasting tools and interactive resources
+      </p>
+      <div className="bg-white p-8 rounded-lg shadow-sm">
+        <p className="text-gray-600">
+          Content for The Back Corner page will be added here.
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+// Gallery Page Component
+const GalleryPage = () => (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">Gallery</h1>
+      <p className="text-lg text-gray-600 mb-8">
+        Photos and media from our events and activities
+      </p>
+      <div className="bg-white p-8 rounded-lg shadow-sm">
+        <p className="text-gray-600">
+          Gallery content will be added here.
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+// About Page Component
+const AboutPage = () => (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">About & Contact</h1>
+      <p className="text-lg text-gray-600 mb-8">
+        Learn more about the Idaho Broadcasting Foundation
+      </p>
+      <div className="bg-white p-8 rounded-lg shadow-sm">
+        <div className="max-w-3xl mx-auto text-left">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Our Mission</h2>
+          <p className="text-gray-600 mb-6">
+            The Idaho Broadcasting Foundation is dedicated to supporting and advancing 
+            the broadcasting industry throughout Idaho through education, professional 
+            development, and community engagement.
+          </p>
+          
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>
+          <div className="text-gray-600">
+            <p className="mb-2">Email: info@idahobroadcasting.org</p>
+            <p className="mb-2">Phone: (208) 555-0123</p>
+            <p>Address: Boise, Idaho</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// News Page Component
+const NewsPage = () => (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">News & Social</h1>
+      <p className="text-lg text-gray-600 mb-8">
+        Latest news and social media updates
+      </p>
+      <div className="bg-white p-8 rounded-lg shadow-sm">
+        <p className="text-gray-600">
+          News and social media content will be added here.
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+// Main App Component
+function App() {
+  return (
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/back-corner" element={<BackCornerPage />} />
+          <Route path="/gallery" element={<GalleryPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/news" element={<NewsPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/events" element={<EventsManager />} />
+        </Routes>
+      </Layout>
+    </Router>
+  );
+}
+
 export default App;
+
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import AdminDashboard from './components/AdminDashboard';
+import EventsPage from './components/EventsPage';
+import EventsManager from './components/EventsManager';
+
+// Main Layout Component
+const Layout = ({ children }) => {
+  const location = useLocation();
+  
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Navigation */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center">
+              <Link to="/" className="text-2xl font-bold text-gray-800">
+                Idaho Broadcasting Foundation
+              </Link>
+            </div>
+            
+            <nav className="hidden md:flex space-x-8">
+              <Link 
+                to="/" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/' 
+                    ? 'bg-blue-100 text-blue-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                HOME
+              </Link>
+              <Link 
+                to="/events" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/events' 
+                    ? 'bg-orange-100 text-orange-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                EVENTS
+              </Link>
+              <Link 
+                to="/back-corner" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/back-corner' 
+                    ? 'bg-purple-100 text-purple-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                THE BACK CORNER
+              </Link>
+              <Link 
+                to="/gallery" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/gallery' 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                GALLERY
+              </Link>
+              <Link 
+                to="/about" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/about' 
+                    ? 'bg-pink-100 text-pink-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                ABOUT/CONTACT
+              </Link>
+              <Link 
+                to="/news" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/news' 
+                    ? 'bg-indigo-100 text-indigo-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                NEWS/SOCIAL
+              </Link>
+              <Link 
+                to="/admin" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname.startsWith('/admin') 
+                    ? 'bg-red-100 text-red-700' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                ADMIN
+              </Link>
+            </nav>
+            
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <button className="text-gray-600 hover:text-gray-900">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      {/* Main Content */}
+      <main>
+        {children}
+      </main>
+      
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-8 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-gray-300">
+              © 2025 Idaho Broadcasting Foundation. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+// Home Page Component
+const HomePage = () => (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <h1 className="text-4xl font-bold text-gray-900 mb-6">
+        Welcome to Idaho Broadcasting Foundation
+      </h1>
+      <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+        Supporting broadcasting excellence across Idaho through education, 
+        resources, and community engagement.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">Broadcasting Events</h3>
+          <p className="text-gray-600">
+            Join our conferences, workshops, and seminars designed for broadcasting professionals.
+          </p>
+          <Link to="/events" className="text-blue-600 hover:text-blue-800 font-medium mt-3 inline-block">
+            View Events →
+          </Link>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">The Back Corner</h3>
+          <p className="text-gray-600">
+            Explore our interactive broadcasting tools and resources.
+          </p>
+          <Link to="/back-corner" className="text-blue-600 hover:text-blue-800 font-medium mt-3 inline-block">
+            Explore Tools →
+          </Link>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">News & Updates</h3>
+          <p className="text-gray-600">
+            Stay informed with the latest broadcasting news and foundation updates.
+          </p>
+          <Link to="/news" className="text-blue-600 hover:text-blue-800 font-medium mt-3 inline-block">
+            Read News →
+          </Link>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// Back Corner Page Component
+const BackCornerPage = () => (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">The Back Corner</h1>
+      <p className="text-lg text-gray-600 mb-8">
+        Broadcasting tools and interactive resources
+      </p>
+      <div className="bg-white p-8 rounded-lg shadow-sm">
+        <p className="text-gray-600">
+          Content for The Back Corner page will be added here.
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+// Gallery Page Component
+const GalleryPage = () => (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">Gallery</h1>
+      <p className="text-lg text-gray-600 mb-8">
+        Photos and media from our events and activities
+      </p>
+      <div className="bg-white p-8 rounded-lg shadow-sm">
+        <p className="text-gray-600">
+          Gallery content will be added here.
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+// About Page Component
+const AboutPage = () => (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">About & Contact</h1>
+      <p className="text-lg text-gray-600 mb-8">
+        Learn more about the Idaho Broadcasting Foundation
+      </p>
+      <div className="bg-white p-8 rounded-lg shadow-sm">
+        <div className="max-w-3xl mx-auto text-left">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Our Mission</h2>
+          <p className="text-gray-600 mb-6">
+            The Idaho Broadcasting Foundation is dedicated to supporting and advancing 
+            the broadcasting industry throughout Idaho through education, professional 
+            development, and community engagement.
+          </p>
+          
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>
+          <div className="text-gray-600">
+            <p className="mb-2">Email: info@idahobroadcasting.org</p>
+            <p className="mb-2">Phone: (208) 555-0123</p>
+            <p>Address: Boise, Idaho</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// News Page Component
+const NewsPage = () => (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="text-center">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">News & Social</h1>
+      <p className="text-lg text-gray-600 mb-8">
+        Latest news and social media updates
+      </p>
+      <div className="bg-white p-8 rounded-lg shadow-sm">
+        <p className="text-gray-600">
+          News and social media content will be added here.
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+// Main App Component
+function App() {
+  return (
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/back-corner" element={<BackCornerPage />} />
+          <Route path="/gallery" element={<GalleryPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/news" element={<NewsPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/events" element={<EventsManager />} />
+        </Routes>
+      </Layout>
+    </Router>
+  );
+}
+
+export default App;
+
