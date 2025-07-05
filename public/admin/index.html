@@ -22,8 +22,9 @@
             }
           });
         }
-        if (window.NetlifyCms) {
-          window.NetlifyCms.init();
+        var cms = window.CMS || window.NetlifyCmsApp || window.NetlifyCms;
+        if (cms && cms.init) {
+          cms.init();
         }
       });
   </script>
