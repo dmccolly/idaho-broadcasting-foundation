@@ -31,7 +31,7 @@ const EventsPage = () => {
         {upcoming.map(ev => (
           <div key={ev.id} className="bg-white shadow rounded overflow-hidden">
             {ev.image && (
-              <img src={ev.image} alt="event" className="w-full h-64 object-cover" />
+              <img src={ev.image} alt={ev.title} className="w-full h-64 object-cover" />
             )}
             <div className="p-4">
               <h2 className="text-xl font-semibold text-gray-800">{ev.title}</h2>
