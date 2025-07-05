@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import VoxProManagement from './VoxProManagement.jsx'
 import BackCornerPage from './BackCornerPage.jsx'
+import EventsManager from './EventsManager.jsx'
 
 const AdminPage = () => {
   const [tab, setTab] = useState('manage')
@@ -20,6 +21,12 @@ const AdminPage = () => {
         >
           VoxPro Player
         </button>
+        <button
+          onClick={() => setTab('events')}
+          className={`pb-2 ${tab === 'events' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-blue-600'}`}
+        >
+          Events Manager
+        </button>
       </div>
       {tab === 'manage' && (
         <VoxProManagement />
@@ -28,6 +35,9 @@ const AdminPage = () => {
         <div className="mt-4">
           <BackCornerPage />
         </div>
+      )}
+      {tab === 'events' && (
+        <EventsManager />
       )}
     </div>
   )
