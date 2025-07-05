@@ -1,186 +1,110 @@
-import { useState } from 'react'
-import { eventsData } from '../data/eventsData'
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 const EventsPage = () => {
-  const [rsvpFormData, setRsvpFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    attending: '',
-    message: ''
-  })
-  const [showArchive, setShowArchive] = useState(false)
+  const events = [
+    {
+      id: 1,
+      title: 'Idaho Broadcasting Conference 2025',
+      date: 'Friday, August 15, 2025 at 09:00 AM',
+      location: '📍 Boise Convention Center',
+      address: 'Boise Convention Center, 850 W Front St, Boise, ID 83702',
+      description: 'Annual conference bringing together broadcasting professionals from across Idaho. Join us for workshops, networking, and the latest industry insights.',
+      datetime: '2025-08-15T09:00:00'
+    },
+    {
+      id: 2,
+      title: 'Radio Production Workshop',
+      date: 'Saturday, September 21, 2025 at 02:00 PM',
+      location: '📍 Idaho State University Media Center',
+      address: 'Idaho State University Media Center, Pocatello, ID',
+      description: 'Hands-on workshop covering modern radio production techniques, digital editing, and broadcast technology for both beginners and experienced professionals.',
+      datetime: '2025-09-21T14:00:00'
+    },
+    {
+      id: 3,
+      title: 'Digital Broadcasting Seminar',
+      date: 'Thursday, October 10, 2025 at 10:00 AM',
+      location: '📍 University of Idaho',
+      address: 'University of Idaho, Moscow, ID',
+      description: 'Explore the future of digital broadcasting, streaming technologies, and emerging trends in the media landscape.',
+      datetime: '2025-10-10T10:00:00'
+    }
+  ];
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setRsvpFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
+  const addToCalendar = (title, datetime) => {
+    const startDate = new Date(datetime);
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+    
+    const startFormatted = startDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const endFormatted = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    
+    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startFormatted}/${endFormatted}`;
+    window.open(calendarUrl, '_blank');
+  };
 
-  const handleRSVP = () => {
-    console.log('RSVP submitted:', rsvpFormData)
-    alert('Thank you for your RSVP. We look forward to seeing you.')
-  }
-
-  const formatEventDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    })
-  }
-
-  const formatArchiveDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    })
-  }
-
-  const currentEvent = eventsData.current
+  const openMap = (address) => {
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    window.open(mapUrl, '_blank');
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Foundation Events</h1>
-          <p className="text-gray-600 mt-2">Celebrating and preserving Idaho's broadcasting heritage</p>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <h1 className="text-3xl font-bold text-gray-800 text-center mb-10">
+            Upcoming Events
+          </h1>
+          
+          <div className="space-y-6">
+            {events.map((event) => (
+              <div
+                key={event.id}
+                className="bg-gray-50 border-l-4 border-red-500 rounded-r-lg p-6"
+              >
+                <h2 className="text-xl font-bold text-gray-800 mb-3">
+                  {event.title}
+                </h2>
+                <div className="text-lg text-red-500 font-medium mb-2">
+                  {event.date}
+                </div>
+                <div className="text-gray-600 mb-4">
+                  {event.location}
+                </div>
+                <p className="text-gray-700 leading-relaxed mb-4">
+                  {event.description}
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={() => addToCalendar(event.title, event.datetime)}
+                    className="px-4 py-2 bg-green-500 text-white rounded-md font-medium hover:bg-green-600 transition-colors duration-300"
+                  >
+                    Add to Calendar
+                  </button>
+                  <button
+                    onClick={() => openMap(event.address)}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md font-medium hover:bg-blue-600 transition-colors duration-300"
+                  >
+                    View Map
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-10">
+            <Link
+              to="/"
+              className="text-blue-500 hover:text-blue-600 hover:underline"
+            >
+              ← Back to Main Site
+            </Link>
+          </div>
         </div>
       </div>
+    </div>
+  );
+};
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {currentEvent && (
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
-            <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-16 bg-blue-400 rounded"></div>
-                <div>
-                  <h2 className="text-2xl font-bold">{currentEvent.title}</h2>
-                  <p className="text-blue-200 text-lg">{currentEvent.subtitle}</p>
-                  <p className="text-gray-300 text-sm">{formatEventDate(currentEvent.date)} • {currentEvent.time}</p>
-                </div>
-              </div>
-            </div>
+export default EventsPage;
 
-            <div className="p-6">
-              <div className="grid lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <div className="mb-6">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-3">In Remembrance</h3>
-                    <div className="prose text-gray-700 leading-relaxed">
-                      <p className="mb-4">{currentEvent.description}</p>
-                      <p className="mb-4">{currentEvent.fullDescription}</p>
-                      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
-                        <p className="text-blue-800 italic">
-                          "We celebrate, honor, and preserve the rich history of Idaho broadcasting. 
-                          We strive to highlight how TV and radio stations have shaped Idaho's history 
-                          and their ongoing contributions to the communities they serve."
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                    <h4 className="font-semibold text-gray-800 mb-3">Career Highlights</h4>
-                    <div className="space-y-2 text-sm text-gray-700">
-                      {currentEvent.careerHighlights.map((highlight, index) => (
-                        <div key={index} className="flex items-start space-x-3">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                          <span>{highlight}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="lg:col-span-1">
-                  <div className="bg-slate-50 rounded-lg p-5 border">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">RSVP for the Tribute</h3>
-                    
-                    <div className="space-y-4 mb-6">
-                      <input
-                        type="text"
-                        name="name"
-                        placeholder="Your Name"
-                        value={rsvpFormData.name}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border rounded-lg text-sm"
-                      />
-                      <input
-                        type="email"
-                        name="email"
-                        placeholder="Email Address"
-                        value={rsvpFormData.email}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border rounded-lg text-sm"
-                      />
-                      <input
-                        type="tel"
-                        name="phone"
-                        placeholder="Phone Number"
-                        value={rsvpFormData.phone}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border rounded-lg text-sm"
-                      />
-                      <select
-                        name="attending"
-                        value={rsvpFormData.attending}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border rounded-lg text-sm"
-                      >
-                        <option value="">Will you attend?</option>
-                        <option value="yes">Yes, I'll attend</option>
-                        <option value="no">Unable to attend</option>
-                      </select>
-                      <textarea
-                        name="message"
-                        placeholder="Share a memory of Larry (optional)"
-                        value={rsvpFormData.message}
-                        onChange={handleInputChange}
-                        rows="3"
-                        className="w-full p-3 border rounded-lg text-sm"
-                      />
-                    </div>
-
-                    <button
-                      onClick={handleRSVP}
-                      className="w-full bg-slate-700 text-white py-3 rounded-lg hover:bg-slate-800 transition-colors font-medium"
-                    >
-                      Submit RSVP
-                    </button>
-
-                    <div className="mt-6 pt-4 border-t border-gray-200">
-                      <h4 className="font-medium text-gray-800 mb-3">Alternative RSVP Methods</h4>
-                      <div className="space-y-2 text-sm text-gray-600">
-                        <div className="flex items-center space-x-2">
-                          <span className="w-4 h-4 bg-blue-100 rounded text-blue-600 text-xs flex items-center justify-center">📞</span>
-                          <span>{currentEvent.contactInfo.phone} (Call or Text Art)</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-4 h-4 bg-blue-100 rounded text-blue-600 text-xs flex items-center justify-center">📧</span>
-                          <span>{currentEvent.contactInfo.email}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-4 h-4 bg-blue-100 rounded text-blue-600 text-xs flex items-center justify-center">📱</span>
-                          <span>Foundation voicemail: {currentEvent.contactInfo.voicemail}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="p-6 border-b">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-800">Event Archive</h2>
-              <button
