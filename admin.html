@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Idaho Broadcasting Foundation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .tool-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .tool-card:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .tool-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .events-tool .tool-icon { color: #e74c3c; }
+        .voxpro-player .tool-icon { color: #27ae60; }
+        .voxpro-mgmt .tool-icon { color: #3498db; }
+        
+        .tool-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .tool-description {
+            color: #7f8c8d;
+            line-height: 1.4;
+            margin-bottom: 15px;
+        }
+        
+        .tool-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .tool-link:hover {
+            background: #2980b9;
+        }
+        
+        .events-tool .tool-link { background: #e74c3c; }
+        .events-tool .tool-link:hover { background: #c0392b; }
+        
+        .voxpro-player .tool-link { background: #27ae60; }
+        .voxpro-player .tool-link:hover { background: #229954; }
+        
+        .voxpro-mgmt .tool-link { background: #3498db; }
+        .voxpro-mgmt .tool-link:hover { background: #2980b9; }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #7f8c8d;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 600px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+        <p class="subtitle">Idaho Broadcasting Foundation Management Tools</p>
+        
+        <div class="tools-grid">
+            <div class="tool-card events-tool">
+                <span class="tool-icon">📅</span>
+                <div class="tool-title">Events Manager</div>
+                <div class="tool-description">
+                    Add, edit, and manage events for the website. Control what appears on the events page and schedule upcoming broadcasts.
+                </div>
+                <a href="/events-manager.html" class="tool-link">Manage Events</a>
+            </div>
+            
+            <div class="tool-card voxpro-player">
+                <span class="tool-icon">▶️</span>
+                <div class="tool-title">VoxPro Player</div>
+                <div class="tool-description">
+                    Access the VoxPro player interface for live broadcasting and audio playback control during shows.
+                </div>
+                <a href="/voxpro-player.html" class="tool-link">Launch Player</a>
+            </div>
+            
+            <div class="tool-card voxpro-mgmt">
+                <span class="tool-icon">🎛️</span>
+                <div class="tool-title">VoxPro Management</div>
+                <div class="tool-description">
+                    Configure and manage VoxPro settings, upload audio content, and control broadcasting parameters.
+                </div>
+                <a href="/voxpro-management.html" class="tool-link">VoxPro Management</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Idaho Broadcasting Foundation Admin Panel</p>
+            <a href="/" class="back-link">← Back to Main Site</a>
+        </div>
+    </div>
+
+    <script>
+        // Add click handlers for the tool cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const toolCards = document.querySelectorAll('.tool-card');
+            
+            toolCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const link = this.querySelector('.tool-link');
+                    if (link) {
+                        window.location.href = link.href;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
