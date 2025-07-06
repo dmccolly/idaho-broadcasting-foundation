@@ -232,19 +232,16 @@ const AboutPage = () => (
 );
 
 // News Page Component
+import BroadcastingNewsFeed from './components/BroadcastingNewsFeed.jsx';
 const NewsPage = () => (
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div className="text-center">
+    <div className="text-center mb-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">News & Social</h1>
       <p className="text-lg text-gray-600 mb-8">
         Latest news and social media updates
       </p>
-      <div className="bg-white p-8 rounded-lg shadow-sm">
-        <p className="text-gray-600">
-          News and social media content will be added here.
-        </p>
-      </div>
     </div>
+    <BroadcastingNewsFeed />
   </div>
 );
 
@@ -506,17 +503,13 @@ const AboutPage = () => (
 // News Page Component
 const NewsPage = () => (
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div className="text-center">
+    <div className="text-center mb-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">News & Social</h1>
       <p className="text-lg text-gray-600 mb-8">
         Latest news and social media updates
       </p>
-      <div className="bg-white p-8 rounded-lg shadow-sm">
-        <p className="text-gray-600">
-          News and social media content will be added here.
-        </p>
-      </div>
     </div>
+    <BroadcastingNewsFeed />
   </div>
 );
 
