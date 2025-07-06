@@ -5,6 +5,7 @@ import EventsPage from './components/EventsPage';
 import EventsManager from './components/EventsManager';
 import BackCornerPage from './components/BackCornerPage';
 import VoxProManagement from './components/VoxProManagement';
+import VideoGalleryPage from './components/VideoGalleryPage';
 
 // Main Layout Component
 const Layout = ({ children }) => {
@@ -184,6 +185,14 @@ const GalleryPage = () => (
           Gallery content will be added here.
         </p>
       </div>
+      <div className="mt-8">
+        <Link
+          to="/gallery/videos"
+          className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+        >
+          Visit Video Gallery
+        </Link>
+      </div>
     </div>
   </div>
 );
@@ -244,6 +253,7 @@ function App() {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/back-corner" element={<BackCornerPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
+          <Route path="/gallery/videos" element={<VideoGalleryPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
