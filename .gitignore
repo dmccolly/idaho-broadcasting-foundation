@@ -4,3 +4,4 @@
 # Node modules (if any)
 node_modules/
 dist/
+pnpm-lock.yaml

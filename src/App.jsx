@@ -81,15 +81,25 @@ const Layout = ({ children }) => {
               >
                 NEWS/SOCIAL
               </Link>
-              <Link 
-                to="/admin" 
+              <Link
+                to="/admin"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname.startsWith('/admin') 
-                    ? 'bg-red-100 text-red-700' 
+                  location.pathname.startsWith('/admin')
+                    ? 'bg-red-100 text-red-700'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
                 ADMIN
+              </Link>
+              <Link
+                to="/admin/events"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/admin/events'
+                    ? 'bg-yellow-100 text-yellow-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                EVENTS MANAGER
               </Link>
             </nav>
             

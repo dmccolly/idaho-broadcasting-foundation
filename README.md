@@ -17,3 +17,5 @@ The project is built with Vite. Netlify will run `pnpm run build` and deploy
 the contents of the `dist` folder. Locally you can run the same command after
 installing dependencies with `pnpm install`.
 
+The Netlify build uses Node 20 and pnpm 10.12.4 as specified in `netlify.toml`.
+
