@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { parse } from 'node-html-parser';
+// Note: ES module syntax is required since package.json uses "type": "module"
+
 
 // Configuration for news sources
 const NEWS_SOURCES = {
