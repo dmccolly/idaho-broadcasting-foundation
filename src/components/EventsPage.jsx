@@ -1,36 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 const EventsPage = () => {
-  const events = [
-    {
-      id: 1,
-      title: 'Idaho Broadcasting Conference 2025',
-      date: 'Friday, August 15, 2025 at 09:00 AM',
-      location: '📍 Boise Convention Center',
-      address: 'Boise Convention Center, 850 W Front St, Boise, ID 83702',
-      description: 'Annual conference bringing together broadcasting professionals from across Idaho. Join us for workshops, networking, and the latest industry insights.',
-      datetime: '2025-08-15T09:00:00'
-    },
-    {
-      id: 2,
-      title: 'Radio Production Workshop',
-      date: 'Saturday, September 21, 2025 at 02:00 PM',
-      location: '📍 Idaho State University Media Center',
-      address: 'Idaho State University Media Center, Pocatello, ID',
-      description: 'Hands-on workshop covering modern radio production techniques, digital editing, and broadcast technology for both beginners and experienced professionals.',
-      datetime: '2025-09-21T14:00:00'
-    },
-    {
-      id: 3,
-      title: 'Digital Broadcasting Seminar',
-      date: 'Thursday, October 10, 2025 at 10:00 AM',
-      location: '📍 University of Idaho',
-      address: 'University of Idaho, Moscow, ID',
-      description: 'Explore the future of digital broadcasting, streaming technologies, and emerging trends in the media landscape.',
-      datetime: '2025-10-10T10:00:00'
-    }
-  ];
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .order('date', { ascending: true });
+      if (!error) {
+        setEvents(data || []);
+      }
+    };
+    loadEvents();
+  }, []);
 
   const addToCalendar = (title, datetime) => {
     const startDate = new Date(datetime);
@@ -57,39 +43,42 @@ const EventsPage = () => {
           </h1>
           
           <div className="space-y-6">
-            {events.map((event) => (
-              <div
-                key={event.id}
-                className="bg-gray-50 border-l-4 border-red-500 rounded-r-lg p-6"
-              >
-                <h2 className="text-xl font-bold text-gray-800 mb-3">
-                  {event.title}
-                </h2>
-                <div className="text-lg text-red-500 font-medium mb-2">
-                  {event.date}
+            {events.map((event) => {
+              const datetime = `${event.date}T${event.time}`;
+              return (
+                <div
+                  key={event.id}
+                  className="bg-gray-50 border-l-4 border-red-500 rounded-r-lg p-6"
+                >
+                  <h2 className="text-xl font-bold text-gray-800 mb-3">
+                    {event.title}
+                  </h2>
+                  <div className="text-lg text-red-500 font-medium mb-2">
+                    {new Date(datetime).toLocaleString()}
+                  </div>
+                  <div className="text-gray-600 mb-4">
+                    {event.location}
+                  </div>
+                  <p className="text-gray-700 leading-relaxed mb-4">
+                    {event.description}
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={() => addToCalendar(event.title, datetime)}
+                      className="px-4 py-2 bg-green-500 text-white rounded-md font-medium hover:bg-green-600 transition-colors duration-300"
+                    >
+                      Add to Calendar
+                    </button>
+                    <button
+                      onClick={() => openMap(event.address)}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-md font-medium hover:bg-blue-600 transition-colors duration-300"
+                    >
+                      View Map
+                    </button>
+                  </div>
                 </div>
-                <div className="text-gray-600 mb-4">
-                  {event.location}
-                </div>
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  {event.description}
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={() => addToCalendar(event.title, event.datetime)}
-                    className="px-4 py-2 bg-green-500 text-white rounded-md font-medium hover:bg-green-600 transition-colors duration-300"
-                  >
-                    Add to Calendar
-                  </button>
-                  <button
-                    onClick={() => openMap(event.address)}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-md font-medium hover:bg-blue-600 transition-colors duration-300"
-                  >
-                    View Map
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           
           <div className="text-center mt-10">

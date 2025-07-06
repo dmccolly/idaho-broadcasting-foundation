@@ -10,3 +10,10 @@ On Netlify, configure these variables in your site settings so they are
 available during builds and in serverless functions. Locally you can create a
 `.env` file with the same variables for development, but `.env*` files are
 ignored from version control.
+
+## Building and Deploying
+
+The project is built with Vite. Netlify will run `pnpm run build` and deploy
+the contents of the `dist` folder. Locally you can run the same command after
+installing dependencies with `pnpm install`.
+

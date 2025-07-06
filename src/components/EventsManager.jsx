@@ -1,39 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 const EventsManager = () => {
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      title: 'Idaho Broadcasting Conference 2025',
-      date: '2025-08-15',
-      time: '09:00',
-      location: 'Boise Convention Center',
-      address: '850 W Front St, Boise, ID 83702',
-      description: 'Annual conference bringing together broadcasting professionals from across Idaho.',
-      type: 'Conference'
-    },
-    {
-      id: 2,
-      title: 'Radio Production Workshop',
-      date: '2025-09-21',
-      time: '14:00',
-      location: 'Idaho State University Media Center',
-      address: 'Pocatello, ID',
-      description: 'Hands-on workshop covering modern radio production techniques.',
-      type: 'Workshop'
-    },
-    {
-      id: 3,
-      title: 'Digital Broadcasting Seminar',
-      date: '2025-10-10',
-      time: '10:00',
-      location: 'University of Idaho',
-      address: 'Moscow, ID',
-      description: 'Explore the future of digital broadcasting and streaming technologies.',
-      type: 'Seminar'
-    }
-  ]);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -48,6 +19,30 @@ const EventsManager = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
+  useEffect(() => {
+    const loadEvents = async () => {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .order('date', { ascending: true });
+      if (!error) {
+        setEvents(data || []);
+      }
+      setLoading(false);
+    };
+    loadEvents();
+  }, []);
+
+  const refreshEvents = async () => {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .order('date', { ascending: true });
+    if (!error) {
+      setEvents(data || []);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -56,24 +51,23 @@ const EventsManager = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (editingId) {
-      // Update existing event
-      setEvents(prev => prev.map(event => 
-        event.id === editingId 
-          ? { ...formData, id: editingId }
-          : event
-      ));
-      setEditingId(null);
+      const { error } = await supabase
+        .from('events')
+        .update(formData)
+        .eq('id', editingId);
+      if (!error) {
+        setEditingId(null);
+        await refreshEvents();
+      }
     } else {
-      // Add new event
-      const newEvent = {
-        ...formData,
-        id: Date.now()
-      };
-      setEvents(prev => [...prev, newEvent]);
+      const { error } = await supabase.from('events').insert([formData]);
+      if (!error) {
+        await refreshEvents();
+      }
     }
 
     // Reset form
@@ -97,8 +91,11 @@ const EventsManager = () => {
     setEditingId(event.id);
   };
 
-  const handleDelete = (id) => {
-    setEvents(prev => prev.filter(event => event.id !== id));
+  const handleDelete = async (id) => {
+    const { error } = await supabase.from('events').delete().eq('id', id);
+    if (!error) {
+      await refreshEvents();
+    }
   };
 
   const handleClear = () => {
