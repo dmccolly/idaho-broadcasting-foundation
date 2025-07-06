@@ -5,6 +5,16 @@ import useEvents from '../hooks/useEvents';
 const EventsPage = () => {
   const events = useEvents();
 
+  const now = new Date();
+  const upcomingEvents = events.filter((event) => {
+    const dt = new Date(`${event.date}T${event.time || '00:00'}`);
+    return dt >= now;
+  });
+  const pastEvents = events.filter((event) => {
+    const dt = new Date(`${event.date}T${event.time || '00:00'}`);
+    return dt < now;
+  });
+
   const addToCalendar = (title, date, time) => {
     const startDate = new Date(`${date}T${time}`);
     const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
@@ -37,10 +47,10 @@ const EventsPage = () => {
           </h1>
 
           <div className="space-y-6">
-            {events.length === 0 ? (
-              <p className="text-center text-gray-500">No events found.</p>
+            {upcomingEvents.length === 0 ? (
+              <p className="text-center text-gray-500">No upcoming events.</p>
             ) : (
-              events.map((event) => (
+              upcomingEvents.map((event) => (
                 <div
                   key={event.id}
                   className="bg-gray-50 border-l-4 border-red-500 rounded-r-lg p-6"
@@ -79,6 +89,24 @@ const EventsPage = () => {
               ))
             )}
           </div>
+
+          {pastEvents.length > 0 && (
+            <div className="mt-16">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                Past Events
+              </h2>
+              <ul className="space-y-2">
+                {pastEvents.map((event) => (
+                  <li key={event.id}>
+                    <a href="#" className="text-blue-500 hover:underline">
+                      {event.title}
+                    </a>{' '}
+                    <span className="text-sm text-gray-500">{event.date}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="text-center mt-10">
             <Link

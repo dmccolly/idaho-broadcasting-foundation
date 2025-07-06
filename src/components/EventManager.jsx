@@ -13,7 +13,7 @@ const emptyForm = {
   type: 'Conference'
 };
 
-const EventsManager = () => {
+const EventManager = () => {
   const events = useEvents();
   const [formData, setFormData] = useState(emptyForm);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -288,4 +288,4 @@ const EventsManager = () => {
   );
 };
 
-export default EventsManager;
+export default EventManager;

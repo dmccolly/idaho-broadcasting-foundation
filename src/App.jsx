@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import AdminDashboard from './components/AdminDashboard';
 import EventsPage from './components/EventsPage';
-import EventsManager from './components/EventsManager';
+import EventManager from './components/EventManager';
 
 // Main Layout Component
 const Layout = ({ children }) => {
@@ -261,7 +261,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/events" element={<EventsManager />} />
+          <Route path="/admin/events" element={<EventManager />} />
         </Routes>
       </Layout>
     </Router>
