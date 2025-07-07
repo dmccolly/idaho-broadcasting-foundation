@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import './RadioPage.css';
 
 // IMPORTANT: Ensure these images are uploaded to src/assets/images/
-import wowCountryLogo from '../assets/images/wow-country-104-3-logo.png';
 import q104Logo from '../assets/images/q104-logo.png';
 import radioConsoleDark from '../assets/images/RadioCOnsoleDark.png';
 
@@ -14,7 +13,6 @@ const stationData = [
     name: 'KIDQ - 104.3 FM',
     synopsis: (
       <>
-        {/* Removed wowCountryLogo as requested */}
         <img src={q104Logo} alt="Q104 Logo" className="station-logo" />
         KIDQ is a dynamic station, combining the best of country and rock to deliver a unique listening experience in the Treasure Valley. Known for its vibrant community engagement and diverse music selection, KIDQ aims to be a leading voice in Idaho radio.
       </>
