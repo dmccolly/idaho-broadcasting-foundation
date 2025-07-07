@@ -6,7 +6,7 @@ import EventsManager from './components/EventsManager';
 import BackCornerPage from './components/BackCornerPage.jsx';
 import GalleryPage from './components/GalleryPage.jsx';
 import VoxProManagement from './components/VoxProManagement.jsx';
-import NewsSocialPage from './components/NewsSocialFeed.jsx';
+import NewsSocialPage from './components/NewsSocialPage.jsx';
 
 // Main Layout Component
 const Layout = ({ children }) => {
