@@ -6,7 +6,7 @@ import EventsManager from './components/EventsManager';
 import BackCornerPage from './components/BackCornerPage.jsx';
 import GalleryPage from './components/GalleryPage.jsx';
 import VoxProManagement from './components/VoxProManagement.jsx';
-import BroadcastingNewsFeed from './components/BroadcastingNewsFeed.jsx';
+import NewsSocialPage from './components/NewsSocialFeed.jsx';
 
 // Main Layout Component
 const Layout = ({ children }) => {
@@ -202,18 +202,6 @@ const AboutPage = () => (
   </div>
 );
 
-// News Page Component
-const NewsPage = () => (
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div className="text-center mb-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">News & Social</h1>
-      <p className="text-lg text-gray-600 mb-8">
-        Latest news and social media updates
-      </p>
-    </div>
-    <BroadcastingNewsFeed />
-  </div>
-);
 
 // Main App Component
 function App() {
@@ -226,7 +214,7 @@ function App() {
           <Route path="/back-corner" element={<BackCornerPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/news" element={<NewsPage />} />
+          <Route path="/news" element={<NewsSocialPage />} />
           <Route path="/admin/voxpro-player" element={<BackCornerPage />} />
           <Route path="/admin/voxpro-management" element={<VoxProManagement />} />
           <Route path="/admin" element={<AdminDashboard />} />

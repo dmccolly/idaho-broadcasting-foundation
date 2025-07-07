@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import BroadcastingNewsFeed from './BroadcastingNewsFeed.jsx'
 
 // Events data - this would typically come from your CMS or backend
 const eventsData = {
@@ -50,7 +51,7 @@ const eventsData = {
   ]
 }
 
-const UpdatedEventsPage = () => {
+const NewsSocialPage = () => {
   const [rsvpFormData, setRsvpFormData] = useState({
     name: '',
     email: '',
@@ -104,7 +105,9 @@ const UpdatedEventsPage = () => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+  <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="lg:grid lg:grid-cols-3 lg:gap-8">
+      <div className="lg:col-span-2">
         {/* Current/Upcoming Event */}
         {currentEvent && (
           <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
@@ -290,8 +293,13 @@ const UpdatedEventsPage = () => {
           </p>
         </div>
       </div>
+      <aside className="lg:col-span-1 mt-8 lg:mt-0">
+        <BroadcastingNewsFeed />
+      </aside>
+      </div>
     </div>
+  </div>
   )
 }
 
-export default UpdatedEventsPage
+export default NewsSocialPage
