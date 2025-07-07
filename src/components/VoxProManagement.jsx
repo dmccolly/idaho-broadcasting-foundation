@@ -114,12 +114,12 @@ const VoxProManagement = () => {
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
-      <h2 className="text-2xl font-bold text-green-400 mb-4">VoxPro Management</h2>
+    <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700 max-w-md">
+      <h2 className="text-xl font-bold text-green-400 mb-3">VoxPro Management</h2>
 
       {/* Assignment Form */}
-      <form onSubmit={handleAssign} className="mb-8 p-4 bg-gray-700 rounded-md">
-        <h3 className="text-xl text-white mb-4">Assign Media to Key</h3>
+      <form onSubmit={handleAssign} className="mb-6 p-3 bg-gray-700 rounded-md">
+        <h3 className="text-lg text-white mb-3">Assign Media to Key</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="media-file" className="block text-sm font-medium text-gray-300 mb-1">Select Media File</label>
@@ -179,7 +179,7 @@ const VoxProManagement = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors disabled:bg-gray-500"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 px-3 rounded transition-colors disabled:bg-gray-500 text-sm"
           >
             {isLoading ? 'Assigning...' : 'Assign/Update Key'}
           </button>
@@ -189,7 +189,7 @@ const VoxProManagement = () => {
 
       {/* Current Assignments */}
       <div>
-        <h3 className="text-xl text-white mb-4">Current Assignments</h3>
+        <h3 className="text-lg text-white mb-3">Current Assignments</h3>
         <div className="space-y-3">
           {assignments.length > 0 ? assignments.map(assignment => (
             <div key={assignment.id} className="bg-gray-700 p-3 rounded-md flex items-center justify-between">
@@ -200,7 +200,7 @@ const VoxProManagement = () => {
               <button
                 onClick={() => handleRemove(assignment.key_slot)}
                 disabled={isLoading}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm transition-colors disabled:bg-gray-500"
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs transition-colors disabled:bg-gray-500"
               >
                 Remove
               </button>
