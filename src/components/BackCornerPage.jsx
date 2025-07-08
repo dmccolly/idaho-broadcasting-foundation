@@ -785,11 +785,22 @@ const BackCornerPage = ({ mode = 'public' }) => {
     <div className="min-h-screen bg-white">
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="flex gap-6">
-          
+
           {/* LEFT COLUMN - MAIN ARTICLE CONTENT */}
-          <div className="flex-1">
+          <div className="flex-1 flex flex-col gap-4">
+            {mode === 'admin' && (
+              <VoxProPlayerWidget
+                onKeyClick={handleKeyClick}
+                currentPlayingKey={currentPlayingKey}
+                assignments={assignments}
+                connectionStatus={connectionStatus}
+                statusMessage={statusMessage}
+                setStatusMessage={setStatusMessage}
+              />
+            )}
+
             <div className="bg-white">
-              
+
              <h1 className="text-3xl font-bold text-gray-800 mb-6">The Back Corner - Updated</h1>
               
               <div className="prose prose-lg max-w-none">
@@ -853,27 +864,28 @@ const BackCornerPage = ({ mode = 'public' }) => {
           </div>
 
           {/* RIGHT COLUMN - VOXPRO WIDGETS STACKED */}
-          <div className="w-72 flex flex-col gap-4">
-            
-            {/* VOXPRO PLAYER WIDGET (TOP) */}
-            <VoxProPlayerWidget
-              onKeyClick={handleKeyClick}
-              currentPlayingKey={currentPlayingKey}
-              assignments={assignments}
-              connectionStatus={connectionStatus}
-              statusMessage={statusMessage}
-              setStatusMessage={setStatusMessage}
-            />
+          <div className={`${mode === 'admin' ? 'w-96' : 'w-72'} flex flex-col gap-4`}>
 
-            {/* KEY ASSIGNMENTS WIDGET (BOTTOM) */}
+            {mode === 'admin' && (
+              <VoxProManagement />
+            )}
+
+            {mode !== 'admin' && (
+              <VoxProPlayerWidget
+                onKeyClick={handleKeyClick}
+                currentPlayingKey={currentPlayingKey}
+                assignments={assignments}
+                connectionStatus={connectionStatus}
+                statusMessage={statusMessage}
+                setStatusMessage={setStatusMessage}
+              />
+            )}
+
+            {/* KEY ASSIGNMENTS WIDGET */}
             <KeyAssignmentsWidget
               assignments={assignments}
               currentPlayingKey={currentPlayingKey}
             />
-
-            {mode === 'admin' && (
-              <VoxProManagement compact />
-            )}
             
           </div>
         </div>

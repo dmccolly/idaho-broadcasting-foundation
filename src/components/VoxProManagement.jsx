@@ -116,7 +116,7 @@ const VoxProManagement = ({ compact = false }) => {
   return (
     <div
       className={`bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 ${
-        compact ? 'w-full p-4 text-sm' : ''
+        compact ? 'w-72 p-4 text-sm' : 'w-full'
       }`}
     >
       <h2 className="text-2xl font-bold text-green-400 mb-4">VoxPro Management</h2>

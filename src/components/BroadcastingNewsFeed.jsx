@@ -9,12 +9,16 @@ const BroadcastingNewsFeed = () => {
   const loadNews = async () => {
     try {
       const response = await fetch('/.netlify/functions/news-aggregator');
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}`);
+      }
       const data = await response.json();
       setNewsData(data);
       setError(false);
     } catch (err) {
       console.error('Error loading news:', err);
       setError(true);
+      setNewsData(null);
     }
   };
 
