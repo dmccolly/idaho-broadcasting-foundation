@@ -202,7 +202,7 @@ const AboutPage = () => (
 );
 
 // News Page Component
-import BroadcastingNewsFeed from './components/BroadcastingNewsFeed.jsx';
+import BroadcastingHeadlines from './components/BroadcastingHeadlines.jsx';
 const NewsPage = () => (
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div className="text-center mb-8">
@@ -211,7 +211,17 @@ const NewsPage = () => (
         Latest news and social media updates
       </p>
     </div>
-    <BroadcastingNewsFeed />
+    <div className="grid md:grid-cols-3 gap-8 items-start">
+      <div className="md:col-span-2">
+        {/* Additional content will be added here */}
+        <div className="bg-white p-6 rounded shadow-sm text-gray-700">
+          <p>Coming soon: foundation updates and social media highlights.</p>
+        </div>
+      </div>
+      <aside>
+        <BroadcastingHeadlines />
+      </aside>
+    </div>
   </div>
 );
 
