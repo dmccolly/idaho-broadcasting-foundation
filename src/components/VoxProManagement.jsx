@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
-const VoxProManagement = () => {
+const VoxProManagement = ({ compact = false }) => {
   const [assignments, setAssignments] = useState([]);
   const [mediaFiles, setMediaFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState('');
@@ -114,7 +114,11 @@ const VoxProManagement = () => {
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
+    <div
+      className={`bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 ${
+        compact ? 'w-full p-4 text-sm' : ''
+      }`}
+    >
       <h2 className="text-2xl font-bold text-green-400 mb-4">VoxPro Management</h2>
 
       {/* Assignment Form */}
@@ -179,7 +183,7 @@ const VoxProManagement = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors disabled:bg-gray-500"
+            className="bg-gradient-to-b from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 text-white font-bold py-2 px-4 rounded transition-all shadow-md disabled:bg-gray-500"
           >
             {isLoading ? 'Assigning...' : 'Assign/Update Key'}
           </button>
@@ -200,7 +204,7 @@ const VoxProManagement = () => {
               <button
                 onClick={() => handleRemove(assignment.key_slot)}
                 disabled={isLoading}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm transition-colors disabled:bg-gray-500"
+                className="bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 text-white font-bold py-1 px-3 rounded text-sm transition-all shadow-md disabled:bg-gray-500"
               >
                 Remove
               </button>
@@ -213,5 +217,4 @@ const VoxProManagement = () => {
     </div>
   );
 };
-
 export default VoxProManagement;

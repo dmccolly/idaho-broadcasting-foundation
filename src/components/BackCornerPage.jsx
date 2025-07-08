@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import VoxProManagement from './VoxProManagement.jsx';
 
 // Enhanced Universal Media Player Component - CONTENT GROWS WITH WINDOW
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
@@ -658,7 +659,7 @@ const KeyAssignmentsWidget = ({ assignments, currentPlayingKey }) => {
 };
 
 // MAIN BACK CORNER PAGE COMPONENT
-const BackCornerPage = () => {
+const BackCornerPage = ({ mode = 'public' }) => {
   // State management
   const [connectionStatus, setConnectionStatus] = useState('connecting');
   const [statusMessage, setStatusMessage] = useState('Connecting to Supabase...');
@@ -869,6 +870,10 @@ const BackCornerPage = () => {
               assignments={assignments}
               currentPlayingKey={currentPlayingKey}
             />
+
+            {mode === 'admin' && (
+              <VoxProManagement compact />
+            )}
             
           </div>
         </div>

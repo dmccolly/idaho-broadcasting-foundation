@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import AdminDashboard from './components/AdminDashboard';
 import EventsPage from './components/EventsPage';
 import EventsManager from './components/EventsManager';
+import BackCornerPage from './components/BackCornerPage.jsx';
 
 // Main Layout Component
 const Layout = ({ children }) => {
@@ -168,22 +169,6 @@ const HomePage = () => (
   </div>
 );
 
-// Back Corner Page Component
-const BackCornerPage = () => (
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div className="text-center">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">The Back Corner</h1>
-      <p className="text-lg text-gray-600 mb-8">
-        Broadcasting tools and interactive resources
-      </p>
-      <div className="bg-white p-8 rounded-lg shadow-sm">
-        <p className="text-gray-600">
-          Content for The Back Corner page will be added here.
-        </p>
-      </div>
-    </div>
-  </div>
-);
 
 // Gallery Page Component
 const GalleryPage = () => (
@@ -259,6 +244,7 @@ function App() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/events" element={<EventsManager />} />
+          <Route path="/admin/voxpro-management" element={<BackCornerPage mode="admin" />} />
         </Routes>
       </Layout>
     </Router>
