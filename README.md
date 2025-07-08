@@ -20,3 +20,8 @@ To create a separate working copy of this project without affecting the main sit
 ```
 
 Replace the path with your desired destination directory. The script copies all files except the `.git` folder, initializes a new Git repository in that location, and outputs the path to the duplicate.
+
+## Design Style Guide
+
+See [STYLE_GUIDE.md](./STYLE_GUIDE.md) for details on implementing the Idaho Broadcasting Foundation design system using Tailwind CSS and CSS variables.
+
