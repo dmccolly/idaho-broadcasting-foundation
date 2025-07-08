@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { loadEvents } from '../utils/eventsStorage';
+import { loadEvents, saveEvents } from '../utils/eventsStorage';
 import { sampleEvents } from '../data/sampleEvents';
 
 const EventsPage = () => {
@@ -9,10 +9,11 @@ const EventsPage = () => {
 
   useEffect(() => {
     const events = loadEvents();
-    const all = events.length ? events : sampleEvents.map(e => ({
-      ...e,
-      datetime: `${e.date}T${e.time}`
-    }));
+    let all = events;
+    if (!events.length) {
+      all = sampleEvents.map(e => ({ ...e, datetime: `${e.date}T${e.time}` }));
+      saveEvents(all);
+    }
     const now = new Date();
     const upcomingEvents = [];
     const pastEvents = [];

@@ -1,20 +1,25 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import VoxProSystem from './VoxProSystem.jsx';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import VoxProSystem from './VoxProSystem.jsx'
+import BackCornerPage from './BackCornerPage.jsx'
 
 const AdminVoxProPage = () => (
   <div className="min-h-screen bg-gray-50 py-8 px-4">
-    <div className="max-w-6xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800 text-center">VoxPro Administration</h1>
-      <div className="text-center">
+    <div className="max-w-7xl mx-auto space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-800">VoxPro Management</h1>
         <Link to="/admin/events" className="text-blue-800 hover:underline">
           Manage Events →
         </Link>
       </div>
-      <VoxProSystem />
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="bg-white rounded shadow p-4 overflow-auto">
+          <BackCornerPage />
+        </div>
+        <VoxProSystem />
+      </div>
     </div>
   </div>
-);
+)
 
-export default AdminVoxProPage;
-
+export default AdminVoxProPage

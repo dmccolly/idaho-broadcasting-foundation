@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import AdminDashboard from './components/AdminDashboard.jsx';
 import AdminVoxProPage from './components/AdminVoxProPage.jsx';
 import EventsPage from './components/EventsPage';
 import EventsManager from './components/EventsManager';
@@ -16,7 +17,7 @@ const Layout = ({ children }) => {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-end py-4">
-            <Link to="/" className="text-blue-800">
+            <Link to="/" className="text-blue-900">
               <span className="block text-2xl font-bold leading-none">History of Idaho Broadcasting</span>
               <span className="block italic">Foundation</span>
             </Link>
@@ -26,7 +27,7 @@ const Layout = ({ children }) => {
                 to="/" 
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   location.pathname === '/' 
-                    ? 'bg-blue-100 text-blue-800'
+                    ? 'bg-blue-100 text-blue-900'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
@@ -236,7 +237,8 @@ function App() {
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/news" element={<NewsPage />} />
-          <Route path="/admin" element={<AdminVoxProPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/voxpro" element={<AdminVoxProPage />} />
           <Route path="/admin/events" element={<EventsManager />} />
         </Routes>
       </Layout>
