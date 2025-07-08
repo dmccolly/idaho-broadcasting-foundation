@@ -37,9 +37,17 @@ export async function handler(event, context) {
     const allArticles = [];
 
     // Fetch RSS feeds
+    const requestHeaders = {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (compatible; IdahoBroadcastingNewsBot/1.0; +https://idahobroadcasting.org)'
+      },
+      timeout: 10000
+    };
+
     for (const rssUrl of [...NEWS_SOURCES.rss, ...NEWS_SOURCES.boise_specific]) {
       try {
-        const response = await axios.get(rssUrl, { timeout: 10000 });
+        const response = await axios.get(rssUrl, requestHeaders);
         const articles = parseRSS(response.data, rssUrl);
         allArticles.push(...articles);
       } catch (error) {
@@ -50,10 +58,7 @@ export async function handler(event, context) {
     // Fetch Reddit posts
     for (const redditUrl of NEWS_SOURCES.reddit) {
       try {
-        const response = await axios.get(redditUrl, {
-          headers: { 'User-Agent': 'Broadcasting News Aggregator 1.0' },
-          timeout: 10000
-        });
+        const response = await axios.get(redditUrl, requestHeaders);
         const posts = parseReddit(response.data, redditUrl);
         allArticles.push(...posts);
       } catch (error) {

@@ -10,19 +10,18 @@ const BroadcastingHeadlines = () => {
   const [data, setData] = useState(null)
   const [error, setError] = useState(false)
 
-  const load = async () => {
-    try {
-      const res = await fetch('/.netlify/functions/news-aggregator')
-      const json = await res.json()
-      setData(json)
-      setError(false)
-    } catch (err) {
-      console.error('Failed to fetch news', err)
-      setError(true)
-    }
-  }
-
   useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch('/.netlify/functions/news-aggregator')
+        const json = await res.json()
+        setData(json)
+        setError(false)
+      } catch (err) {
+        console.error('Failed to fetch news', err)
+        setError(true)
+      }
+    }
     load()
   }, [])
 
