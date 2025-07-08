@@ -1,5 +1,9 @@
 import axios from 'axios';
 import { parse } from 'node-html-parser';
+import fs from 'fs';
+import path from 'path';
+
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 // Configuration for news sources
 const NEWS_SOURCES = {
@@ -67,7 +71,7 @@ export async function handler(event, context) {
     }
 
     // Filter and score articles
-    const relevantArticles = allArticles
+    let relevantArticles = allArticles
       .filter(article => isRelevantToBroadcasting(article))
       .map(article => ({
         ...article,
@@ -75,6 +79,19 @@ export async function handler(event, context) {
       }))
       .sort((a, b) => b.relevanceScore - a.relevanceScore || new Date(b.date) - new Date(a.date))
       .slice(0, 50);
+
+    if (relevantArticles.length === 0) {
+      try {
+        const fallbackPath = path.join(__dirname, 'sample-news.json');
+        const fallback = JSON.parse(fs.readFileSync(fallbackPath, 'utf8'));
+        relevantArticles = fallback.map(item => ({
+          ...item,
+          relevanceScore: 0
+        }));
+      } catch (err) {
+        console.error('Failed to load fallback news:', err);
+      }
+    }
 
     // Separate current (top 10) and archive
     const currentStories = relevantArticles.slice(0, 10);
