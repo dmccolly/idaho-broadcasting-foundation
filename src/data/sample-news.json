@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Idaho Radio Legend Remembered at Tribute Luncheon",
+    "description": "Friends and colleagues celebrate the life of long-time Boise broadcaster Larry Lomax.",
+    "link": "https://example.com/larry-lomax-tribute",
+    "date": "2025-05-20T12:00:00Z",
+    "source": "Example News",
+    "type": "rss"
+  },
+  {
+    "title": "KIVI-TV Upgrades Studio with New Set and Graphics",
+    "description": "Channel 6 unveils a refreshed look as part of its commitment to local news.",
+    "link": "https://example.com/kivitv-new-set",
+    "date": "2025-06-15T09:00:00Z",
+    "source": "Example News",
+    "type": "rss"
+  },
+  {
+    "title": "Discussion: How Streaming is Changing Local Broadcasting",
+    "description": "Reddit users weigh in on the rise of online radio and television.",
+    "link": "https://example.com/streaming-discussion",
+    "date": "2025-07-01T18:00:00Z",
+    "source": "Reddit broadcasting",
+    "type": "reddit"
+  }
+]

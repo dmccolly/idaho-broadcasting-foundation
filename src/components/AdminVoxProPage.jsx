@@ -7,7 +7,7 @@ const AdminVoxProPage = () => (
     <div className="max-w-6xl mx-auto space-y-6">
       <h1 className="text-3xl font-bold text-gray-800 text-center">VoxPro Administration</h1>
       <div className="text-center">
-        <Link to="/admin/events" className="text-blue-600 hover:underline">
+        <Link to="/admin/events" className="text-blue-800 hover:underline">
           Manage Events →
         </Link>
       </div>

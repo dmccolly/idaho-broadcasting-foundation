@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import sampleNews from '../data/sample-news.json'
 
 const truncateWords = (text, count) => {
   if (!text) return ''
@@ -19,18 +20,15 @@ const BroadcastingHeadlines = () => {
         setError(false)
       } catch (err) {
         console.error('Failed to fetch news', err)
-        setError(true)
+        setData({ current: sampleNews })
+        setError(false)
       }
     }
     load()
   }, [])
 
   if (error) {
-    return (
-      <div className="bg-white p-4 rounded shadow">
-        <p className="text-red-600">Unable to load news.</p>
-      </div>
-    )
+    return null
   }
 
   if (!data) {
@@ -59,7 +57,7 @@ const BroadcastingHeadlines = () => {
               href={story.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-700 hover:underline"
+              className="text-blue-800 hover:underline"
             >
               {truncateWords(story.title, 15)}
             </a>

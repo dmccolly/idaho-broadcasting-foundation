@@ -16,7 +16,7 @@ const Layout = ({ children }) => {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-end py-4">
-            <Link to="/" className="text-blue-700">
+            <Link to="/" className="text-blue-800">
               <span className="block text-2xl font-bold leading-none">History of Idaho Broadcasting</span>
               <span className="block italic">Foundation</span>
             </Link>
@@ -26,7 +26,7 @@ const Layout = ({ children }) => {
                 to="/" 
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   location.pathname === '/' 
-                    ? 'bg-blue-100 text-blue-700' 
+                    ? 'bg-blue-100 text-blue-800'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >

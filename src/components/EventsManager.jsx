@@ -1,39 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { loadEvents, saveEvents } from '../utils/eventsStorage';
+import { sampleEvents } from '../data/sampleEvents';
 
 const EventsManager = () => {
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      title: 'Idaho Broadcasting Conference 2025',
-      date: '2025-08-15',
-      time: '09:00',
-      location: 'Boise Convention Center',
-      address: '850 W Front St, Boise, ID 83702',
-      description: 'Annual conference bringing together broadcasting professionals from across Idaho.',
-      type: 'Conference'
-    },
-    {
-      id: 2,
-      title: 'Radio Production Workshop',
-      date: '2025-09-21',
-      time: '14:00',
-      location: 'Idaho State University Media Center',
-      address: 'Pocatello, ID',
-      description: 'Hands-on workshop covering modern radio production techniques.',
-      type: 'Workshop'
-    },
-    {
-      id: 3,
-      title: 'Digital Broadcasting Seminar',
-      date: '2025-10-10',
-      time: '10:00',
-      location: 'University of Idaho',
-      address: 'Moscow, ID',
-      description: 'Explore the future of digital broadcasting and streaming technologies.',
-      type: 'Seminar'
-    }
-  ]);
+  const [events, setEvents] = useState(() => {
+    const stored = loadEvents();
+    return stored.length ? stored : sampleEvents;
+  });
 
   const [formData, setFormData] = useState({
     title: '',
@@ -48,6 +22,10 @@ const EventsManager = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
+  useEffect(() => {
+    saveEvents(events);
+  }, [events]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -59,18 +37,23 @@ const EventsManager = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    const eventWithDate = {
+      ...formData,
+      datetime: `${formData.date}T${formData.time}`
+    };
+
     if (editingId) {
       // Update existing event
-      setEvents(prev => prev.map(event => 
-        event.id === editingId 
-          ? { ...formData, id: editingId }
+      setEvents(prev => prev.map(event =>
+        event.id === editingId
+          ? { ...eventWithDate, id: editingId }
           : event
       ));
       setEditingId(null);
     } else {
       // Add new event
       const newEvent = {
-        ...formData,
+        ...eventWithDate,
         id: Date.now()
       };
       setEvents(prev => [...prev, newEvent]);
@@ -93,7 +76,9 @@ const EventsManager = () => {
   };
 
   const handleEdit = (event) => {
-    setFormData(event);
+    const { datetime, ...rest } = event;
+    const [d, t] = datetime ? datetime.split('T') : [event.date, event.time];
+    setFormData({ ...rest, date: d, time: t });
     setEditingId(event.id);
   };
 
@@ -273,7 +258,7 @@ const EventsManager = () => {
             <div className="mb-8">
               <h2 className="text-xl font-bold text-gray-800 mb-4">Current Events</h2>
               <div className="space-y-4">
-                {events.map((event) => (
+                {[...events].sort((a,b) => new Date(a.datetime) - new Date(b.datetime)).map((event) => (
                   <div key={event.id} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">

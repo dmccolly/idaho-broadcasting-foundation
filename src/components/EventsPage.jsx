@@ -1,36 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { loadEvents } from '../utils/eventsStorage';
+import { sampleEvents } from '../data/sampleEvents';
 
 const EventsPage = () => {
-  const events = [
-    {
-      id: 1,
-      title: 'Idaho Broadcasting Conference 2025',
-      date: 'Friday, August 15, 2025 at 09:00 AM',
-      location: '📍 Boise Convention Center',
-      address: 'Boise Convention Center, 850 W Front St, Boise, ID 83702',
-      description: 'Annual conference bringing together broadcasting professionals from across Idaho. Join us for workshops, networking, and the latest industry insights.',
-      datetime: '2025-08-15T09:00:00'
-    },
-    {
-      id: 2,
-      title: 'Radio Production Workshop',
-      date: 'Saturday, September 21, 2025 at 02:00 PM',
-      location: '📍 Idaho State University Media Center',
-      address: 'Idaho State University Media Center, Pocatello, ID',
-      description: 'Hands-on workshop covering modern radio production techniques, digital editing, and broadcast technology for both beginners and experienced professionals.',
-      datetime: '2025-09-21T14:00:00'
-    },
-    {
-      id: 3,
-      title: 'Digital Broadcasting Seminar',
-      date: 'Thursday, October 10, 2025 at 10:00 AM',
-      location: '📍 University of Idaho',
-      address: 'University of Idaho, Moscow, ID',
-      description: 'Explore the future of digital broadcasting, streaming technologies, and emerging trends in the media landscape.',
-      datetime: '2025-10-10T10:00:00'
-    }
-  ];
+  const [upcoming, setUpcoming] = useState([]);
+  const [past, setPast] = useState([]);
+
+  useEffect(() => {
+    const events = loadEvents();
+    const all = events.length ? events : sampleEvents.map(e => ({
+      ...e,
+      datetime: `${e.date}T${e.time}`
+    }));
+    const now = new Date();
+    const upcomingEvents = [];
+    const pastEvents = [];
+    all.forEach(ev => {
+      const dt = new Date(ev.datetime);
+      if (dt >= now) upcomingEvents.push(ev); else pastEvents.push(ev);
+    });
+    upcomingEvents.sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
+    pastEvents.sort((a,b) => new Date(b.datetime) - new Date(a.datetime));
+    setUpcoming(upcomingEvents);
+    setPast(pastEvents);
+  }, []);
 
   const addToCalendar = (title, datetime) => {
     const startDate = new Date(datetime);
@@ -48,6 +42,18 @@ const EventsPage = () => {
     window.open(mapUrl, '_blank');
   };
 
+  const formatDisplayDate = (dt) => {
+    const date = new Date(dt);
+    return date.toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
@@ -57,7 +63,7 @@ const EventsPage = () => {
           </h1>
           
           <div className="space-y-6">
-            {events.map((event) => (
+            {upcoming.map((event) => (
               <div
                 key={event.id}
                 className="bg-gray-50 border-l-4 border-red-500 rounded-r-lg p-6"
@@ -66,7 +72,7 @@ const EventsPage = () => {
                   {event.title}
                 </h2>
                 <div className="text-lg text-red-500 font-medium mb-2">
-                  {event.date}
+                  {formatDisplayDate(event.datetime)}
                 </div>
                 <div className="text-gray-600 mb-4">
                   {event.location}
@@ -91,11 +97,25 @@ const EventsPage = () => {
               </div>
             ))}
           </div>
+
+          {past.length > 0 && (
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">Past Events</h2>
+              <ul className="space-y-2">
+                {past.map(ev => (
+                  <li key={ev.id} className="flex justify-between border-b pb-1">
+                    <a href="#" className="text-blue-800 hover:underline">{ev.title}</a>
+                    <span className="text-sm text-gray-500">{new Date(ev.datetime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           
           <div className="text-center mt-10">
             <Link
               to="/"
-              className="text-blue-500 hover:text-blue-600 hover:underline"
+              className="text-blue-800 hover:text-blue-900 hover:underline"
             >
               ← Back to Main Site
             </Link>
