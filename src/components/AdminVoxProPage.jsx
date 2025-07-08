@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import VoxProSystem from './VoxProSystem.jsx'
-import BackCornerPage from './BackCornerPage.jsx'
+import VoxProPlayer from './VoxProPlayer.jsx'
 
 const AdminVoxProPage = () => (
   <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -14,7 +14,7 @@ const AdminVoxProPage = () => (
       </div>
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-white rounded shadow p-4 overflow-auto">
-          <BackCornerPage />
+          <VoxProPlayer />
         </div>
         <VoxProSystem />
       </div>

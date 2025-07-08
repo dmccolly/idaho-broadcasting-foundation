@@ -193,7 +193,7 @@ const VoxProSystem = ({ mode = 'admin' }) => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-900 to-blue-700 text-white p-6 rounded-lg">
+    <div className="bg-gray-900 text-white p-6 rounded-lg border border-gray-700">
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold">VoxPro Enterprise Media Management System</h3>
@@ -227,7 +227,7 @@ const VoxProSystem = ({ mode = 'admin' }) => {
               <button
                 key={num}
                 onClick={() => handleKeyPress(`START_${num}`)}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-2 rounded text-sm transition-colors"
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-2 rounded text-sm transition-colors whitespace-nowrap w-20"
                 title={getKeyTitle(`START_${num}`)}
               >
                 START {num}
@@ -237,29 +237,29 @@ const VoxProSystem = ({ mode = 'admin' }) => {
 
           {/* Control Keys Row 1 */}
           <div className="grid grid-cols-4 gap-2 mb-2">
-            <button 
+            <button
               onClick={() => handleKeyPress('A')}
-              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded transition-colors"
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded transition-colors whitespace-nowrap w-20"
               title={getKeyTitle('A')}
             >
               A
             </button>
-            <button 
+            <button
               onClick={() => handleKeyPress('B')}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded transition-colors"
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded transition-colors whitespace-nowrap w-20"
               title={getKeyTitle('B')}
             >
               B
             </button>
-            <button 
+            <button
               onClick={() => handleKeyPress('DUP')}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded transition-colors"
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded transition-colors whitespace-nowrap w-20"
             >
               DUP
             </button>
-            <button 
+            <button
               onClick={() => handleKeyPress('C')}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded transition-colors"
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded transition-colors whitespace-nowrap w-20"
               title={getKeyTitle('C')}
             >
               C
@@ -268,16 +268,16 @@ const VoxProSystem = ({ mode = 'admin' }) => {
 
           {/* Control Keys Row 2 */}
           <div className="grid grid-cols-2 gap-2 mb-4">
-            <button 
+            <button
               onClick={() => handleKeyPress('D')}
-              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded transition-colors"
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded transition-colors whitespace-nowrap w-20"
               title={getKeyTitle('D')}
             >
               D
             </button>
-            <button 
+            <button
               onClick={() => handleKeyPress('CUE')}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded transition-colors"
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded transition-colors whitespace-nowrap w-20"
             >
               CUE
             </button>
@@ -285,6 +285,16 @@ const VoxProSystem = ({ mode = 'admin' }) => {
 
           <div className="bg-gray-700 p-3 rounded text-center text-sm">
             Hover over keys to see assigned media
+          </div>
+
+          <div className="mt-4 bg-gray-800 p-3 rounded">
+            <h5 className="text-sm font-semibold mb-2 text-green-400">Key Definitions</h5>
+            <ul className="text-xs space-y-1">
+              <li><span className="font-bold">START 1-5:</span> Play assigned media</li>
+              <li><span className="font-bold">A-D:</span> Trigger configured macros</li>
+              <li><span className="font-bold">DUP:</span> Duplicate last action</li>
+              <li><span className="font-bold">CUE:</span> Prepare next track</li>
+            </ul>
           </div>
 
           {/* Storage Stats */}
