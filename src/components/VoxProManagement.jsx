@@ -191,30 +191,6 @@ const VoxProManagement = ({ compact = false }) => {
         </div>
       </form>
 
-      {/* Current Assignments */}
-      <div>
-        <h3 className="text-xl text-white mb-4">Current Assignments</h3>
-        <div className="space-y-3">
-          {assignments.length > 0 ? assignments.map(assignment => (
-            <div key={assignment.id} className="bg-gray-700 p-3 rounded-md flex items-center justify-between">
-              <div>
-                <p className="font-bold text-green-400">Key {assignment.key_slot}: <span className="text-white">{assignment.title}</span></p>
-                <p className="text-xs text-gray-400 truncate max-w-md">{assignment.media_url}</p>
-              </div>
-              <button
-                onClick={() => handleRemove(assignment.key_slot)}
-                disabled={isLoading}
-                className="bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 text-white font-bold py-1 px-3 rounded text-sm transition-all shadow-md disabled:bg-gray-500"
-              >
-                Remove
-              </button>
-            </div>
-          )) : (
-            <p className="text-gray-400">No keys are currently assigned.</p>
-          )}
-        </div>
-      </div>
     </div>
   );
-};
-export default VoxProManagement;
+};export default VoxProManagement;

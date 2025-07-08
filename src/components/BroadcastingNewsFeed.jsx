@@ -64,8 +64,14 @@ const BroadcastingNewsFeed = () => {
   if (error) {
     return (
       <div id="news-feed-container">
-        <div className="error-message">
-          <p>Unable to load news feed. Please try again later.</p>
+        <div className="error-message text-center">
+          <p className="mb-2">Unable to load news feed.</p>
+          <button
+            onClick={loadNews}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );

@@ -1,24 +1,32 @@
 import React from 'react';
 
-const images = [
-  { src: '/assets/gallery/image1.jpg', alt: 'Image 1' },
-  { src: '/assets/gallery/image2.jpg', alt: 'Image 2' },
-  { src: '/assets/gallery/image3.jpg', alt: 'Image 3' },
-  // Add more images as needed
+const videos = [
+  { title: "Marty Holtman's Santa Express", url: 'https://player.vimeo.com/video/1040039534' },
+  { title: 'Dee Sarton Interview', url: 'https://player.vimeo.com/video/982877483' },
+  { title: 'Marcia Franklin Interview', url: 'https://player.vimeo.com/video/982872224' },
+  { title: 'Don Nelson Interview', url: 'https://player.vimeo.com/video/982856307' },
+  { title: 'Kevin Miller Interview', url: 'https://player.vimeo.com/video/982690679' },
+  { title: 'Marty Holtman Interview', url: 'https://player.vimeo.com/video/967979349' },
 ];
 
 const GalleryPage = () => {
   return (
-    <div className="gallery-page container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">Gallery</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {images.map((img, idx) => (
-          <img
-            key={idx}
-            src={img.src}
-            alt={img.alt}
-            className="w-full h-auto rounded shadow-md hover:shadow-lg transition-shadow duration-200"
-          />
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-center mb-6">Video Gallery</h1>
+      <p className="text-center text-gray-600 mb-10">
+        Interviews and features from our broadcasting archives
+      </p>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {videos.map((video, idx) => (
+          <div key={idx} className="aspect-video bg-gray-200 rounded-lg overflow-hidden shadow">
+            <iframe
+              src={video.url}
+              className="w-full h-full"
+              frameBorder="0"
+              allow="autoplay; fullscreen; picture-in-picture"
+              title={video.title}
+            ></iframe>
+          </div>
         ))}
       </div>
     </div>

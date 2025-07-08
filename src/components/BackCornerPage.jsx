@@ -864,7 +864,7 @@ const BackCornerPage = ({ mode = 'public' }) => {
           </div>
 
           {/* RIGHT COLUMN - VOXPRO WIDGETS STACKED */}
-          <div className={`${mode === 'admin' ? 'w-96' : 'w-72'} flex flex-col gap-4`}>
+          <div className={`${mode === 'admin' ? 'w-[28rem]' : 'w-72'} flex flex-col gap-4`}>
 
             {mode === 'admin' && (
               <VoxProManagement />
