@@ -143,12 +143,12 @@ const EventsManager = () => {
             </div>
           )}
 
-          {/* Add/Edit Event Form */}
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              {editingId ? 'Edit Event' : 'Add New Event'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="md:grid md:grid-cols-2 md:gap-8">
+            <div>
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                {editingId ? 'Edit Event' : 'Add New Event'}
+              </h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -268,42 +268,42 @@ const EventsManager = () => {
                 </button>
               </div>
             </form>
-          </div>
+            </div>
 
-          {/* Current Events List */}
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Current Events</h2>
-            <div className="space-y-4">
-              {events.map((event) => (
-                <div key={event.id} className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg text-gray-800">{event.title}</h3>
-                      <p className="text-red-500 font-medium">
-                        {formatEventDate(event.date, event.time)}
-                      </p>
-                      <p className="text-gray-600">📍 {event.location}</p>
-                      {event.description && (
-                        <p className="text-gray-700 mt-2">{event.description}</p>
-                      )}
-                    </div>
-                    <div className="flex gap-2 ml-4">
-                      <button
-                        onClick={() => handleEdit(event)}
-                        className="px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600 transition-colors duration-300"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(event.id)}
-                        className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition-colors duration-300"
-                      >
-                        Delete
-                      </button>
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">Current Events</h2>
+              <div className="space-y-4">
+                {events.map((event) => (
+                  <div key={event.id} className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg text-gray-800">{event.title}</h3>
+                        <p className="text-red-500 font-medium">
+                          {formatEventDate(event.date, event.time)}
+                        </p>
+                        <p className="text-gray-600">📍 {event.location}</p>
+                        {event.description && (
+                          <p className="text-gray-700 mt-2">{event.description}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <button
+                          onClick={() => handleEdit(event)}
+                          className="px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600 transition-colors duration-300"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(event.id)}
+                          className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition-colors duration-300"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 

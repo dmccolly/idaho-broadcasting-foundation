@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import AdminDashboard from './components/AdminDashboard';
+import AdminVoxProPage from './components/AdminVoxProPage.jsx';
 import EventsPage from './components/EventsPage';
 import EventsManager from './components/EventsManager';
 import BackCornerPage from './components/BackCornerPage.jsx';
@@ -15,14 +15,13 @@ const Layout = ({ children }) => {
       {/* Header Navigation */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center">
-              <Link to="/" className="text-2xl font-bold text-gray-800">
-                Idaho Broadcasting Foundation
-              </Link>
-            </div>
-            
-            <nav className="hidden md:flex space-x-8">
+          <div className="flex justify-between items-end py-4">
+            <Link to="/" className="text-blue-700">
+              <span className="block text-2xl font-bold leading-none">History of Idaho Broadcasting</span>
+              <span className="block italic">Foundation</span>
+            </Link>
+
+            <nav className="hidden md:flex space-x-8 items-end">
               <Link 
                 to="/" 
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -237,7 +236,7 @@ function App() {
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/news" element={<NewsPage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={<AdminVoxProPage />} />
           <Route path="/admin/events" element={<EventsManager />} />
         </Routes>
       </Layout>

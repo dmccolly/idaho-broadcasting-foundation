@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { parse } from 'node-html-parser';
+import Parser from 'rss-parser';
 import sampleNews from './sample-news.json' assert { type: 'json' };
 
 // Configuration for news sources
@@ -33,6 +33,15 @@ const BROADCASTING_KEYWORDS = [
   'boise radio', 'boise tv', 'idaho broadcasting'
 ];
 
+const parser = new Parser({
+  requestOptions: {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; IdahoBroadcastingNewsBot/1.0; +https://idahobroadcasting.org)'
+    },
+    timeout: 10000
+  }
+});
+
 export async function handler(event, context) {
   try {
     const allArticles = [];
@@ -48,9 +57,19 @@ export async function handler(event, context) {
 
     for (const rssUrl of [...NEWS_SOURCES.rss, ...NEWS_SOURCES.boise_specific]) {
       try {
-        const response = await axios.get(rssUrl, requestHeaders);
-        const articles = parseRSS(response.data, rssUrl);
-        allArticles.push(...articles);
+        const feed = await parser.parseURL(rssUrl);
+        feed.items.forEach(item => {
+          if (item.title && item.link) {
+            allArticles.push({
+              title: cleanText(item.title),
+              description: cleanText(item.contentSnippet || item.content || ''),
+              link: item.link,
+              date: new Date(item.isoDate || item.pubDate || Date.now()),
+              source: extractSourceName(rssUrl),
+              type: 'rss'
+            });
+          }
+        });
       } catch (error) {
         console.error(`Error fetching RSS from ${rssUrl}:`, error.message);
       }
@@ -68,8 +87,12 @@ export async function handler(event, context) {
     }
 
     // Filter and score articles
-    let relevantArticles = allArticles
-      .filter(article => isRelevantToBroadcasting(article))
+    const uniqueMap = new Map();
+    allArticles.forEach(a => {
+      if (!uniqueMap.has(a.link)) uniqueMap.set(a.link, a);
+    });
+
+    let relevantArticles = Array.from(uniqueMap.values())
       .map(article => ({
         ...article,
         relevanceScore: calculateRelevanceScore(article)
@@ -117,35 +140,6 @@ export async function handler(event, context) {
   }
 }
 
-function parseRSS(xmlData, source) {
-  const articles = [];
-  try {
-    const root = parse(xmlData);
-    const items = root.querySelectorAll('item');
-
-    items.forEach(item => {
-      const title = item.querySelector('title')?.text || '';
-      const description = item.querySelector('description')?.text || '';
-      const link = item.querySelector('link')?.text || '';
-      const pubDate = item.querySelector('pubDate')?.text || '';
-
-      if (title && link) {
-        articles.push({
-          title: cleanText(title),
-          description: cleanText(description),
-          link,
-          date: new Date(pubDate || Date.now()),
-          source: extractSourceName(source),
-          type: 'rss'
-        });
-      }
-    });
-  } catch (error) {
-    console.error('Error parsing RSS:', error);
-  }
-  return articles;
-}
-
 function parseReddit(data, source) {
   const posts = [];
   try {
@@ -170,11 +164,6 @@ function parseReddit(data, source) {
     console.error('Error parsing Reddit:', error);
   }
   return posts;
-}
-
-function isRelevantToBroadcasting(article) {
-  const text = `${article.title} ${article.description}`.toLowerCase();
-  return BROADCASTING_KEYWORDS.some(keyword => text.includes(keyword.toLowerCase()));
 }
 
 function calculateRelevanceScore(article) {
