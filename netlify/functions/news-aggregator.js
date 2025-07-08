@@ -1,5 +1,5 @@
-const axios = require('axios');
-const { parse } = require('node-html-parser');
+import axios from 'axios';
+import { parse } from 'node-html-parser';
 
 // Configuration for news sources
 const NEWS_SOURCES = {
@@ -32,7 +32,7 @@ const BROADCASTING_KEYWORDS = [
   'boise radio', 'boise tv', 'idaho broadcasting'
 ];
 
-exports.handler = async (event, context) => {
+export async function handler(event, context) {
   try {
     const allArticles = [];
 
@@ -102,7 +102,7 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ error: 'Failed to aggregate news' })
     };
   }
-};
+}
 
 function parseRSS(xmlData, source) {
   const articles = [];

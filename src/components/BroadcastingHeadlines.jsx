@@ -42,6 +42,14 @@ const BroadcastingHeadlines = () => {
     )
   }
 
+  if (!data.current?.length) {
+    return (
+      <div className="bg-white p-4 rounded shadow">
+        <p>No stories found.</p>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-white p-4 rounded shadow">
       <h2 className="text-lg font-semibold mb-3 text-gray-800">Broadcasting News</h2>

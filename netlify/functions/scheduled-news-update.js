@@ -1,4 +1,4 @@
-const { schedule } = require('@netlify/functions');
+import { schedule } from '@netlify/functions';
 
 const handler = async (event, context) => {
   try {
@@ -25,4 +25,4 @@ const handler = async (event, context) => {
   }
 };
 
-exports.handler = schedule('0 13,21 * * *', handler);
+export const handler = schedule('0 13,21 * * *', handler);
