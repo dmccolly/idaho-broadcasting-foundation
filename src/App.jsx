@@ -5,6 +5,8 @@ import EventsPage from './components/EventsPage';
 import EventsManager from './components/EventsManager';
 import GalleryPage from './components/GalleryPage';
 import BackCornerPage from './components/BackCornerPage';
+import AdminVoxProPage from './components/AdminVoxProPage';
+import VoxProPlayerPopup from './components/VoxProPlayerPopup';
 
 // Main Layout Component
 const Layout = ({ children }) => {
@@ -228,6 +230,8 @@ function App() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/events" element={<EventsManager />} />
+          <Route path="/admin/voxpro" element={<AdminVoxProPage />} />
+          <Route path="/voxpro-player" element={<VoxProPlayerPopup />} />
         </Routes>
       </Layout>
     </Router>

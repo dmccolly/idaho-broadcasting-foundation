@@ -588,6 +588,16 @@ const VoxProPlayerWidget = ({ onKeyClick, currentPlayingKey, assignments, connec
             {statusMessage}
           </div>
         </div>
+        <button
+          onClick={() => {
+            const top = window.innerHeight - 500;
+            const features = `width=500,height=500,left=0,top=${top < 0 ? 0 : top}`;
+            window.open('/voxpro-player', 'voxproPlayer', features);
+          }}
+          className="mt-3 text-xs text-blue-400 underline"
+        >
+          Pop‑out Player
+        </button>
       </div>
 
       {/* START Keys */}

@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const EventsManager = () => {
-  const [events, setEvents] = useState([
+const initialEvents = [
     {
       id: 1,
       title: 'Idaho Broadcasting Conference 2025',
@@ -33,7 +32,25 @@ const EventsManager = () => {
       description: 'Explore the future of digital broadcasting and streaming technologies.',
       type: 'Seminar'
     }
-  ]);
+  ];
+
+const EventsManager = () => {
+  const [events, setEvents] = useState(initialEvents);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('events') || 'null');
+      if (Array.isArray(stored) && stored.length) {
+        setEvents(stored);
+      }
+    } catch {
+      // ignore JSON errors
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('events', JSON.stringify(events));
+  }, [events]);
 
   const [formData, setFormData] = useState({
     title: '',

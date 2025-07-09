@@ -12,20 +12,12 @@ const AdminDashboard = () => {
       color: 'red'
     },
     {
-      id: 'voxpro-player',
-      title: 'VoxPro Player',
-      description: 'Access the VoxPro player interface for live broadcasting and audio playback control during shows.',
-      icon: '▶️',
-      link: '/admin/voxpro-player',
-      color: 'green'
-    },
-    {
-      id: 'voxpro-mgmt',
-      title: 'VoxPro Management',
-      description: 'Configure and manage VoxPro settings, upload audio content, and control broadcasting parameters.',
+      id: 'voxpro',
+      title: 'VoxPro Tools',
+      description: 'Upload audio, assign keys and preview the VoxPro player.',
       icon: '🎛️',
-      link: '/admin/voxpro-management',
-      color: 'blue'
+      link: '/admin/voxpro',
+      color: 'green'
     }
   ];
 
@@ -82,9 +74,7 @@ const AdminDashboard = () => {
                     to={tool.link}
                     className={`inline-block px-5 py-2 text-white rounded-md font-medium transition-colors duration-300 ${colorClasses.button}`}
                   >
-                    {tool.id === 'events' ? 'Manage Events' : 
-                     tool.id === 'voxpro-player' ? 'Launch Player' : 
-                     'VoxPro Management'}
+                    {tool.id === 'events' ? 'Manage Events' : 'Open VoxPro'}
                   </Link>
                 </div>
               );

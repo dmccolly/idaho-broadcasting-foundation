@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const EventsPage = () => {
-  const events = [
+const defaultEvents = [
     {
       id: 1,
       title: 'Idaho Broadcasting Conference 2025',
@@ -31,6 +30,36 @@ const EventsPage = () => {
       datetime: '2025-10-10T10:00:00'
     }
   ];
+
+const EventsPage = () => {
+  const [events, setEvents] = useState(defaultEvents);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('events') || 'null');
+      if (Array.isArray(stored) && stored.length) {
+        // Convert stored events to display format for date/time if needed
+        setEvents(
+          stored.map((e) => ({
+            ...e,
+            date: new Date(`${e.date}T${e.time}`).toLocaleString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            }),
+            datetime: `${e.date}T${e.time}`,
+            location: `📍 ${e.location}`,
+            address: e.address
+          }))
+        );
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }, []);
 
   const addToCalendar = (title, datetime) => {
     const startDate = new Date(datetime);
