@@ -4,7 +4,10 @@ const KeyAssignmentsWidget = ({ assignments, currentPlayingKey }) => {
     <div className="bg-gray-900 rounded-lg p-3 border border-gray-700 shadow-xl">
       <h3 className="text-green-400 font-semibold text-base mb-3 text-center">Current Key Assignments</h3>
       <div className="space-y-1.5">
-        {assignments.map((assignment) => (
+        {assignments
+          .slice()
+          .sort((a, b) => Number(a.key_slot) - Number(b.key_slot))
+          .map((assignment) => (
           <div key={assignment.id} className="bg-gray-800 rounded p-2 border border-gray-600">
             <div className="flex items-center justify-between">
               <span className={`text-xs font-bold ${

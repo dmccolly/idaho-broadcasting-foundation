@@ -59,7 +59,7 @@ const BackCornerPage = () => {
       const { data, error } = await supabase
         .from('assignments')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('key_slot');
 
       if (error) {
         console.error('Error loading assignments:', error);

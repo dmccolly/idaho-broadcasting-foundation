@@ -424,22 +424,17 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
         const ext = url.split('.').pop().toLowerCase();
         const embedUrl =
           ext === 'pdf'
-            ? url
+            ? `${url}#toolbar=0&view=FitH`
             : `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(url)}`;
         return (
           <div className="h-full w-full">
             {ext === 'pdf' ? (
-              <object
-                data={embedUrl}
-                type="application/pdf"
-                className="w-full h-full"
-              >
-                <iframe
-                  src={embedUrl}
-                  className="w-full h-full border-0"
-                  title={assignment.title}
-                />
-              </object>
+              <iframe
+                src={embedUrl}
+                title={assignment.title}
+                className="w-full h-full border-0"
+                style={{ width: '100%', height: '100%' }}
+              />
             ) : (
               <iframe
                 src={embedUrl}
