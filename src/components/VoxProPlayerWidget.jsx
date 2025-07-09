@@ -37,17 +37,6 @@ const VoxProPlayerWidget = ({
             {statusMessage}
           </div>
         </div>
-        <button
-          onClick={() => {
-            const top = Math.max(0, (window.innerHeight - 500) / 2);
-            const features = `width=500,height=500,left=300,top=${top}`;
-            const key = currentPlayingKey || 1;
-            window.open(`/voxpro-player?key=${key}`, 'voxproPlayer', features);
-          }}
-          className="mt-3 text-xs text-blue-400 underline"
-        >
-          Pop‑out Player
-        </button>
       </div>
 
       {/* START Keys */}

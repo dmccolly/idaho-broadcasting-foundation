@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabase';
 
 const VoxProManagement = () => {
   const [assignments, setAssignments] = useState([]);
-  const [mediaFiles, setMediaFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState('');
   const [selectedKey, setSelectedKey] = useState('');
   const [title, setTitle] = useState('');
@@ -14,7 +13,6 @@ const VoxProManagement = () => {
 
   useEffect(() => {
     loadAssignments();
-    loadMediaFiles();
   }, []);
 
   const loadAssignments = async () => {
@@ -27,19 +25,6 @@ const VoxProManagement = () => {
       setStatusMessage(`Error loading assignments: ${error.message}`);
     } else {
       setAssignments(data);
-    }
-  };
-
-  const loadMediaFiles = async () => {
-    const { data, error } = await supabase
-      .storage
-      .from('media')
-      .list('voxpro', { limit: 100 });
-    if (error) {
-      console.error('Error loading media files:', error);
-      setStatusMessage(`Error loading media files: ${error.message}`);
-    } else {
-      setMediaFiles(data);
     }
   };
 
@@ -62,7 +47,6 @@ const VoxProManagement = () => {
       setStatusMessage(`Upload error: ${error.message}`);
     } else {
       setStatusMessage('Upload successful');
-      loadMediaFiles();
       setSelectedFile(file.name);
     }
 
@@ -153,32 +137,21 @@ const VoxProManagement = () => {
       {/* Assignment Form */}
       <form onSubmit={handleAssign} className="mb-8 p-4 bg-gray-700 rounded-md">
         <h3 className="text-xl text-white mb-4">Assign Media to Key</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div>
-            <label htmlFor="media-file" className="block text-sm font-medium text-gray-300 mb-1">Select Media File</label>
-            <select
-              id="media-file"
-              value={selectedFile}
-              onChange={(e) => setSelectedFile(e.target.value)}
-              className="w-full bg-gray-900 text-white p-2 rounded border border-gray-600 focus:ring-green-500 focus:border-green-500"
-              required
-            >
-              <option value="">Choose a file...</option>
-              {mediaFiles.map(file => (
-                <option key={file.id} value={file.name}>{file.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="md:col-span-2">
-            <label htmlFor="upload-file" className="block text-sm font-medium text-gray-300 mb-1">Upload New File</label>
-            <input
-              type="file"
-              id="upload-file"
-              onChange={handleUpload}
-              className="w-full bg-gray-900 text-white p-2 rounded border border-gray-600 focus:ring-green-500 focus:border-green-500"
-            />
-            {uploading && <p className="text-xs text-gray-400 mt-1">Uploading...</p>}
-          </div>
+            <label htmlFor="upload-file" className="block text-sm font-medium text-gray-300 mb-1">Choose File</label>
+          <input
+            type="file"
+            id="upload-file"
+            onChange={handleUpload}
+            className="w-full bg-gray-900 text-white p-2 rounded border border-gray-600 focus:ring-green-500 focus:border-green-500"
+            required
+          />
+          {selectedFile && (
+            <p className="text-xs text-gray-400 mt-1">{selectedFile}</p>
+          )}
+          {uploading && <p className="text-xs text-gray-400 mt-1">Uploading...</p>}
+        </div>
           <div>
             <label htmlFor="key-slot" className="block text-sm font-medium text-gray-300 mb-1">Select Key Slot</label>
             <select
