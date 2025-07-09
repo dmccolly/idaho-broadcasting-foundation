@@ -7,6 +7,7 @@ const VoxProManagement = () => {
   const [selectedKey, setSelectedKey] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [submittedBy, setSubmittedBy] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -94,7 +95,7 @@ const VoxProManagement = () => {
         description,
         media_url: mediaUrl,
         media_type: mediaType,
-        submitted_by: 'Admin', // Or get from auth user
+        submitted_by: submittedBy || 'Admin'
       }, { onConflict: 'key_slot' });
 
     if (error) {
@@ -108,6 +109,7 @@ const VoxProManagement = () => {
       setSelectedKey('');
       setTitle('');
       setDescription('');
+      setSubmittedBy('');
     }
     setIsLoading(false);
   };
@@ -179,18 +181,30 @@ const VoxProManagement = () => {
               required
             />
           </div>
-          <div className="md:col-span-2">
-            <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">Description</label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows="3"
-              className="w-full bg-gray-900 text-white p-2 rounded border border-gray-600 focus:ring-green-500 focus:border-green-500"
-              placeholder="Enter a brief description"
-            ></textarea>
-          </div>
+        <div className="md:col-span-2">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows="3"
+            className="w-full bg-gray-900 text-white p-2 rounded border border-gray-600 focus:ring-green-500 focus:border-green-500"
+            placeholder="Enter a brief description"
+          ></textarea>
         </div>
+        <div className="md:col-span-2">
+          <label htmlFor="submitted-by" className="block text-sm font-medium text-gray-300 mb-1">Submitted By</label>
+          <input
+            type="text"
+            id="submitted-by"
+            value={submittedBy}
+            onChange={(e) => setSubmittedBy(e.target.value)}
+            className="w-full bg-gray-900 text-white p-2 rounded border border-gray-600 focus:ring-green-500 focus:border-green-500"
+            placeholder="Your name"
+            required
+          />
+        </div>
+      </div>
         <div className="mt-4 flex items-center justify-between">
           <button
             type="submit"
@@ -212,6 +226,9 @@ const VoxProManagement = () => {
               <div className="min-w-0">
                 <p className="font-bold text-green-400 truncate">Key {assignment.key_slot}: <span className="text-white">{assignment.title}</span></p>
                 <p className="text-xs text-gray-400 truncate max-w-xs">{assignment.media_url}</p>
+                {assignment.submitted_by && (
+                  <p className="text-xs text-gray-500">Submitted by {assignment.submitted_by}</p>
+                )}
               </div>
               <button
                 onClick={() => handleRemove(assignment.key_slot)}
@@ -227,5 +244,4 @@ const VoxProManagement = () => {
         </div>
       </div>
     </div>
-  );
-};export default VoxProManagement;
+  );};export default VoxProManagement;

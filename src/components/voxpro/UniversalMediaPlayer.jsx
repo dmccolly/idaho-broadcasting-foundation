@@ -425,6 +425,7 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
               src={assignment.media_url}
               className="w-full h-full border-0 rounded"
               title={assignment.title}
+              style={{ width: '100%', height: '100%' }}
             />
           </div>
         );
