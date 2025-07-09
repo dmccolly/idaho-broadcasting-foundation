@@ -11,116 +11,97 @@ import radioConsoleDark from '../assets/images/RadioCOnsoleDark.png';
 const stationData = [
   {
     id: 'kidq',
-    name: 'KIDQ - 104.3 FM',
+    name: 'KIDQ (now KAWO) – 104.3 FM',
     synopsis: (
       <>
-        {/* Removed wowCountryLogo as requested */}
         <img src={q104Logo} alt="Q104 Logo" className="station-logo" />
-        KIDQ is a dynamic station, combining the best of country and rock to deliver a unique listening experience in the Treasure Valley. Known for its vibrant community engagement and diverse music selection, KIDQ aims to be a leading voice in Idaho radio.
+        Long before "Wow Country 104.3," this frequency debuted as Boise's first album rock outlet, Q‑104. Over the decades it morphed from rock to adult contemporary to oldies before settling on country in 2006.
       </>
     ),
     history: `
-      <p><strong>Early Days:</strong> KIDQ began broadcasting in [Year] with a focus on delivering a blend of popular music and local news. Its initial programming aimed to capture a broad audience in the region.</p>
-      <p><strong>Evolution and Fusion:</strong> Over the years, KIDQ evolved to incorporate both country and rock formats, creating a distinctive sound that appeals to a wide range of listeners. This fusion has made it a unique presence in the Idaho radio landscape.</p>
-      <p><strong>Modern Era:</strong> Today, KIDQ maintains its commitment to diverse programming, integrating digital platforms while preserving its traditional radio presence. It continues to host popular events and remains a beloved station for its loyal listeners.</p>
-      <p><strong>Key Personalities:</strong> [List of notable DJs/personalities]</p>
-      <p><strong>Legacy:</strong> KIDQ's legacy is built on its consistent delivery of quality programming and its deep connection to the Idaho community, offering something for every music lover.</p>
+      <p><strong>1979:</strong> Launched as KIDQ "Q‑104," introducing Boise's first album‑oriented rock format.</p>
+      <p><strong>Mid‑1980s:</strong> The rock era ended as the station flipped to adult contemporary "K‑Lite" and later to oldies as "Kool 104," a format that lasted nearly two decades.</p>
+      <p><strong>2006:</strong> Clear Channel moved the station to country, first as "My Country" and soon rebranded it as "Wow Country 104.3." Townsquare Media owns the station today, one of several country outlets in the market.</p>
     `
   },
   {
     id: 'kcix',
     name: 'KCIX - 105.9 FM',
-    synopsis: `KCIX, "Mix 105.9," offers a diverse blend of adult contemporary hits, making it a popular choice for a wide demographic. Its commitment to local events and community service has made it a staple in Idaho broadcasting.`,
+    synopsis: `For generations of Boise commuters, “Mix 106” was defined by the friendly banter of Mike and Kate. Their long‑running morning show helped KCIX dominate the Hot AC format for years.`,
     history: `
-      <p><strong>Inception:</strong> KCIX launched in [Year], aiming to fill a niche for adult contemporary music. Its initial format quickly gained traction among listeners seeking a mix of popular and classic hits.</p>
-      <p><strong>Evolution:</strong> Over the years, KCIX adapted its playlist to reflect changing musical tastes while maintaining its core adult contemporary identity. It became known for its smooth transitions and engaging hosts.</p>
-      <p><strong>Community Focus:</strong> KCIX has always emphasized local involvement, sponsoring numerous community events and charity drives. This dedication has fostered a strong bond with its audience.</p>
-      <p><strong>Programming Highlights:</strong> [Details on specific shows or segments]</p>
-      <p><strong>Impact:</strong> KCIX's impact lies in its ability to provide a comforting and familiar soundscape for its listeners, alongside its active role in community betterment.</p>
+      <p><strong>1985:</strong> Signed on as "K‑106" with an adult contemporary format.</p>
+      <p><strong>1999:</strong> Rebranded to "Mix 106" and soon became a powerhouse thanks to the “Mike and Kate” morning show.</p>
+      <p><strong>2016:</strong> Kate McGwire’s departure marked the start of a revolving door of hosts, and ratings have struggled since.</p>
     `
   },
   {
     id: 'kthi',
     name: 'KTHI - 107.1 FM',
-    synopsis: `KTHI, "107.1 K-Hits," specializes in classic hits from the 70s, 80s, and 90s, bringing a nostalgic experience to its listeners. It’s celebrated for its timeless playlist and engaging throwback segments.`,
+    synopsis: `For 22 years "107.1 K‑Hits" was Boise’s home for classic hits. In 2024 the familiar playlist vanished overnight as the station flipped to "Hank FM" classic country.`,
     history: `
-      <p><strong>Founding:</strong> KTHI began broadcasting in [Year], carving out a niche by focusing exclusively on classic hits. This format immediately resonated with listeners looking to relive their favorite musical eras.</p>
-      <p><strong>Golden Era:</strong> The station quickly became a go-to for nostalgic music, featuring themed weekends and special programming dedicated to specific decades. Its DJs often shared anecdotes about the music and artists.</p>
-      <p><strong>Current Status:</strong> KTHI continues to thrive by curating a playlist that appeals to multiple generations. It remains a popular choice for those who appreciate the enduring appeal of classic pop and rock.</p>
-      <p><strong>Notable Shows:</strong> [Examples of popular classic hit shows]</p>
-      <p><strong>Cultural Significance:</strong> KTHI plays a significant role in preserving and celebrating the musical heritage of past decades, offering a unique listening experience in the Idaho market.</p>
+      <p><strong>2002:</strong> Adopted the KTHI call sign and "K‑Hits" branding, becoming a staple for 70s and 80s classics.</p>
+      <p><strong>May 2024:</strong> After weeks of rumours, the station abruptly dropped K‑Hits and relaunched as "107.1 Hank FM" playing classic country.</p>
+      <p>The surprise flip left longtime listeners reeling as Lotus Communications sought to capture a slice of the lucrative country audience.</p>
     `
   },
   {
     id: 'kqxr',
     name: 'KQXR - 100.3 FM',
-    synopsis: `KQXR, "100.3 The X," is Idaho's premier rock station, delivering hard-hitting rock music and supporting local bands. Known for its edgy personality and commitment to the rock scene, it’s a favorite among rock enthusiasts.`,
+    synopsis: `"100.3 The X" has ruled Boise's rock scene since the mid‑90s, championing local bands and hosting the legendary X‑Fest each summer.`,
     history: `
-      <p><strong>Establishment:</strong> KQXR hit the airwaves in [Year], quickly establishing itself as the voice of rock music in Idaho. Its aggressive programming and rebellious spirit set it apart from other stations.</p>
-      <p><strong>Rise to Prominence:</strong> "The X" became a cultural touchstone for rock fans, hosting major concerts, band interviews, and promoting the local music scene. Its morning show gained a reputation for its irreverent humor.</p>
-      <p><strong>Enduring Legacy:</strong> Today, KQXR continues its tradition of playing the best in rock, from classic anthems to new releases. It remains a vital platform for both established and emerging rock artists.</p>
-      <p><strong>Signature Events:</strong> [Concerts, festivals, or annual events hosted by KQXR]</p>
-      <p><strong>Influence:</strong> KQXR has profoundly influenced the rock music landscape in Idaho, fostering a vibrant community of musicians and fans.</p>
+      <p><strong>1978:</strong> Signed on (then at 100.1 FM) and went through several formats before adopting a hard‑rock identity.</p>
+      <p><strong>1995:</strong> Rebranded as "The X" with an alternative rock format that evolved into active rock by 2010.</p>
+      <p>With long‑time hosts Nic & Big J and deep involvement in the concert scene, KQXR remains the valley’s definitive rock outlet.</p>
     `
   },
   {
     id: 'kido',
     name: 'KIDO - 580 AM / 107.5 FM',
-    synopsis: `KIDO is a prominent news/talk radio station, providing comprehensive coverage of local, state, and national issues. With a strong lineup of talk show hosts, KIDO is a key source for news and political commentary in Idaho.`,
+    synopsis: `KIDO’s lineage stretches back to Boise’s very first station in the 1920s. After a famous frequency swap in 2002, it cemented itself as the city’s conservative talk powerhouse.`,
     history: `
-      <p><strong>Historical Roots:</strong> KIDO has a long and storied history in Idaho broadcasting, dating back to [Year]. It initially served as a general entertainment station before evolving into its current news/talk format.</p>
-      <p><strong>Transition to News/Talk:</strong> In the [Decade]s, KIDO shifted its focus to news and talk programming, responding to a growing demand for in-depth discussions on current events and public affairs.</p>
-      <p><strong>Modern Era:</strong> KIDO now features a mix of local talk shows, syndicated programs, and live news updates. It plays a crucial role in informing public discourse and engaging listeners on critical issues.</p>
-      <p><strong>Key Programs:</strong> [Names of popular talk shows or news segments]</p>
-      <p><strong>Role in Community:</strong> KIDO serves as a vital forum for public opinion and debate, contributing significantly to the civic life of Idaho.</p>
+      <p><strong>1922:</strong> Began as high‑school project KFAU, soon becoming KIDO.</p>
+      <p><strong>2002:</strong> Swapped frequencies with 630 AM to gain a stronger 580 AM signal, ensuring the future of its talk format.</p>
+      <p>Now owned by Townsquare Media, KIDO features local host Kevin Miller alongside national conservative voices.</p>
     `
   },
   {
     id: 'kfxd',
     name: 'KFXD - 630 AM',
-    synopsis: `KFXD, "The Fan," is Idaho's leading sports talk radio station, offering live game broadcasts, expert analysis, and passionate discussions on local and national sports. It’s the go-to station for sports fans.`,
+    synopsis: `At 630 AM, this facility carried the KIDO call for 80 years. After the 2002 frequency swap it has bounced through country, talk, sports and today airs rhythmic hits as “Power 105.5.”`,
     history: `
-      <p><strong>Launch:</strong> KFXD began its journey in [Year] with a clear mission: to be the voice of sports in Idaho. It quickly gained a following among avid sports enthusiasts.</p>
-      <p><strong>Building a Reputation:</strong> The station became known for its comprehensive coverage of high school, collegiate, and professional sports. Its live play-by-play broadcasts and insightful commentary set it apart.</p>
-      <p><strong>Current Status:</strong> KFXD continues to deliver unparalleled sports content, featuring popular local personalities and exclusive interviews with athletes and coaches. It remains an essential resource for Idaho sports fans.</p>
-      <p><strong>Coverage Highlights:</strong> [Specific teams or events KFXD is known for covering]</p>
-      <p><strong>Fan Engagement:</strong> KFXD fosters a strong sense of community among sports fans, providing a platform for discussion and shared passion.</p>
+      <p><strong>1920s‑2002:</strong> Home of the original KIDO until Clear Channel moved that brand to 580 AM.</p>
+      <p><strong>2002‑2020:</strong> Operated under various formats—including classic country and sports talk "The Fan"—before flipping to a hip‑hop focused format in 2020.</p>
+      <p>The AM signal drops to a mere 37 watts at night, so most listeners hear it on 105.5 FM via translator.</p>
     `
   },
   {
     id: 'kbsu',
     name: 'KBSU - 90.3 FM',
-    synopsis: `KBSU is Boise State Public Radio, an NPR member station providing in-depth news, cultural programming, and classical music. It is a vital source of unbiased information and enriching content for the community.`,
+    synopsis: `From humble campus club to statewide network, Boise State Public Radio now reaches more than a million Idahoans with NPR news and classical music.`,
     history: `
-      <p><strong>Origins:</strong> KBSU, operated by Boise State University, first went on air in [Year] with a commitment to public service broadcasting. It quickly became an affiliate of NPR, bringing national and international news to Idaho.</p>
-      <p><strong>Program Expansion:</strong> Over the decades, KBSU expanded its programming to include a wide range of cultural shows, classical music, and local public affairs discussions, enriching the intellectual life of the region.</p>
-      <p><strong>Educational Role:</strong> As a university-affiliated station, KBSU also plays an educational role, often featuring programs produced by students and faculty, and serving as a learning laboratory for aspiring broadcasters.</p>
-      <p><strong>Awards and Recognition:</strong> [Any notable awards or achievements]</p>
-      <p><strong>Community Impact:</strong> KBSU's impact is profound, providing a trusted source of news and a platform for diverse voices and artistic expression, contributing significantly to the cultural fabric of Idaho.</p>
+      <p><strong>1957:</strong> Began as a low‑power student station at Boise Junior College.</p>
+      <p><strong>1988:</strong> Joined NPR and boosted power to 19,000 watts from Deer Point, delivering a clear public radio signal to Boise.</p>
+      <p>Today KBSU and sister station KBSX operate a network of transmitters across Idaho, providing award‑winning news and cultural programming.</p>
     `
   },
   {
     id: 'kgem',
     name: 'KGEM - 1140 AM',
-    synopsis: `KGEM is a heritage station in Idaho, known for its diverse programming that has evolved over decades. It has played various roles in the local media landscape, from music to talk, adapting to the changing needs of its audience.`,
+    synopsis: `KGEM spent six decades as a commercial station before a 2009 sale turned it into Salt & Light Catholic Radio, dedicated to faith‑based programming.`,
     history: `
-      <p><strong>Founding and Early Years:</strong> KGEM has a rich history dating back to [Year], making it one of Idaho's oldest stations. It initially broadcast [original format, e.g., popular music, local news].</p>
-      <p><strong>Format Changes:</strong> Throughout its existence, KGEM has undergone several format changes, reflecting shifts in listener preferences and market demands. It has been a home for [mention various formats, e.g., country, easy listening, religious programming].</p>
-      <p><strong>Resilience:</strong> Despite changes in the broadcasting landscape, KGEM has demonstrated remarkable resilience, continuing to serve the community in various capacities. Its long history is a testament to its adaptability.</p>
-      <p><strong>Notable Moments:</strong> [Any significant historical events or broadcasts associated with KGEM]</p>
-      <p><strong>Enduring Presence:</strong> KGEM remains a part of Idaho's radio heritage, symbolizing the enduring power of local broadcasting and its ability to connect with generations of listeners.</p>
+      <p><strong>1947:</strong> Signed on and became a familiar AM voice in Boise for music and entertainment.</p>
+      <p><strong>2009:</strong> Purchased by Salt & Light Radio and converted to a non‑commercial Catholic format.</p>
+      <p>Today KGEM airs EWTN programming and serves the Treasure Valley’s Catholic community.</p>
     `
   },
   {
     id: 'kboi',
     name: 'KBOI - 670 AM / 93.1 FM',
-    synopsis: `KBOI is a long-standing news and talk radio station, serving the Boise area with comprehensive news coverage, insightful commentary, and popular syndicated programs. It is a key source for local and national discussions.`,
+    synopsis: `With a booming 50,000‑watt signal, KBOI has delivered news and talk across Idaho since the 1940s and remains the flagship for Boise State sports.`,
     history: `
-      <p><strong>Establishment:</strong> KBOI has been a fixture in Idaho radio since [Year], initially establishing itself as a dominant force in [original format, e.g., general entertainment, news].</p>
-      <p><strong>Transition to News/Talk:</strong> Similar to other heritage AM stations, KBOI transitioned to a news and talk format, capitalizing on its strong signal and established listener base to deliver timely information and engaging discussions.</p>
-      <p><strong>Market Leader:</strong> KBOI has consistently been a market leader in news and talk, attracting a wide audience interested in current events, politics, and local issues. Its hosts are often influential figures in the community.</p>
-      <p><strong>Key Features:</strong> [Examples of news segments, call-in shows, or syndicated programs]</p>
-      <p><strong>Influence and Reach:</strong> KBOI's influence extends across the Treasure Valley and beyond, making it a critical platform for public discourse and a trusted source of information for many Idahoans.</p>
+      <p><strong>1947:</strong> Signed on as KDSH and soon joined CBS Radio.</p>
+      <p><strong>1955:</strong> Became KBOI, later increasing power to 50 kW and dominating the market with a full‑service format.</p>
+      <p>By the 1980s it had evolved into today’s news/talk powerhouse and continues as one of Idaho’s most influential stations.</p>
     `
   }
 ];
