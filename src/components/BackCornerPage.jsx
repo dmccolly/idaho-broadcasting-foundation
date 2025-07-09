@@ -8,7 +8,10 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const [error, setError] = useState(null);
   const [mediaType, setMediaType] = useState(null);
   const [windowSize, setWindowSize] = useState({ width: 500, height: 500 });
-  const [windowPosition, setWindowPosition] = useState({ x: 0, y: Math.max(0, window.innerHeight - 500) });
+  const [windowPosition, setWindowPosition] = useState({
+    x: 150,
+    y: Math.max(0, window.innerHeight - 500 - 150)
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });

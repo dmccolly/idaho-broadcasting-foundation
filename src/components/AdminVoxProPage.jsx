@@ -10,20 +10,35 @@ const AdminVoxProPage = () => {
   const [currentPlayingKey, setCurrentPlayingKey] = useState(null);
   const popupRef = useRef(null);
 
-  const openPopup = () => {
+  const openOrFocusPopup = (key) => {
     const left = 150;
     const top = Math.max(0, window.innerHeight - 500 - 150);
     const features = `width=500,height=500,left=${left},top=${top}`;
-    const key = currentPlayingKey || 1;
+
     if (popupRef.current && !popupRef.current.closed) {
       popupRef.current.focus();
+      if (popupRef.current.playerKey !== key) {
+        popupRef.current.location.href = `/voxpro-player?key=${key}`;
+        popupRef.current.playerKey = key;
+      }
     } else {
       popupRef.current = window.open(
         `/voxpro-player?key=${key}`,
         'voxproPlayer',
         features
       );
+      if (popupRef.current) {
+        popupRef.current.playerKey = key;
+        popupRef.current.onbeforeunload = () => {
+          setCurrentPlayingKey(null);
+          popupRef.current = null;
+        };
+      }
     }
+  };
+
+  const openPopup = () => {
+    openOrFocusPopup(currentPlayingKey || '1');
   };
 
   useEffect(() => {
@@ -68,31 +83,14 @@ const AdminVoxProPage = () => {
   };
 
   const handleKeyClick = (key) => {
-    const left = 150;
-    const top = Math.max(0, window.innerHeight - 500 - 150);
-    const features = `width=500,height=500,left=${left},top=${top}`;
-
-    // If the same key is pressed again, close the popup
     if (currentPlayingKey === key) {
-      if (popupRef.current && !popupRef.current.closed) {
-        popupRef.current.close();
-      }
+      popupRef.current?.close();
       popupRef.current = null;
       setCurrentPlayingKey(null);
-      return;
+    } else {
+      openOrFocusPopup(key);
+      setCurrentPlayingKey(key);
     }
-
-    // If another popup is open, close it first
-    if (popupRef.current && !popupRef.current.closed) {
-      popupRef.current.close();
-    }
-
-    popupRef.current = window.open(
-      `/voxpro-player?key=${key}`,
-      'voxproPlayer',
-      features
-    );
-    setCurrentPlayingKey(key);
   };
 
   useEffect(() => {

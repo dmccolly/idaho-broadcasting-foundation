@@ -53,7 +53,13 @@ const VoxProManagement = () => {
       return;
     }
 
-    const mediaUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/media/voxpro/${selectedFile}`;
+    const {
+      data: { publicUrl }
+    } = supabase.storage
+      .from('media')
+      .getPublicUrl(`voxpro/${selectedFile}`);
+
+    const mediaUrl = publicUrl;
     const fileExtension = selectedFile.split('.').pop().toLowerCase();
 
     let mediaType;
