@@ -2,9 +2,50 @@ import React, { useState } from 'react';
 
 const BroadcastingNewsFeed = () => {
   const [currentFilter, setCurrentFilter] = useState('all');
+  const [expandedId, setExpandedId] = useState(null);
 
   // Real broadcasting news stories - updated July 8, 2025
   const newsData = [
+    {
+      id: 101,
+      title: 'KTVB Opens New Downtown Boise Studio',
+      excerpt: 'Idaho\'s NBC affiliate unveiled a state-of-the-art facility to boost local television coverage.',
+      source: 'KTVB',
+      date: '2025-07-05',
+      category: 'local',
+      content: 'The studio features new sets and technology aimed at highlighting Boise\'s growing community news.',
+      link: 'https://www.ktvb.com/'
+    },
+    {
+      id: 102,
+      title: 'KBOI 670 AM Launches Morning News for Boise',
+      excerpt: 'A new live program focuses on Treasure Valley headlines, traffic and weather each weekday.',
+      source: 'KBOI Radio',
+      date: '2025-07-04',
+      category: 'local',
+      content: 'Station managers say the show will bring more Boise voices to the air and spotlight local issues.',
+      link: 'https://www.kboi.com/'
+    },
+    {
+      id: 103,
+      title: 'Idaho Public Television Hosts Local Film Festival',
+      excerpt: 'IPTV teams with Boise State University for a weekend celebrating homegrown filmmakers.',
+      source: 'Idaho Public Television',
+      date: '2025-07-03',
+      category: 'local',
+      content: 'Workshops and screenings are planned across campus with segments airing later this summer.',
+      link: 'https://www.idahoptv.org/'
+    },
+    {
+      id: 104,
+      title: 'KBSU-FM Earns Community Service Award',
+      excerpt: 'Boise State\'s radio station receives honors for outstanding service to Treasure Valley listeners.',
+      source: 'Boise State Public Radio',
+      date: '2025-07-02',
+      category: 'local',
+      content: 'The recognition highlights decades of educational and cultural programming.',
+      link: 'https://www.boisestatepublicradio.org/'
+    },
     {
       id: 1,
       title: "Opposition Emerges to 5G Broadcast Proposal for Low-Power TV Stations",
@@ -180,32 +221,57 @@ const BroadcastingNewsFeed = () => {
       </div>
 
       {/* News Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
         {filteredNews.map((story) => (
           <div
             key={story.id}
-            className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border-l-4 ${getCategoryColor(story.category)}`}
+            className={`bg-white rounded-lg shadow hover:shadow-md transition-all duration-300 overflow-hidden border-l-4 ${getCategoryColor(story.category)}`}
           >
-            <div className="p-6">
+            <div className="p-4 text-sm">
               {/* Header with source and date */}
-              <div className="flex justify-between items-start mb-4">
+              <div className="flex justify-between items-start mb-2">
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryBadgeColor(story.category)}`}>
                   {story.source}
                 </span>
-                <span className="text-sm text-gray-500">
+                <span className="text-xs text-gray-500">
                   {formatDate(story.date)}
                 </span>
               </div>
 
               {/* Title */}
-              <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
+              <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-2 leading-snug">
                 {story.title}
               </h3>
 
               {/* Excerpt */}
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 text-xs leading-relaxed">
                 {story.excerpt}
               </p>
+              {expandedId === story.id && story.content && (
+                <p className="text-gray-700 text-xs mt-2">
+                  {story.content}
+                  {story.link && (
+                    <> {' '}
+                      <a
+                        href={story.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        Learn more
+                      </a>
+                    </>
+                  )}
+                </p>
+              )}
+              <button
+                onClick={() =>
+                  setExpandedId(expandedId === story.id ? null : story.id)
+                }
+                className="text-blue-600 hover:underline text-xs mt-2"
+              >
+                {expandedId === story.id ? 'Show less' : 'Read more'}
+              </button>
             </div>
           </div>
         ))}
