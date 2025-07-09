@@ -12,7 +12,7 @@ export async function uploadFile(file, keySlot, title, description) {
 
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const filePath = `${fileName}`;
+    const filePath = `voxpro/${fileName}`;
 
     // Upload any file type to media bucket
     const { data: uploadData, error: uploadError } = await supabase.storage

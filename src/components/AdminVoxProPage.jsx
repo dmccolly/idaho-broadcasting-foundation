@@ -99,8 +99,15 @@ const AdminVoxProPage = () => {
         <UniversalMediaPlayer
           key={w.id}
           assignment={w.assignment}
-          onClose={() => setActiveWindows([])}
-          onMinimize={(m) => setActiveWindows((prev) => prev.map(p => p.id === w.id ? { ...p, isMinimized: m } : p))}
+          onClose={() => {
+            setActiveWindows([]);
+            setCurrentPlayingKey(null);
+          }}
+          onMinimize={(m) =>
+            setActiveWindows((prev) =>
+              prev.map((p) => (p.id === w.id ? { ...p, isMinimized: m } : p))
+            )
+          }
           isMinimized={w.isMinimized}
           windowId={w.id}
         />

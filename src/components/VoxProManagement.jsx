@@ -10,6 +10,7 @@ const VoxProManagement = () => {
   const [description, setDescription] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     loadAssignments();
@@ -40,6 +41,32 @@ const VoxProManagement = () => {
     } else {
       setMediaFiles(data);
     }
+  };
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setStatusMessage('Uploading...');
+
+    const { error } = await supabase.storage
+      .from('media')
+      .upload(`voxpro/${file.name}`, file, {
+        cacheControl: '3600',
+        upsert: true,
+        contentType: file.type || 'application/octet-stream',
+      });
+
+    if (error) {
+      console.error('Upload error:', error);
+      setStatusMessage(`Upload error: ${error.message}`);
+    } else {
+      setStatusMessage('Upload successful');
+      loadMediaFiles();
+      setSelectedFile(file.name);
+    }
+
+    setUploading(false);
   };
 
   const handleAssign = async (e) => {
@@ -141,6 +168,16 @@ const VoxProManagement = () => {
                 <option key={file.id} value={file.name}>{file.name}</option>
               ))}
             </select>
+          </div>
+          <div className="md:col-span-2">
+            <label htmlFor="upload-file" className="block text-sm font-medium text-gray-300 mb-1">Upload New File</label>
+            <input
+              type="file"
+              id="upload-file"
+              onChange={handleUpload}
+              className="w-full bg-gray-900 text-white p-2 rounded border border-gray-600 focus:ring-green-500 focus:border-green-500"
+            />
+            {uploading && <p className="text-xs text-gray-400 mt-1">Uploading...</p>}
           </div>
           <div>
             <label htmlFor="key-slot" className="block text-sm font-medium text-gray-300 mb-1">Select Key Slot</label>
