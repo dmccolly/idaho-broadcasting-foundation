@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabase';
-import VoxProPlayerWidget from './VoxProPlayerWidget.jsx';
+import { supabase } from '../../lib/supabase';
+import VoxProPlayerWidget from '../VoxProPlayerWidget.jsx';
 
 // Enhanced Universal Media Player Component - CONTENT GROWS WITH WINDOW
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
