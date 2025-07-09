@@ -39,8 +39,8 @@ const VoxProPlayerWidget = ({
         </div>
         <button
           onClick={() => {
-            const top = window.innerHeight - 500;
-            const features = `width=500,height=500,left=0,top=${top < 0 ? 0 : top}`;
+            const top = Math.max(0, (window.innerHeight - 500) / 2);
+            const features = `width=500,height=500,left=300,top=${top}`;
             const key = currentPlayingKey || 1;
             window.open(`/voxpro-player?key=${key}`, 'voxproPlayer', features);
           }}
