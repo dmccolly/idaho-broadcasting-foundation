@@ -7,6 +7,9 @@ import GalleryPage from './components/GalleryPage';
 import BackCornerPage from './components/BackCornerPage';
 import AdminVoxProPage from './components/AdminVoxProPage';
 import VoxProPlayerPopup from './components/VoxProPlayerPopup';
+import HistoryLandingPage from './components/HistoryLandingPage.jsx';
+import RadioPage from './components/RadioPage.jsx';
+import TelevisionPage from './components/TelevisionPage.jsx';
 
 // Main Layout Component
 const Layout = ({ children }) => {
@@ -55,21 +58,31 @@ const Layout = ({ children }) => {
               >
                 THE BACK CORNER
               </Link>
-              <Link 
-                to="/gallery" 
+              <Link
+                to="/gallery"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === '/gallery' 
-                    ? 'bg-green-100 text-green-700' 
+                  location.pathname === '/gallery'
+                    ? 'bg-green-100 text-green-700'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
                 GALLERY
               </Link>
-              <Link 
-                to="/about" 
+              <Link
+                to="/history"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === '/about' 
-                    ? 'bg-pink-100 text-pink-700' 
+                  location.pathname.startsWith('/history')
+                    ? 'bg-yellow-100 text-yellow-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                HISTORY
+              </Link>
+              <Link
+                to="/about"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/about'
+                    ? 'bg-pink-100 text-pink-700'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
@@ -226,6 +239,9 @@ function App() {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/back-corner" element={<BackCornerPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
+          <Route path="/history" element={<HistoryLandingPage />} />
+          <Route path="/history/radio" element={<RadioPage />} />
+          <Route path="/history/television" element={<TelevisionPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/admin" element={<AdminDashboard />} />

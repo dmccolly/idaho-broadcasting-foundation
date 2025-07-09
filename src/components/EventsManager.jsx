@@ -50,6 +50,7 @@ const EventsManager = () => {
 
   useEffect(() => {
     localStorage.setItem('events', JSON.stringify(events));
+    window.dispatchEvent(new Event('storage'));
   }, [events]);
 
   const [formData, setFormData] = useState({
