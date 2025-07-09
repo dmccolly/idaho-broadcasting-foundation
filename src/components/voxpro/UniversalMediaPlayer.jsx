@@ -8,9 +8,10 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const [error, setError] = useState(null);
   const [mediaType, setMediaType] = useState(null);
   const [windowSize, setWindowSize] = useState({ width: 500, height: 500 });
+  // Default lower-left placement so popups never hide player controls
   const [windowPosition, setWindowPosition] = useState({
-    x: 150,
-    y: Math.max(0, window.innerHeight - 500 - 150)
+    x: 20,
+    y: Math.max(0, window.innerHeight - 520)
   });
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);

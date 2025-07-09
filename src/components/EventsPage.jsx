@@ -59,6 +59,35 @@ const EventsPage = () => {
     } catch {
       // ignore parse errors
     }
+
+    const handleStorage = () => {
+      try {
+        const updated = JSON.parse(localStorage.getItem('events') || 'null');
+        if (Array.isArray(updated) && updated.length) {
+          setEvents(
+            updated.map((e) => ({
+              ...e,
+              date: new Date(`${e.date}T${e.time}`).toLocaleString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              }),
+              datetime: `${e.date}T${e.time}`,
+              location: `📍 ${e.location}`,
+              address: e.address
+            }))
+          );
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   const addToCalendar = (title, datetime) => {

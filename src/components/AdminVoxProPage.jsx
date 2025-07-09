@@ -76,6 +76,20 @@ const AdminVoxProPage = () => {
     setWindowCounter((prev) => prev + 1);
   };
 
+  const closeWindow = (windowId) => {
+    const windowToClose = activeWindows.find((w) => w.id === windowId);
+    if (windowToClose && windowToClose.assignment.key_slot === currentPlayingKey) {
+      setCurrentPlayingKey(null);
+    }
+    setActiveWindows((prev) => prev.filter((w) => w.id !== windowId));
+  };
+
+  const minimizeWindow = (windowId, minimize) => {
+    setActiveWindows((prev) =>
+      prev.map((w) => (w.id === windowId ? { ...w, isMinimized: minimize } : w))
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto flex flex-wrap gap-6 items-start">
@@ -99,15 +113,8 @@ const AdminVoxProPage = () => {
         <UniversalMediaPlayer
           key={w.id}
           assignment={w.assignment}
-          onClose={() => {
-            setActiveWindows([]);
-            setCurrentPlayingKey(null);
-          }}
-          onMinimize={(m) =>
-            setActiveWindows((prev) =>
-              prev.map((p) => (p.id === w.id ? { ...p, isMinimized: m } : p))
-            )
-          }
+          onClose={() => closeWindow(w.id)}
+          onMinimize={(m) => minimizeWindow(w.id, m)}
           isMinimized={w.isMinimized}
           windowId={w.id}
         />
