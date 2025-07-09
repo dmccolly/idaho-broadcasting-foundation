@@ -10,8 +10,9 @@ const AdminVoxProPage = () => {
   const [currentPlayingKey, setCurrentPlayingKey] = useState(null);
 
   const openPopup = () => {
-    const top = Math.max(0, (window.innerHeight - 500) / 2);
-    const features = `width=500,height=500,left=300,top=${top}`;
+    const left = 150;
+    const top = Math.max(0, window.innerHeight - 500 - 150);
+    const features = `width=500,height=500,left=${left},top=${top}`;
     const key = currentPlayingKey || 1;
     window.open(`/voxpro-player?key=${key}`, 'voxproPlayer', features);
   };
@@ -58,8 +59,9 @@ const AdminVoxProPage = () => {
   };
 
   const handleKeyClick = (key) => {
-    const top = Math.max(0, (window.innerHeight - 500) / 2);
-    const features = `width=500,height=500,left=300,top=${top}`;
+    const left = 150;
+    const top = Math.max(0, window.innerHeight - 500 - 150);
+    const features = `width=500,height=500,left=${left},top=${top}`;
     window.open(`/voxpro-player?key=${key}`, 'voxproPlayer', features);
     setCurrentPlayingKey(key);
   };

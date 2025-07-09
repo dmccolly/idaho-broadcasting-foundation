@@ -114,7 +114,7 @@ const VoxProManagement = () => {
   };
 
   return (
-    <div className="bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-700 max-w-md">
+    <div className="bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-700 w-full max-w-md">
       <h2 className="text-2xl font-bold text-green-400 mb-4">VoxPro Management</h2>
 
       {/* Assignment Form */}
@@ -193,9 +193,9 @@ const VoxProManagement = () => {
         <div className="space-y-3">
           {assignments.length > 0 ? assignments.map(assignment => (
             <div key={assignment.id} className="bg-gray-700 p-3 rounded-md flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="font-bold text-green-400">Key {assignment.key_slot}: <span className="text-white">{assignment.title}</span></p>
-                <p className="text-xs text-gray-400 truncate max-w-md">{assignment.media_url}</p>
+              <div className="min-w-0">
+                <p className="font-bold text-green-400 truncate">Key {assignment.key_slot}: <span className="text-white">{assignment.title}</span></p>
+                <p className="text-xs text-gray-400 truncate max-w-xs">{assignment.media_url}</p>
               </div>
               <button
                 onClick={() => handleRemove(assignment.key_slot)}
@@ -212,5 +212,4 @@ const VoxProManagement = () => {
       </div>
     </div>
   );
-};
-export default VoxProManagement;
+};export default VoxProManagement;
