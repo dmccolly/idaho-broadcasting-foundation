@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import VoxProManagement from './VoxProManagement.jsx';
 import VoxProPlayerWidget from './VoxProPlayerWidget.jsx';
+import UniversalMediaPlayer from './voxpro/UniversalMediaPlayer.jsx';
+import KeyAssignmentsWidget from './voxpro/KeyAssignmentsWidget.jsx';
 import { supabase } from '../lib/supabase';
 
 const AdminVoxProPage = () => {
@@ -8,38 +10,8 @@ const AdminVoxProPage = () => {
   const [connectionStatus, setConnectionStatus] = useState('connecting');
   const [statusMessage, setStatusMessage] = useState('Connecting to Supabase...');
   const [currentPlayingKey, setCurrentPlayingKey] = useState(null);
-  const popupRef = useRef(null);
-
-  const openOrFocusPopup = (key) => {
-    const left = 150;
-    const top = Math.max(0, window.innerHeight - 500 - 150);
-    const features = `width=500,height=500,left=${left},top=${top}`;
-
-    if (popupRef.current && !popupRef.current.closed) {
-      popupRef.current.focus();
-      if (popupRef.current.playerKey !== key) {
-        popupRef.current.location.href = `/voxpro-player?key=${key}`;
-        popupRef.current.playerKey = key;
-      }
-    } else {
-      popupRef.current = window.open(
-        `/voxpro-player?key=${key}`,
-        'voxproPlayer',
-        features
-      );
-      if (popupRef.current) {
-        popupRef.current.playerKey = key;
-        popupRef.current.onbeforeunload = () => {
-          setCurrentPlayingKey(null);
-          popupRef.current = null;
-        };
-      }
-    }
-  };
-
-  const openPopup = () => {
-    openOrFocusPopup(currentPlayingKey || '1');
-  };
+  const [activeWindows, setActiveWindows] = useState([]);
+  const [windowCounter, setWindowCounter] = useState(0);
 
   useEffect(() => {
     const initialize = async () => {
@@ -82,35 +54,32 @@ const AdminVoxProPage = () => {
     }
   };
 
-  const handleKeyClick = (key) => {
-    if (currentPlayingKey === key) {
-      popupRef.current?.close();
-      popupRef.current = null;
-      setCurrentPlayingKey(null);
-    } else {
-      openOrFocusPopup(key);
-      setCurrentPlayingKey(key);
-    }
-  };
+  const getKeyAssignment = (key) => assignments.find((a) => a.key_slot === key);
 
-  useEffect(() => {
-    return () => {
-      if (popupRef.current && !popupRef.current.closed) {
-        popupRef.current.close();
-      }
-    };
-  }, []);
+  const handleKeyClick = (key) => {
+    const assignment = getKeyAssignment(key);
+    if (!assignment) return;
+
+    if (currentPlayingKey === key) {
+      setCurrentPlayingKey(null);
+      setActiveWindows((prev) => prev.filter((w) => w.assignment.key_slot !== key));
+      return;
+    }
+
+    if (currentPlayingKey) {
+      setActiveWindows((prev) => prev.filter((w) => w.assignment.key_slot !== currentPlayingKey));
+    }
+
+    setCurrentPlayingKey(key);
+    const newWindow = { id: windowCounter, assignment, isMinimized: false };
+    setActiveWindows([newWindow]);
+    setWindowCounter((prev) => prev + 1);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto flex flex-wrap gap-6 items-start">
-        <div className="bg-gray-900 rounded-lg p-4 shadow-xl border border-gray-700 w-80 overflow-hidden">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-bold text-green-400">VoxPro Player</h2>
-            <button onClick={openPopup} className="text-xs text-blue-400 underline">
-              Pop‑out Player
-            </button>
-          </div>
+        <div className="w-72 flex flex-col gap-4">
           <VoxProPlayerWidget
             onKeyClick={handleKeyClick}
             currentPlayingKey={currentPlayingKey}
@@ -119,11 +88,23 @@ const AdminVoxProPage = () => {
             statusMessage={statusMessage}
             setStatusMessage={setStatusMessage}
           />
+          <KeyAssignmentsWidget assignments={assignments} currentPlayingKey={currentPlayingKey} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4 shadow-xl border border-gray-700 flex-1 min-w-[18rem] max-w-md overflow-hidden">
           <VoxProManagement />
         </div>
       </div>
+
+      {activeWindows.map((w) => (
+        <UniversalMediaPlayer
+          key={w.id}
+          assignment={w.assignment}
+          onClose={() => setActiveWindows([])}
+          onMinimize={(m) => setActiveWindows((prev) => prev.map(p => p.id === w.id ? { ...p, isMinimized: m } : p))}
+          isMinimized={w.isMinimized}
+          windowId={w.id}
+        />
+      ))}
     </div>
   );
 };
