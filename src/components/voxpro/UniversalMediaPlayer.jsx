@@ -419,17 +419,24 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
           </div>
         );
 
-      case 'document':
+      case 'document': {
+        const url = assignment.media_url;
+        const ext = url.split('.').pop().toLowerCase();
+        const embedUrl =
+          ext === 'pdf'
+            ? url
+            : `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(url)}`;
         return (
           <div className="h-full w-full">
             <iframe
-              src={assignment.media_url}
+              src={embedUrl}
               className="w-full h-full border-0 rounded"
               title={assignment.title}
-              style={{ width: '100%', height: '100%' }}
+              style={{ width: '100%', height: '100%', display: 'block' }}
             />
           </div>
         );
+      }
 
       default:
         return (
