@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import AdminDashboard from './components/AdminDashboard';
 import EventsPage from './components/EventsPage';
 import EventsManager from './components/EventsManager';
+import GalleryPage from './components/GalleryPage';
 
 // Main Layout Component
 const Layout = ({ children }) => {
@@ -179,23 +180,6 @@ const BackCornerPage = () => (
       <div className="bg-white p-8 rounded-lg shadow-sm">
         <p className="text-gray-600">
           Content for The Back Corner page will be added here.
-        </p>
-      </div>
-    </div>
-  </div>
-);
-
-// Gallery Page Component
-const GalleryPage = () => (
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div className="text-center">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Gallery</h1>
-      <p className="text-lg text-gray-600 mb-8">
-        Photos and media from our events and activities
-      </p>
-      <div className="bg-white p-8 rounded-lg shadow-sm">
-        <p className="text-gray-600">
-          Gallery content will be added here.
         </p>
       </div>
     </div>
