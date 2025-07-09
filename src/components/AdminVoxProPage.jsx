@@ -23,7 +23,7 @@ const AdminVoxProPage = () => {
           </div>
           <VoxProSystem mode="player" />
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-gradient-to-br from-blue-900 to-blue-700 text-white rounded-lg shadow p-4">
           <VoxProManagement />
         </div>
       </div>

@@ -6,11 +6,8 @@ const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, wi
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mediaType, setMediaType] = useState(null);
-  const [windowSize, setWindowSize] = useState({
-    width: assignment?.media_url?.match(/\.(pdf)$/i) ? 900 : 800,
-    height: assignment?.media_url?.match(/\.(pdf)$/i) ? 700 : 600
-  });
-  const [windowPosition, setWindowPosition] = useState({ x: window.innerWidth - 820, y: window.innerHeight - 620 });
+  const [windowSize, setWindowSize] = useState({ width: 500, height: 500 });
+  const [windowPosition, setWindowPosition] = useState({ x: 0, y: Math.max(0, window.innerHeight - 500) });
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
