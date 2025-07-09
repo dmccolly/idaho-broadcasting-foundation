@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import VoxProManagement from './VoxProManagement.jsx';
 import VoxProPlayerWidget from './VoxProPlayerWidget.jsx';
 import { supabase } from '../lib/supabase';
@@ -8,13 +8,22 @@ const AdminVoxProPage = () => {
   const [connectionStatus, setConnectionStatus] = useState('connecting');
   const [statusMessage, setStatusMessage] = useState('Connecting to Supabase...');
   const [currentPlayingKey, setCurrentPlayingKey] = useState(null);
+  const popupRef = useRef(null);
 
   const openPopup = () => {
     const left = 150;
     const top = Math.max(0, window.innerHeight - 500 - 150);
     const features = `width=500,height=500,left=${left},top=${top}`;
     const key = currentPlayingKey || 1;
-    window.open(`/voxpro-player?key=${key}`, 'voxproPlayer', features);
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.focus();
+    } else {
+      popupRef.current = window.open(
+        `/voxpro-player?key=${key}`,
+        'voxproPlayer',
+        features
+      );
+    }
   };
 
   useEffect(() => {
@@ -62,9 +71,37 @@ const AdminVoxProPage = () => {
     const left = 150;
     const top = Math.max(0, window.innerHeight - 500 - 150);
     const features = `width=500,height=500,left=${left},top=${top}`;
-    window.open(`/voxpro-player?key=${key}`, 'voxproPlayer', features);
+
+    // If the same key is pressed again, close the popup
+    if (currentPlayingKey === key) {
+      if (popupRef.current && !popupRef.current.closed) {
+        popupRef.current.close();
+      }
+      popupRef.current = null;
+      setCurrentPlayingKey(null);
+      return;
+    }
+
+    // If another popup is open, close it first
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.close();
+    }
+
+    popupRef.current = window.open(
+      `/voxpro-player?key=${key}`,
+      'voxproPlayer',
+      features
+    );
     setCurrentPlayingKey(key);
   };
+
+  useEffect(() => {
+    return () => {
+      if (popupRef.current && !popupRef.current.closed) {
+        popupRef.current.close();
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
