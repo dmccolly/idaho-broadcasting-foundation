@@ -114,7 +114,7 @@ const VoxProManagement = () => {
   };
 
   return (
-    <div className="bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-700">
+    <div className="bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-700 max-w-md">
       <h2 className="text-2xl font-bold text-green-400 mb-4">VoxPro Management</h2>
 
       {/* Assignment Form */}
@@ -192,7 +192,7 @@ const VoxProManagement = () => {
         <h3 className="text-xl text-white mb-4">Current Assignments</h3>
         <div className="space-y-3">
           {assignments.length > 0 ? assignments.map(assignment => (
-            <div key={assignment.id} className="bg-gray-700 p-3 rounded-md flex items-center justify-between">
+            <div key={assignment.id} className="bg-gray-700 p-3 rounded-md flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="font-bold text-green-400">Key {assignment.key_slot}: <span className="text-white">{assignment.title}</span></p>
                 <p className="text-xs text-gray-400 truncate max-w-md">{assignment.media_url}</p>
@@ -213,5 +213,4 @@ const VoxProManagement = () => {
     </div>
   );
 };
-
 export default VoxProManagement;

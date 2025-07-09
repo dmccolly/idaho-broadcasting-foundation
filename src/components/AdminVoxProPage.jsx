@@ -12,7 +12,8 @@ const AdminVoxProPage = () => {
   const openPopup = () => {
     const top = window.innerHeight - 500;
     const features = `width=500,height=500,left=0,top=${top < 0 ? 0 : top}`;
-    window.open('/voxpro-player', 'voxproPlayer', features);
+    const key = currentPlayingKey || 1;
+    window.open(`/voxpro-player?key=${key}`, 'voxproPlayer', features);
   };
 
   useEffect(() => {
@@ -59,14 +60,14 @@ const AdminVoxProPage = () => {
   const handleKeyClick = (key) => {
     const top = window.innerHeight - 500;
     const features = `width=500,height=500,left=0,top=${top < 0 ? 0 : top}`;
-    window.open('/voxpro-player', 'voxproPlayer', features);
+    window.open(`/voxpro-player?key=${key}`, 'voxproPlayer', features);
     setCurrentPlayingKey(key);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
-        <div className="bg-gray-900 rounded-lg p-4 shadow-xl border border-gray-700">
+      <div className="max-w-6xl mx-auto flex flex-wrap gap-6">
+        <div className="bg-gray-900 rounded-lg p-4 shadow-xl border border-gray-700 w-72">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-bold text-green-400">VoxPro Player</h2>
             <button onClick={openPopup} className="text-xs text-blue-400 underline">
@@ -82,7 +83,7 @@ const AdminVoxProPage = () => {
             setStatusMessage={setStatusMessage}
           />
         </div>
-        <div className="bg-gray-900 rounded-lg p-4 shadow-xl border border-gray-700">
+        <div className="bg-gray-900 rounded-lg p-4 shadow-xl border border-gray-700 flex-1 min-w-[18rem]">
           <VoxProManagement />
         </div>
       </div>

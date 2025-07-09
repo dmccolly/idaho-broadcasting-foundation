@@ -1,8 +1,8 @@
-import VoxProSystem from './VoxProSystem.jsx';
+import VoxProAssignmentPlayer from './VoxProAssignmentPlayer.jsx';
 
 const VoxProPlayerPopup = () => (
-  <div className="p-2 bg-gray-50 min-h-screen">
-    <VoxProSystem mode="player" />
+  <div className="p-2 bg-gray-50 min-h-screen flex items-center justify-center">
+    <VoxProAssignmentPlayer />
   </div>
 );
 
