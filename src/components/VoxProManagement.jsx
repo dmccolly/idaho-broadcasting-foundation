@@ -114,7 +114,7 @@ const VoxProManagement = () => {
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
+    <div className="bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-700">
       <h2 className="text-2xl font-bold text-green-400 mb-4">VoxPro Management</h2>
 
       {/* Assignment Form */}
