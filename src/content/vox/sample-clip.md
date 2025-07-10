@@ -1,12 +1,76 @@
----
-title: Sample VOX Clip
-description: Example audio clip for Decap CMS
-audio_file: sample-clip.mp3
-station: Example FM
-date_recorded: 2025-07-01T00:00:00Z
-contributor: Jane Doe
-transcript: |
-  This is a short transcript of the sample clip.
----
+backend:
+  name: git-gateway
+  branch: main
 
-A brief description of the clip goes here.
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+collections:
+  # Documentation pages
+  - name: "docs"
+    label: "Pages"
+    folder: "src/content/docs"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "string", required: false }
+      - { label: "Content", name: "body", widget: "markdown" }
+
+  # VOX Audio Clips
+  - name: "vox-clips"
+    label: "VOX Audio Clips"
+    folder: "src/content/vox"
+    create: true
+    slug: "{{fields.title}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Audio File", name: "audio_file", widget: "file", media_library: { config: { accept: ["audio/*"] } } }
+      - { label: "Station", name: "station", widget: "string", required: false }
+      - { label: "Date Recorded", name: "date_recorded", widget: "datetime", required: false }
+      - { label: "Contributor", name: "contributor", widget: "string", required: false }
+      - { label: "Transcript", name: "transcript", widget: "text", required: false }
+
+  # Radio Stations
+  - name: "radio-stations"
+    label: "Radio Stations"
+    folder: "src/content/stations/radio"
+    create: true
+    slug: "{{fields.call_letters}}-{{fields.frequency}}"
+    fields:
+      - { label: "Call Letters", name: "call_letters", widget: "string" }
+      - { label: "Frequency", name: "frequency", widget: "string" }
+      - { label: "City", name: "city", widget: "string" }
+      - { label: "Format", name: "format", widget: "string" }
+      - { label: "Website", name: "website", widget: "string", required: false }
+      - { label: "History", name: "history", widget: "markdown", required: false }
+
+  # TV Stations
+  - name: "tv-stations"
+    label: "TV Stations"
+    folder: "src/content/stations/tv"
+    create: true
+    slug: "{{fields.call_letters}}-ch{{fields.channel}}"
+    fields:
+      - { label: "Call Letters", name: "call_letters", widget: "string" }
+      - { label: "Channel", name: "channel", widget: "number" }
+      - { label: "City", name: "city", widget: "string" }
+      - { label: "Network", name: "network", widget: "string" }
+      - { label: "Website", name: "website", widget: "string", required: false }
+      - { label: "History", name: "history", widget: "markdown", required: false }
+
+  # Photo Gallery
+  - name: "gallery"
+    label: "Photo Gallery"
+    folder: "src/content/gallery"
+    create: true
+    slug: "{{fields.title}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Photos", name: "photos", widget: "list", fields: [
+          { label: "Image", name: "image", widget: "image" },
+          { label: "Caption", name: "caption", widget: "string" }
+        ]}
