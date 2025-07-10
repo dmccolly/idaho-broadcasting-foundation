@@ -1,4 +1,9 @@
 {
   "collections": [],
-  "pages": []
+  "pages": [
+    {
+      "label": "Home Page",
+      "path": "index.html"
+    }
+  ]
 }
