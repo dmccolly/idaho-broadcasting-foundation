@@ -1,4 +1,8 @@
 {
-  "collections": [],
-  "pages": []
+  "collections": [
+    { "name": "vox-clips", "folder": "src/content/vox" }
+  ],
+  "pages": [
+    { "src": "index.html" }
+  ]
 }
