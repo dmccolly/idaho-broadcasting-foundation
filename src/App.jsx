@@ -68,6 +68,7 @@ const Layout = ({ children }) => {
               >
                 GALLERY
               </Link>
+              {/* History navigation tab */}
               <Link
                 to="/history"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
