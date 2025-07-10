@@ -4,6 +4,18 @@
     {
       "label": "Home Page",
       "path": "index.html"
+    },
+    {
+      "label": "Admin Dashboard",
+      "path": "admin/index.html"
+    },
+    {
+      "label": "VoxPro Player",
+      "path": "admin/voxpro-player/index.html"
+    },
+    {
+      "label": "VoxPro Management",
+      "path": "admin/voxpro-management/index.html"
     }
   ]
 }
