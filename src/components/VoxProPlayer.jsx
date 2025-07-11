@@ -60,6 +60,8 @@ const detectMediaType = (url) => {
     setIsLoading(false);
   }
 
+};
+
 // Create green audio visualization bars
 const createAudioVisualization = () => {
 setTimeout(() => {
