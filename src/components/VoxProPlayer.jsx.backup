@@ -3,96 +3,99 @@ import { supabase } from '../lib/supabase';
 
 // Enhanced Universal Media Player Component - CONTENT GROWS WITH WINDOW
 const UniversalMediaPlayer = ({ assignment, onClose, onMinimize, isMinimized, windowId }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [mediaType, setMediaType] = useState(null);
-  const [windowSize, setWindowSize] = useState({
-    width: assignment?.media_url?.match(/\.(pdf)$/i) ? 900 : 800,
-    height: assignment?.media_url?.match(/\.(pdf)$/i) ? 700 : 600
-  });
-  const [windowPosition, setWindowPosition] = useState({ x: window.innerWidth - 820, y: window.innerHeight - 620 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [isMaximized, setIsMaximized] = useState(false);
-  const [previousSize, setPreviousSize] = useState(null);
+const [isLoading, setIsLoading] = useState(true);
+const [error, setError] = useState(null);
+const [mediaType, setMediaType] = useState(null);
+const [windowSize, setWindowSize] = useState({
+width: assignment?.media_url?.match(/\.(pdf)$/i) ? 900 : 800,
+height: assignment?.media_url?.match(/\.(pdf)$/i) ? 700 : 600
+});
+const [windowPosition, setWindowPosition] = useState({ x: window.innerWidth - 820, y: window.innerHeight - 620 });
+const [isDragging, setIsDragging] = useState(false);
+const [isResizing, setIsResizing] = useState(false);
+const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+const [isMaximized, setIsMaximized] = useState(false);
+const [previousSize, setPreviousSize] = useState(null);
 
-  // Audio state
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
+// Audio state
+const [isPlaying, setIsPlaying] = useState(false);
+const [currentTime, setCurrentTime] = useState(0);
+const [duration, setDuration] = useState(0);
+const [volume, setVolume] = useState(1);
+const [isMuted, setIsMuted] = useState(false);
 
-  const playerRef = useRef(null);
-  const windowRef = useRef(null);
-  const visualizationRef = useRef(null);
-  const animationRef = useRef(null);
+const playerRef = useRef(null);
+const windowRef = useRef(null);
+const visualizationRef = useRef(null);
+const animationRef = useRef(null);
 
-  useEffect(() => {
-    if (assignment?.media_url) {
-      detectMediaType(assignment.media_url);
-    }
+useEffect(() => {
+if (assignment?.media_url) {
+detectMediaType(assignment.media_url);
+}
 
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [assignment]);
+return () => {
+if (animationRef.current) {
+cancelAnimationFrame(animationRef.current);
+}
+};
+}, [assignment]);
 
-  const detectMediaType = (url) => {
-    const extension = url.split('.').pop().toLowerCase();
+const detectMediaType = (url) => {
+const extension = url.split('.').pop().toLowerCase();
 
-    if (['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(extension)) {
-      setMediaType('video');
-    } else if (['mp3', 'wav', 'ogg', 'aac', 'm4a'].includes(extension)) {
-      setMediaType('audio');
-      createAudioVisualization();
-    } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
-      setMediaType('image');
-    } else if (['pdf', 'doc', 'docx', 'txt'].includes(extension)) {
-      setMediaType('document');
-    } else {
-      setMediaType('unknown');
-    }
-    setIsLoading(false);
-  };
+if (['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(extension)) {
+setMediaType('video');
+} else if (['mp3', 'wav', 'ogg', 'aac', 'm4a'].includes(extension)) {
+setMediaType('audio');
+createAudioVisualization();
+} else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
+setMediaType('image');
+} else if (['pdf',
+setIsLoading(false); // Images load immediately'doc', 'docx', 'txt'].includes(extension)) {
+setMediaType('document');
+} else
+setIsLoading(false); // Documents load immediately{
+setMediaType('unknown');
 
-  // Create green audio visualization bars
-  const createAudioVisualization = () => {
-    setTimeout(() => {
-      if (!visualizationRef.current) return;
+setIsLoading(false); // Unknown types don't need loading}
+setIsLoading(false);
+;
 
-      visualizationRef.current.innerHTML = '';
+// Create green audio visualization bars
+const createAudioVisualization = () => {
+setTimeout(() => {
+if (!visualizationRef.current) return;
 
-      // Create container for animated bars
-      const container = document.createElement('div');
-      container.className = 'flex items-end justify-center h-16 gap-1 bg-gray-900 rounded p-2';
+visualizationRef.current.innerHTML = '';
 
-      // Create 60 green animated bars
-      for (let i = 0; i < 60; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'bg-green-500 rounded-t transition-all duration-150';
-        bar.style.width = '2px';
-        bar.style.height = '4px';
-        bar.style.opacity = '0.7';
-        container.appendChild(bar);
-      }
+// Create container for animated bars
+const container = document.createElement('div');
+container.className = 'flex items-end justify-center h-16 gap-1 bg-gray-900 rounded p-2';
 
-      visualizationRef.current.appendChild(container);
-      console.log('✅ Green visualization bars created');
-    }, 100);
-  };
+// Create 60 green animated bars
+for (let i = 0; i < 60; i++) {
+const bar = document.createElement('div');
+bar.className = 'bg-green-500 rounded-t transition-all duration-150';
+bar.style.width = '2px';
+bar.style.height = '4px';
+bar.style.opacity = '0.7';
+container.appendChild(bar);
+}
 
-  // Animate visualization when playing
-  const startVisualization = () => {
-    if (!visualizationRef.current) return;
+visualizationRef.current.appendChild(container);
+console.log('✅ Green visualization bars created');
+}, 100);
+};
 
-    const bars = visualizationRef.current.querySelectorAll('div > div');
+// Animate visualization when playing
+const startVisualization = () => {
+if (!visualizationRef.current) return;
 
-    const animate = () => {
-      if (!isPlaying) return;
+const bars = visualizationRef.current.querySelectorAll('div > div');
+
+const animate = () => {
+if (!isPlaying) return;
 
       bars.forEach((bar, index) => {
         // Create wave animation
