@@ -22,4 +22,5 @@ available at `/admin.html`. Modern versions of these tools are integrated in the
 React app:
 
 - Visit `/back-corner` for the VoxPro Player page.
+- Visit `/gallery` for the photo gallery section.
 - The admin dashboard links to `/admin/voxpro-player` and `/admin/voxpro-management` for direct access to each tool.
