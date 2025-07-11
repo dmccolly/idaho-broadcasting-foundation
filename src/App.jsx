@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import AdminDashboard from './components/AdminDashboard';
 import EventsPage from './components/EventsPage';
 import EventsManager from './components/EventsManager';
+import VoxProManagement from './components/VoxProManagement.jsx';
+import VoxProPlayer from './components/VoxProPlayer.jsx';
 
 // Main Layout Component
 const Layout = ({ children }) => {
@@ -259,6 +261,8 @@ function App() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/events" element={<EventsManager />} />
+          <Route path="/admin/voxpro-player" element={<VoxProPlayer />} />
+          <Route path="/admin/voxpro-management" element={<VoxProManagement />} />
         </Routes>
       </Layout>
     </Router>
