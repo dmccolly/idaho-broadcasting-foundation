@@ -16,3 +16,6 @@ ignored from version control.
 Netlify CMS is bundled in the `public/admin` directory. Visit `/admin/` on your
 deployed site to log in and manage content. All other duplicate admin folders
 have been removed.
+
+The legacy dashboard with tools like VoxPro Player and Management is still
+available at `/admin.html`.
