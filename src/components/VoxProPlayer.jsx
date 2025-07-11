@@ -42,25 +42,23 @@ cancelAnimationFrame(animationRef.current);
 }, [assignment]);
 
 const detectMediaType = (url) => {
-const extension = url.split('.').pop().toLowerCase();
+  const extension = url.split(".").pop().toLowerCase();
 
-if (['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(extension)) {
-setMediaType('video');
-} else if (['mp3', 'wav', 'ogg', 'aac', 'm4a'].includes(extension)) {
-setMediaType('audio');
-createAudioVisualization();
-} else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
-setMediaType('image');
-} else if (['pdf',
-setIsLoading(false); // Images load immediately'doc', 'docx', 'txt'].includes(extension)) {
-setMediaType('document');
-} else
-setIsLoading(false); // Documents load immediately{
-setMediaType('unknown');
-
-setIsLoading(false); // Unknown types don't need loading}
-setIsLoading(false);
-;
+  if (["mp4","webm","ogg","mov","avi"].includes(extension)) {
+    setMediaType("video");
+  } else if (["mp3","wav","ogg","aac","m4a"].includes(extension)) {
+    setMediaType("audio");
+    createAudioVisualization();
+  } else if (["jpg","jpeg","png","gif","webp","svg"].includes(extension)) {
+    setMediaType("image");
+    setIsLoading(false);
+  } else if (["pdf","doc","docx","txt"].includes(extension)) {
+    setMediaType("document");
+    setIsLoading(false);
+  } else {
+    setMediaType("unknown");
+    setIsLoading(false);
+  }
 
 // Create green audio visualization bars
 const createAudioVisualization = () => {
