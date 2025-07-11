@@ -24,7 +24,7 @@
         }
         var cms = window.CMS || window.NetlifyCmsApp || window.NetlifyCms;
         if (cms && cms.init) {
-          cms.init();
+          cms.init({ config: '/admin/config.yml' });
         }
       });
   </script>
