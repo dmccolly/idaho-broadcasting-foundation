@@ -1,4 +1,9 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# History of Idaho Broadcasting
+Repository: **history-of-idaho-broadcasting**
+
+
+This repository contains a Next.js static site built with Tailwind CSS. The content is written in MDX, and you can edit posts visually using TinaCMS at `/admin`.
+
 
 ## Getting Started
 
